@@ -2,7 +2,8 @@
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
 # Install Software package on your master server/client
 # *****************************************************
-
+# Update Version: Manuel Winkel (www.deyda.net)
+# Add uninstall loop.
 <#
 .SYNOPSIS
 This script installs OneDrive on a MCS/PVS master server/client or wherever you want.
@@ -84,11 +85,24 @@ $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
 $OneDrive = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
 IF ($OneDrive -ne $Version) {
 
+# Deinstallation OneDrive
+Write-Verbose "Deinstalling $Product" -Verbose
+DS_WriteLog "I" "Deinstalling $Product" $LogFile
+try	{
+    Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList '/uninstall /allusers' -NoNewWindow -Wait
+    Stop-Process -Name OneDrive
+	} catch {
+DS_WriteLog "E" "Error deinstalling $Product (error: $($Error[0]))" $LogFile       
+}
+DS_WriteLog "-" "" $LogFile
+Write-Output ""
+
+
 # Installation OneDrive
 Write-Verbose "Installing $Product" -Verbose
 DS_WriteLog "I" "Installing $Product" $LogFile
 try	{
-    Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList '/allusers' –NoNewWindow -Wait
+    Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList '/allusers' -NoNewWindow -Wait
     Stop-Process -Name OneDrive
 	} catch {
 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
