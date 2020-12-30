@@ -63,7 +63,7 @@ $BaseLogDir = "$PSScriptRoot\_Install Logs"       # [edit] add the location of y
 $PackageName = "$Product" 		    # [edit] enter the display name of the software (e.g. 'Arcobat Reader' or 'Microsoft Office')
 
 # Global variables
-$StartDir = $PSScriptRoot # the directory path of the script currently being executed
+#$StartDir = $PSScriptRoot # the directory path of the script currently being executed
 $LogDir = (Join-Path $BaseLogDir $PackageName)
 $LogFileName = ("$ENV:COMPUTERNAME - $PackageName.log")
 $LogFile = Join-path $LogDir $LogFileName
@@ -85,14 +85,14 @@ $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
 $OneDrive = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
 IF ($OneDrive -ne $Version) {
 
-# Deinstallation OneDrive
-Write-Verbose "Deinstalling $Product" -Verbose
-DS_WriteLog "I" "Deinstalling $Product" $LogFile
+# Uninstallation OneDrive
+Write-Verbose "Uninstalling $Product" -Verbose
+DS_WriteLog "I" "Uninstalling $Product" $LogFile
 try	{
     Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList '/uninstall /allusers' -NoNewWindow -Wait
     Stop-Process -Name OneDrive
 	} catch {
-DS_WriteLog "E" "Error deinstalling $Product (error: $($Error[0]))" $LogFile       
+DS_WriteLog "E" "Error uninstalling $Product (error: $($Error[0]))" $LogFile       
 }
 DS_WriteLog "-" "" $LogFile
 Write-Output ""

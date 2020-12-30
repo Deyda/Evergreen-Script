@@ -2,7 +2,8 @@
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
 # Download Software packages with Evergreen powershell module
 # ***********************************************************
-
+# Update Version: Manuel Winkel (www.deyda.net)
+# Corection of Office 365 Deployment Toolkit
 <#
 .SYNOPSIS
 This script downloads software packages if new versions are available.
@@ -55,16 +56,16 @@ $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $NotePadPlusPlus = 1
 $GoogleChrome = 1
 $MSEdge = 1
-$VLCPlayer =1
+$VLCPlayer = 1
 $BISF = 1
-$WorkspaceApp_Current_Relase = 1 
-$WorkspaceApp_LTSR_Relase = 1 
+$WorkspaceApp_Current_Relase = 1
+$WorkspaceApp_LTSR_Relase = 1
 $7ZIP = 1
 $AdobeReaderDC_MUI = 1 # Only MSP Updates
 $FSLogix = 1
 $MSTeams = 1
 $OneDrive = 1
-$OfficeDT = 1 # Office Deployment Toolkit for installing Office 365
+$OfficeDT = 1 # Office Deployment Toolkit for installing Office 365 (Monthly Targeted Version)
 $VMWareTools = 1
 $OpenJDK = 1
 $OracleJava8 = 1
@@ -298,7 +299,6 @@ Write-Verbose "No new version available" -Verbose
 Write-Output ""
 }
 
-
 # Download 7-ZIP
 IF ($7ZIP -eq 1) {
 $Product = "7-Zip"
@@ -334,7 +334,7 @@ Write-Output ""
 IF ($AdobeReaderDC_MUI -eq 1) {
 $Product = "Adobe Reader DC MUI"
 $PackageName = "Adobe_DC_MUI_Update"
-$Adobe = Get-AdobeAcrobatReaderDC | Where-Object {$_.Platform -eq "Windows" -and $_.Language -eq "Multi"}
+$Adobe = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
 $Version = $Adobe.Version
 $URL = $Adobe.uri
 $InstallerType = "msp"
@@ -462,12 +462,12 @@ Write-Output ""
 # Download Office Deployment Toolkit (ODT)
 IF ($OfficeDT -eq 1) {
 $Product = "MS Office 365"
-$PackageName = "officedeploymenttool"
-$URL = $(Get-ODTUri)
+$PackageName = "setup"
+$URL = $(Get-MicrosoftOffice)
+$URLMonthly = $URL | Select-Object -Last 1
 $InstallerType = "exe"
 $Source = "$PackageName" + "." + "$InstallerType"
-$Version = $URL.Split("_") | Select-Object -Last 1
-$Version = $Version -replace ".{4}$"
+$Version = $URLMonthly.version
 $CurrentVersion = Get-Content -Path "$UpdateFolder\$Product\Version.txt" -EA SilentlyContinue
 Write-Verbose "Download $Product" -Verbose
 Write-Host "Download Version: $Version"
@@ -480,7 +480,7 @@ Start-Transcript $LogPS
 New-Item -Path "$UpdateFolder\$Product" -Name "Download date $Date" | Out-Null
 Set-Content -Path "$UpdateFolder\$Product\Version.txt" -Value "$Version"
 Write-Verbose "Starting Download of $Product $Version" -Verbose
-Invoke-WebRequest -Uri $URL -OutFile ("$UpdateFolder\$Product\" + ($Source))
+Invoke-WebRequest -Uri $URLMonthly.uri -OutFile ("$UpdateFolder\$Product\" + ($Source))
 Start-Sleep 3
 Write-Verbose "Stop logging" -Verbose
 Stop-Transcript

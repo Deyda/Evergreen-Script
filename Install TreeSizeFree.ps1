@@ -63,7 +63,7 @@ $BaseLogDir = "$PSScriptRoot\_Install Logs"       # [edit] add the location of y
 $PackageName = "$Product" 		    # [edit] enter the display name of the software (e.g. 'Arcobat Reader' or 'Microsoft Office')
 
 # Global variables
-$StartDir = $PSScriptRoot # the directory path of the script currently being executed
+#$StartDir = $PSScriptRoot # the directory path of the script currently being executed
 $LogDir = (Join-Path $BaseLogDir $PackageName)
 $LogFileName = ("$ENV:COMPUTERNAME - $PackageName.log")
 $LogFile = Join-path $LogDir $LogFileName

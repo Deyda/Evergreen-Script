@@ -2,7 +2,8 @@
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
 # Install Software packages on your master server/client
 # ******************************************************
-
+# Update Version: Manuel Winkel (www.deyda.net)
+# Addition of Office 365 Installation
 <#
 .SYNOPSIS
 This script calls other scripts to install software on a MCS/PVS master server/client or wherever you want. Install scripts have to be in the root folder. 
@@ -43,21 +44,22 @@ Write-Verbose "Setting Variables" -Verbose
 Write-Output ""
 
 # Select software to install
-$NotePadPlusPlus = 1
-$GoogleChrome = 1
+$NotePadPlusPlus = 0
+$GoogleChrome = 0
 $MSEdge = 1
 $VLCPlayer = 1
-$BISF = 1
+$BISF = 0
 $FSLogix = 1
-$WorkspaceApp_Current_Release = 1
-$WorkspaceApp_LTSR_Release = 1
-$7ZIP = 1
-$AdobeReaderDCUpdate = 1
+$WorkspaceApp_Current_Release = 0
+$WorkspaceApp_LTSR_Release = 0
+$7ZIP = 0
+$AdobeReaderDCUpdate = 0
 $MSTeams = 1
 $OneDrive = 1
-$KeepPass = 1
-$mRemoteNG = 1
-$TreeSizeFree = 1
+$KeepPass = 0
+$mRemoteNG = 0
+$TreeSizeFree = 0
+$Office365 = 1
 
 
 # Install Notepad ++
@@ -151,3 +153,9 @@ IF ($TreeSizeFree -eq 1)
 	{
 		& "$psscriptroot\Install TreeSizeFree.ps1"
 	}
+
+# Install Office 365
+IF ($Office365 -eq 1)
+{
+	& "$psscriptroot\Install MS Office 365.ps1"
+}
