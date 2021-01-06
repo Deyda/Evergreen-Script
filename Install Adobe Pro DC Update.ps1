@@ -24,7 +24,7 @@ $global:ErrorActionPreference = "Stop"
 if($verbose){ $global:VerbosePreference = "Continue" }
 
 # Variables
-$Product = "Adobe Pro DC MUI"
+$Product = "Adobe Pro DC"
 
 # FUNCTION Logging
 #========================================================================================================================================
@@ -88,7 +88,7 @@ IF ($Adobe -ne $Version) {
 Write-Verbose "Installing $Product" -Verbose
 DS_WriteLog "I" "Installing $Product" $LogFile
 try {
-	$mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_DC_MUI_Update.msp`" /quiet /qn"
+	$mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_Pro_DC_Update.msp`" /quiet /qn"
 	Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
 	# Update Dienst und Task deaktivieren
 	Stop-Service AdobeARMservice
