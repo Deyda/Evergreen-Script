@@ -54,6 +54,7 @@ $WorkspaceApp_Current_Release = 0
 $WorkspaceApp_LTSR_Release = 0
 $7ZIP = 0
 $AdobeReaderDCUpdate = 0
+$AdobeProDC = 1
 $MSTeams = 1
 $OneDrive = 1
 $KeepPass = 0
@@ -123,6 +124,12 @@ IF ($AdobeReaderDCUpdate -eq 1)
 	{
 		& "$psscriptroot\Install Adobe Reader DC Update.ps1"
 	}
+
+	# Install Adobe Pro DC
+IF ($AdobeProDC -eq 1)
+{
+	& "$psscriptroot\Install Adobe Pro DC Update.ps1"
+}
 
 # Install MS Teams
 IF ($MSTeams -eq 1)

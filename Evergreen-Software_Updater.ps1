@@ -62,6 +62,7 @@ $WorkspaceApp_Current_Relase = 1
 $WorkspaceApp_LTSR_Relase = 1
 $7ZIP = 1
 $AdobeReaderDC_MUI = 1 # Only MSP Updates
+$AdobeProDC = 1
 $FSLogix = 1
 $MSTeams = 1
 $OneDrive = 1
@@ -360,6 +361,35 @@ Write-Verbose "No new version available" -Verbose
 Write-Output ""
 }
 
+# Download Adobe Pro DC Update
+IF ($AdobeProDC -eq 1) {
+   $Product = "Adobe Pro DC"
+   $PackageName = "Adobe_Pro_DC_Update"
+   $Adobe = Get-AdobeAcrobatProDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
+   $Version = $Adobe.Version
+   $URL = $Adobe.uri
+   $InstallerType = "msp"
+   $Source = "$PackageName" + "." + "$InstallerType"
+   $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+   Write-Verbose "Download $Product" -Verbose
+   Write-Host "Download Version: $Version"
+   Write-Host "Current Version: $CurrentVersion"
+   IF (!($CurrentVersion -eq $Version)) {
+   if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+   $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+   Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
+   Start-Transcript $LogPS
+   New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+   Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+   Write-Verbose "Starting Download of $Product $Version" -Verbose
+   Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
+   Write-Verbose "Stop logging" -Verbose
+   Stop-Transcript
+   Write-Output ""
+   }
+   Write-Verbose "No new version available" -Verbose
+   Write-Output ""
+   }
 
 # Download FSLogix
 IF ($FSLogix -eq 1) {
