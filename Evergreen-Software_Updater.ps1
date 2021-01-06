@@ -365,7 +365,7 @@ Write-Output ""
 IF ($AdobeProDC -eq 1) {
    $Product = "Adobe Pro DC"
    $PackageName = "Adobe_Pro_DC_Update"
-   $Adobe = Get-AdobeAcrobatProDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
+   $Adobe = Get-AdobeAcrobatProDC | Where-Object {$_.Type -eq "Updater"}
    $Version = $Adobe.Version
    $URL = $Adobe.uri
    $InstallerType = "msp"
