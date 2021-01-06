@@ -1,8 +1,10 @@
 ﻿# *****************************************************
-# Manuel Winkel, www.deyda.net, Twitter: @deyda84
+# Manuel Winkel (www.deyda.net) @deyda84
+# Original Version by
+# D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
 # Install Software package on your master server/client
 # *****************************************************
-# Advancement of @mohrpheus78 Script
+#
 <#
 .SYNOPSIS
 This script installs the current Adobe Acrobat Pro DC MUI Update on a MCS/PVS master server/client or wherever you want.

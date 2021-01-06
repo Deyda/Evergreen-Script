@@ -53,12 +53,12 @@ Write-Output ""
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 
 # Select software to download
-$NotePadPlusPlus = 1
-$GoogleChrome = 1
+$NotePadPlusPlus = 0
+$GoogleChrome = 0
 $MSEdge = 1
 $VLCPlayer = 1
-$BISF = 1
-$WorkspaceApp_Current_Relase = 1
+$BISF = 0
+$WorkspaceApp_Current_Relase = 0
 $WorkspaceApp_LTSR_Relase = 1
 $7ZIP = 1
 $AdobeReaderDC_MUI = 1 # Only MSP Updates
@@ -67,12 +67,12 @@ $FSLogix = 1
 $MSTeams = 1
 $OneDrive = 1
 $OfficeDT = 1 # Office Deployment Toolkit for installing Office 365 (Monthly Targeted Version)
-$VMWareTools = 1
-$OpenJDK = 1
-$OracleJava8 = 1
-$KeepPass = 1
-$mRemoteNG = 1
-$TreeSizeFree = 1
+$VMWareTools = 0
+$OpenJDK = 0
+$OracleJava8 = 0
+$KeepPass = 0
+$mRemoteNG = 0
+$TreeSizeFree = 0
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
@@ -504,18 +504,18 @@ Write-Host "Download Version: $Version"
 Write-Host "Current Version: $CurrentVersion"
 IF (!($CurrentVersion -eq $Version)) {
 if (!(Test-Path -Path "$UpdateFolder\$Product")) {New-Item -Path "$UpdateFolder\$Product" -ItemType Directory | Out-Null}
-$LogPS = "$UpdateFolder\$Product\" + "$Product $Version.log"
-Remove-Item "$UpdateFolder\$Product\*" -Recurse
+$LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+Remove-Item "$PSScriptRoot\$Product\*" -Recurse
 Start-Transcript $LogPS
-New-Item -Path "$UpdateFolder\$Product" -Name "Download date $Date" | Out-Null
-Set-Content -Path "$UpdateFolder\$Product\Version.txt" -Value "$Version"
+New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
 Write-Verbose "Starting Download of $Product $Version" -Verbose
-Invoke-WebRequest -Uri $URLMonthly.uri -OutFile ("$UpdateFolder\$Product\" + ($Source))
+Invoke-WebRequest -Uri $URLMonthly.uri -OutFile ("$PSScriptRoot\$Product\" + ($Source))
 Start-Sleep 3
 Write-Verbose "Stop logging" -Verbose
 Stop-Transcript
 Write-Output ""
-& "$UpdateFolder\$Product\$PackageName.$InstallerType" /quiet /extract:"$UpdateFolder\$Product"
+& "$PSScriptRoot\$Product\$PackageName.$InstallerType" /quiet /extract:"$PSScriptRoot\$Product"
 }
 Write-Verbose "No new version available" -Verbose
 Write-Output ""
