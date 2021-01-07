@@ -1,9 +1,11 @@
 ﻿# ******************************************************
+# Manuel Winkel (www.deyda.net) @deyda84
+# Original Version by
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
+#
 # Install Software packages on your master server/client
 # ******************************************************
-# Update Version: Manuel Winkel (www.deyda.net)
-# Addition of Office 365 Installation
+#
 <#
 .SYNOPSIS
 This script calls other scripts to install software on a MCS/PVS master server/client or wherever you want. Install scripts have to be in the root folder. 
@@ -51,16 +53,16 @@ $VLCPlayer = 1
 $BISF = 0
 $FSLogix = 1
 $WorkspaceApp_Current_Release = 0
-$WorkspaceApp_LTSR_Release = 0
-$7ZIP = 0
-$AdobeReaderDCUpdate = 0
+$WorkspaceApp_LTSR_Release = 1
+$7ZIP = 1
+$AdobeReaderDC = 1
 $AdobeProDC = 1
 $MSTeams = 1
 $OneDrive = 1
 $KeepPass = 0
 $mRemoteNG = 0
 $TreeSizeFree = 0
-$Office365 = 1
+$Office365 = 0
 
 
 # Install Notepad ++
@@ -119,10 +121,10 @@ IF ($7ZIP -eq 1)
 		& "$psscriptroot\Install 7-Zip.ps1"
 	}
 	
-# Install Adobe Reader DC MUI Update
-IF ($AdobeReaderDCUpdate -eq 1)
+# Install Adobe Reader DC
+IF ($AdobeReaderDC -eq 1)
 	{
-		& "$psscriptroot\Install Adobe Reader DC Update.ps1"
+		& "$psscriptroot\Install Adobe Reader DC.ps1"
 	}
 
 	# Install Adobe Pro DC

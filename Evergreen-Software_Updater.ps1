@@ -1,9 +1,11 @@
 ﻿# ***********************************************************
+# Manuel Winkel (www.deyda.net) @deyda84
+# Original Version by
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
+#
 # Download Software packages with Evergreen powershell module
 # ***********************************************************
-# Update Version: Manuel Winkel (www.deyda.net)
-# Corection of Office 365 Deployment Toolkit
+#
 <#
 .SYNOPSIS
 This script downloads software packages if new versions are available.
@@ -61,7 +63,7 @@ $BISF = 0
 $WorkspaceApp_Current_Relase = 0
 $WorkspaceApp_LTSR_Relase = 1
 $7ZIP = 1
-$AdobeReaderDC_MUI = 1 # Only MSP Updates
+$AdobeReaderDC = 1 # Change Line 338 to get another language
 $AdobeProDC = 1
 $FSLogix = 1
 $MSTeams = 1
@@ -331,14 +333,14 @@ Write-Output ""
 }
 
 
-# Download Adobe Reader DC MUI Update
-IF ($AdobeReaderDC_MUI -eq 1) {
-$Product = "Adobe Reader DC MUI"
-$PackageName = "Adobe_DC_MUI_Update"
-$Adobe = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
+# Download Adobe Reader DC
+IF ($AdobeReaderDC -eq 1) {
+$Product = "Adobe Reader DC"
+$PackageName = "Adobe_DC_Update"
+$Adobe = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "German"}
 $Version = $Adobe.Version
 $URL = $Adobe.uri
-$InstallerType = "msp"
+$InstallerType = "exe"
 $Source = "$PackageName" + "." + "$InstallerType"
 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
 Write-Verbose "Download $Product" -Verbose

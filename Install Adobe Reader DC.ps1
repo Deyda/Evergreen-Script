@@ -1,8 +1,11 @@
 ﻿# *****************************************************
+# Manuel Winkel (www.deyda.net) @deyda84
+# Original Version by
 # D. Mohrmann, S&L Firmengruppe, Twitter: @mohrpheus78
+#
 # Install Software package on your master server/client
 # *****************************************************
-
+#
 <#
 .SYNOPSIS
 This script installs the current Adobe Acrobat DC MUI Update on a MCS/PVS master server/client or wherever you want.
@@ -24,7 +27,7 @@ $global:ErrorActionPreference = "Stop"
 if($verbose){ $global:VerbosePreference = "Continue" }
 
 # Variables
-$Product = "Adobe Reader DC MUI"
+$Product = "Adobe Reader DC"
 
 # FUNCTION Logging
 #========================================================================================================================================
