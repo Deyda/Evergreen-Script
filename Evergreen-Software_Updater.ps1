@@ -464,7 +464,7 @@ Write-Output ""
 IF ($OneDrive -eq 1) {
 $Product = "MS OneDrive"
 $PackageName = "OneDriveSetup"
-$OneDrive = Get-MicrosoftOneDrive | Where-Object {$_.Ring -eq "Production"} | Sort-Object -Property Version -Descending | Select-Object -Last 1
+$OneDrive = Get-MicrosoftOneDrive | Where-Object {$_.Ring -eq "Production" -and $_.Type -eq “Exe”} | Sort-Object -Property Version -Descending | Select-Object -Last 1
 $Version = $OneDrive.Version
 $URL = $OneDrive.uri
 $InstallerType = "exe"
