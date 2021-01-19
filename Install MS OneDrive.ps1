@@ -102,8 +102,10 @@ Write-Output ""
 Write-Verbose "Installing $Product" -Verbose
 DS_WriteLog "I" "Installing $Product" $LogFile
 try	{
-    Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList '/allusers' -NoNewWindow -Wait
-    Stop-Process -Name OneDrive
+    $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList '/allusers' –NoNewWindow -PassThru
+    while (Get-Process -Name "OneDriveSetup" -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+    # onedrive starts automatically after setup. kill!
+    Stop-Process -Name "OneDrive" -Force
 	} catch {
 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
 }
