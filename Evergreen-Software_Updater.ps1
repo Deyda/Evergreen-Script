@@ -153,7 +153,7 @@ Write-Output ""
 IF ($MSEdge -eq 1) {
 $Product = "MS Edge"
 $EdgeURL = Get-MicrosoftEdge | Where-Object {$_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "x64"}
-$EdgeURL  = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
+$EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
 $Version =  (Get-MicrosoftEdge | Where-Object {$_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "x64"}).Version
 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue 
 Write-Verbose "Download $Product" -Verbose
@@ -464,7 +464,7 @@ Write-Output ""
 IF ($OneDrive -eq 1) {
 $Product = "MS OneDrive"
 $PackageName = "OneDriveSetup"
-$OneDrive = Get-MicrosoftOneDrive | Where-Object {$_.Ring -eq "Production" -and $_.Type -eq “Exe”} | Sort-Object -Property Version -Descending | Select-Object -Last 1
+$OneDrive = Get-MicrosoftOneDrive | Where-Object {$_.Ring -eq "Production" -and $_.Type -eq "Exe"} | Sort-Object -Property Version -Descending | Select-Object -Last 1
 $Version = $OneDrive.Version
 $URL = $OneDrive.uri
 $InstallerType = "exe"
