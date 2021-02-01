@@ -91,61 +91,328 @@ function gui_mode{
     Add-Type -AssemblyName System.Windows.Forms
     [System.Windows.Forms.Application]::EnableVisualStyles()
 
+    # Set Variable
+    $Script:install = $true
+    $Script:download = $true
+
     # Set the size of your form
-    $Form                            = New-Object system.Windows.Forms.Form
-    $Form.ClientSize                 = New-Object System.Drawing.Point(899,422)
-    $Form.text                       = "Evergreen - Update your Software"
-    $Form.TopMost                    = $false
+    $Form = New-Object system.Windows.Forms.Form
+    $Form.ClientSize = New-Object System.Drawing.Point(300,900)
+    $Form.text = "Evergreen - Update your Software"
+    $Form.TopMost = $true
+    $Form.AutoSize = $true
 
     # Set the font of the text to be used within the form
     $Font = New-Object System.Drawing.Font("Times New Roman",12)
     $Form.Font = $Font
 
+    # Download / Install Headline
+    $Headline1 = New-Object system.Windows.Forms.Label
+    $Headline1.text = "Select Mode"
+    $Headline1.AutoSize = $true
+    $Headline1.width = 25
+    $Headline1.height = 10
+    $Headline1.location = New-Object System.Drawing.Point(11,4)
+    $form.Controls.Add($Headline1)
+
     # Download Checkbox
-    $DownloadBox                     = New-Object system.Windows.Forms.CheckBox
-    $DownloadBox.text                = "Download"
-    $DownloadBox.AutoSize            = $false
-    $DownloadBox.width               = 95
-    $DownloadBox.height              = 20
-    $DownloadBox.location            = New-Object System.Drawing.Point(11,18)
+    $DownloadBox = New-Object system.Windows.Forms.CheckBox
+    $DownloadBox.text = "Download"
+    $DownloadBox.AutoSize = $false
+    $DownloadBox.width = 95
+    $DownloadBox.height = 20
+    $DownloadBox.location = New-Object System.Drawing.Point(11,35)
+    $form.Controls.Add($DownloadBox)
 
     # Install Checkbox
-    $InstallBox                      = New-Object system.Windows.Forms.CheckBox
-    $InstallBox.text                 = "Install"
-    $InstallBox.AutoSize             = $false
-    $InstallBox.width                = 95
-    $InstallBox.height               = 20
-    $InstallBox.location             = New-Object System.Drawing.Point(108,18)
+    $InstallBox = New-Object system.Windows.Forms.CheckBox
+    $InstallBox.text = "Install"
+    $InstallBox.AutoSize = $false
+    $InstallBox.width = 95
+    $InstallBox.height = 20
+    $InstallBox.location = New-Object System.Drawing.Point(108,35)
+    $form.Controls.Add($InstallBox)
+
+    # Software Headline
+    $Headline2 = New-Object system.Windows.Forms.Label
+    $Headline2.text = "Select Software"
+    $Headline2.AutoSize = $true
+    $Headline2.width = 25
+    $Headline2.height = 10
+    $Headline2.location = New-Object System.Drawing.Point(11,70)
+    $form.Controls.Add($Headline2)
+
+    # 7Zip Checkbox
+    $7ZipBox = New-Object system.Windows.Forms.CheckBox
+    $7ZipBox.text = "7 Zip"
+    $7ZipBox.width = 95
+    $7ZipBox.height = 20
+    $7ZipBox.autosize = $true
+    $7ZipBox.location = New-Object System.Drawing.Point(11,95)
+    $form.Controls.Add($7ZipBox)
+
+    # AdobeProDC Checkbox
+    $AdobeProDCBox = New-Object system.Windows.Forms.CheckBox
+    $AdobeProDCBox.text = "Adobe Pro DC #Only Download @ the moment"
+    $AdobeProDCBox.width = 95
+    $AdobeProDCBox.height = 20
+    $AdobeProDCBox.autosize = $true
+    $AdobeProDCBox.location = New-Object System.Drawing.Point(11,120)
+    $form.Controls.Add($AdobeProDCBox)
+
+    # AdobeReaderDC Checkbox
+    $AdobeReaderDCBox = New-Object system.Windows.Forms.CheckBox
+    $AdobeReaderDCBox.text = "Adobe Reader DC #Only Download @ the moment"
+    $AdobeReaderDCBox.width = 95
+    $AdobeReaderDCBox.height = 20
+    $AdobeReaderDCBox.autosize = $true
+    $AdobeReaderDCBox.location = New-Object System.Drawing.Point(11,145)
+    $form.Controls.Add($AdobeReaderDCBox)
+
+    # BISF Checkbox
+    $BISFBox = New-Object system.Windows.Forms.CheckBox
+    $BISFBox.text = "BIS-F"
+    $BISFBox.width = 95
+    $BISFBox.height = 20
+    $BISFBox.autosize = $true
+    $BISFBox.location = New-Object System.Drawing.Point(11,170)
+    $form.Controls.Add($BISFBox)
+
+    # FSLogix Checkbox
+    $FSLogixBox = New-Object system.Windows.Forms.CheckBox
+    $FSLogixBox.text = "FSLogix"
+    $FSLogixBox.width = 95
+    $FSLogixBox.height = 20
+    $FSLogixBox.autosize = $true
+    $FSLogixBox.location = New-Object System.Drawing.Point(11,195)
+    $form.Controls.Add($FSLogixBox)
+
+    # GoogleChrome Checkbox
+    $GoogleChromeBox = New-Object system.Windows.Forms.CheckBox
+    $GoogleChromeBox.text = "Google Chrome"
+    $GoogleChromeBox.width = 95
+    $GoogleChromeBox.height = 20
+    $GoogleChromeBox.autosize = $true
+    $GoogleChromeBox.location = New-Object System.Drawing.Point(11,220)
+    $form.Controls.Add($GoogleChromeBox)
+
+    # KeepPass Checkbox
+    $KeepPassBox = New-Object system.Windows.Forms.CheckBox
+    $KeepPassBox.text = "KeepPass"
+    $KeepPassBox.width = 95
+    $KeepPassBox.height = 20
+    $KeepPassBox.autosize = $true
+    $KeepPassBox.location = New-Object System.Drawing.Point(11,245)
+    $form.Controls.Add($KeepPassBox)
+
+    # mRemoteNG Checkbox
+    $mRemoteNGBox = New-Object system.Windows.Forms.CheckBox
+    $mRemoteNGBox.text = "mRemoteNG"
+    $mRemoteNGBox.width = 95
+    $mRemoteNGBox.height = 20
+    $mRemoteNGBox.autosize = $true
+    $mRemoteNGBox.location = New-Object System.Drawing.Point(11,270)
+    $form.Controls.Add($mRemoteNGBox)
+
+    # MS365Apps Checkbox
+    $MS365AppsBox = New-Object system.Windows.Forms.CheckBox
+    $MS365AppsBox.text = "Microsoft 365 Apps # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment"
+    $MS365AppsBox.width = 95
+    $MS365AppsBox.height = 20
+    $MS365AppsBox.autosize = $true
+    $MS365AppsBox.location = New-Object System.Drawing.Point(11,295)
+    $form.Controls.Add($MS365AppsBox)
+
+    # MSEdge Checkbox
+    $MSEdgeBox = New-Object system.Windows.Forms.CheckBox
+    $MSEdgeBox.text = "Microsoft Edge"
+    $MSEdgeBox.width = 95
+    $MSEdgeBox.height = 20
+    $MSEdgeBox.autosize = $true
+    $MSEdgeBox.location = New-Object System.Drawing.Point(11,320)
+    $form.Controls.Add($MSEdgeBox)
+
+    # MSOffice2019 Checkbox
+    $MSOffice2019Box = New-Object system.Windows.Forms.CheckBox
+    $MSOffice2019Box.text = "Microsoft Office 2019 # OfficeDeployment Toolkit for installing Office 2019 / Only Download @ the moment"
+    $MSOffice2019Box.width = 95
+    $MSOffice2019Box.height = 20
+    $MSOffice2019Box.autosize = $true
+    $MSOffice2019Box.location = New-Object System.Drawing.Point(11,345)
+    $form.Controls.Add($MSOffice2019Box)
+
+    # MSTeams Checkbox
+    $MSTeamsBox = New-Object system.Windows.Forms.CheckBox
+    $MSTeamsBox.text = "Microsoft Teams (Machine-Based Install)"
+    $MSTeamsBox.width = 95
+    $MSTeamsBox.height = 20
+    $MSTeamsBox.autosize = $true
+    $MSTeamsBox.location = New-Object System.Drawing.Point(11,370)
+    $form.Controls.Add($MSTeamsBox)
+
+    # NotePadPlusPlus Checkbox
+    $NotePadPlusPlusBox = New-Object system.Windows.Forms.CheckBox
+    $NotePadPlusPlusBox.text = "NotePad++"
+    $NotePadPlusPlusBox.width = 95
+    $NotePadPlusPlusBox.height = 20
+    $NotePadPlusPlusBox.autosize = $true
+    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,395)
+    $form.Controls.Add($NotePadPlusPlusBox)
+
+    # OneDrive Checkbox
+    $OneDriveBox = New-Object system.Windows.Forms.CheckBox
+    $OneDriveBox.text = "Microsoft OneDrive (Machine-Based Install)"
+    $OneDriveBox.width = 95
+    $OneDriveBox.height = 20
+    $OneDriveBox.autosize = $true
+    $OneDriveBox.location = New-Object System.Drawing.Point(11,420)
+    $form.Controls.Add($OneDriveBox)
+
+    # OpenJDK Checkbox
+    $OpenJDKBox = New-Object system.Windows.Forms.CheckBox
+    $OpenJDKBox.text = "Open JDK #Only Download @ the moment"
+    $OpenJDKBox.width = 95
+    $OpenJDKBox.height = 20
+    $OpenJDKBox.autosize = $true
+    $OpenJDKBox.location = New-Object System.Drawing.Point(11,445)
+    $form.Controls.Add($OpenJDKBox)
+
+    # OracleJava8 Checkbox
+    $OracleJava8Box = New-Object system.Windows.Forms.CheckBox
+    $OracleJava8Box.text = "Oracle Java 8 #Only Download @ the moment"
+    $OracleJava8Box.width = 95
+    $OracleJava8Box.height = 20
+    $OracleJava8Box.autosize = $true
+    $OracleJava8Box.location = New-Object System.Drawing.Point(11,470)
+    $form.Controls.Add($OracleJava8Box)
+
+    # TreeSizeFree Checkbox
+    $TreeSizeFreeBox = New-Object system.Windows.Forms.CheckBox
+    $TreeSizeFreeBox.text = "TreeSize Free"
+    $TreeSizeFreeBox.width = 95
+    $TreeSizeFreeBox.height = 20
+    $TreeSizeFreeBox.autosize = $true
+    $TreeSizeFreeBox.location = New-Object System.Drawing.Point(11,495)
+    $form.Controls.Add($TreeSizeFreeBox)
+
+    # VLCPlayer Checkbox
+    $VLCPlayerBox = New-Object system.Windows.Forms.CheckBox
+    $VLCPlayerBox.text = "VLC Player"
+    $VLCPlayerBox.width = 95
+    $VLCPlayerBox.height = 20
+    $VLCPlayerBox.autosize = $true
+    $VLCPlayerBox.location = New-Object System.Drawing.Point(11,520)
+    $form.Controls.Add($VLCPlayerBox)
+
+    # VMWareTools Checkbox
+    $VMWareToolsBox = New-Object system.Windows.Forms.CheckBox
+    $VMWareToolsBox.text = "VMWare Tools #Only Download @ the moment"
+    $VMWareToolsBox.width = 95
+    $VMWareToolsBox.height = 20
+    $VMWareToolsBox.autosize = $true
+    $VMWareToolsBox.location = New-Object System.Drawing.Point(11,545)
+    $form.Controls.Add($VMWareToolsBox)
+
+    # WinSCP Checkbox
+    $WinSCPBox = New-Object system.Windows.Forms.CheckBox
+    $WinSCPBox.text = "WinSCP"
+    $WinSCPBox.width = 95
+    $WinSCPBox.height = 20
+    $WinSCPBox.autosize = $true
+    $WinSCPBox.location = New-Object System.Drawing.Point(11,570)
+    $form.Controls.Add($WinSCPBox)
+
+    # WorkspaceApp_Current_Release Checkbox
+    $WorkspaceApp_Current_ReleaseBox = New-Object system.Windows.Forms.CheckBox
+    $WorkspaceApp_Current_ReleaseBox.text = "Citrix WorkspaceApp Current Release"
+    $WorkspaceApp_Current_ReleaseBox.width = 95
+    $WorkspaceApp_Current_ReleaseBox.height = 20
+    $WorkspaceApp_Current_ReleaseBox.autosize = $true
+    $WorkspaceApp_Current_ReleaseBox.location = New-Object System.Drawing.Point(11,595)
+    $form.Controls.Add($WorkspaceApp_Current_ReleaseBox)
+
+    # WorkspaceApp_LTSR_Release Checkbox
+    $WorkspaceApp_LTSR_ReleaseBox = New-Object system.Windows.Forms.CheckBox
+    $WorkspaceApp_LTSR_ReleaseBox.text = "Citrix WorkspaceApp LTSR Release"
+    $WorkspaceApp_LTSR_ReleaseBox.width = 95
+    $WorkspaceApp_LTSR_ReleaseBox.height = 20
+    $WorkspaceApp_LTSR_ReleaseBox.autosize = $true
+    $WorkspaceApp_LTSR_ReleaseBox.location = New-Object System.Drawing.Point(11,620)
+    $form.Controls.Add($WorkspaceApp_LTSR_ReleaseBox)
 
     # OK Button
-    $OKButton                        = New-Object system.Windows.Forms.Button
-    $OKButton.text                   = "OK"
-    $OKButton.width                  = 60
-    $OKButton.height                 = 30
-    $OKButton.location               = New-Object System.Drawing.Point(406,351)
+    $OKButton = New-Object system.Windows.Forms.Button
+    $OKButton.text = "OK"
+    $OKButton.width = 60
+    $OKButton.height = 30
+    $OKButton.location = New-Object System.Drawing.Point(70,800)
     $OKButton.Add_Click({
         if ($DownloadBox.checked -eq $true) {$Script:install = $false}
         else {$Script:install = $true}
         if ($InstallBox.checked -eq $true) {$Script:download = $false}
         else {$Script:download = $true}
-        Write-Verbose "GUI MODE" -Verbose               
+        if ($7ZipBox.checked -eq $true) {$Script:7ZIP = 1}
+        else {$Script:7ZIP = 0}
+        if ($AdobeProDCBox.checked -eq $true) {$Script:AdobeProDC = 1}
+        else {$Script:AdobeProDC = 0}
+        if ($AdobeReaderDCBox.checked -eq $true) {$Script:AdobeReaderDC = 1}
+        else {$Script:AdobeReaderDC = 0}
+        if ($BISFBox.checked -eq $true) {$Script:BISF = 1}
+        else {$Script:BISF = 0}
+        if ($FSLogixBox.checked -eq $true) {$Script:FSLogix = 1}
+        else {$Script:FSLogix = 0}
+        if ($GoogleChromeBox.checked -eq $true) {$Script:GoogleChrome = 1}
+        else {$Script:GoogleChrome = 0}
+        if ($KeepPassBox.checked -eq $true) {$Script:KeepPass = 1}
+        else {$Script:KeepPass = 0}
+        if ($mRemoteNGBox.checked -eq $true) {$Script:mRemoteNG = 1}
+        else {$Script:mRemoteNG = 0}
+        if ($MS365AppsBox.checked -eq $true) {$Script:MS365Apps = 1}
+        else {$Script:MS365Apps = 0}
+        if ($MSEdgeBox.checked -eq $true) {$Script:MSEdge = 1}
+        else {$Script:MSEdge = 0}
+        if ($MSOffice2019Box.checked -eq $true) {$Script:MSOffice2019 = 1}
+        else {$Script:MSOffice2019 = 0}
+        if ($MSTeamsBox.checked -eq $true) {$Script:MSTeams = 1}
+        else {$Script:MSTeams = 0}
+        if ($NotePadPlusPlusBox.checked -eq $true) {$Script:NotePadPlusPlus = 1}
+        else {$Script:NotePadPlusPlus = 0}
+        if ($OneDriveBox.checked -eq $true) {$Script:OneDrive = 1}
+        else {$Script:OneDrive = 0}
+        if ($OpenJDKBox.checked -eq $true) {$Script:OpenJDK = 1}
+        else {$Script:OpenJDK = 0}
+        if ($OracleJava8Box.checked -eq $true) {$Script:OracleJava8 = 1}
+        else {$Script:OracleJava8 = 0}
+        if ($TreeSizeFreeBox.checked -eq $true) {$Script:TreeSizeFree = 1}
+        else {$Script:TreeSizeFree = 0}
+        if ($VLCPlayerBox.checked -eq $true) {$Script:VLCPlayer = 1}
+        else {$Script:VLCPlayer = 0}
+        if ($VMWareToolsBox.checked -eq $true) {$Script:VMWareTools = 1}
+        else {$Script:VMWareTools = 0}
+        if ($WinSCPBox.checked -eq $true) {$Script:WinSCP = 1}
+        else {$Script:WinSCP = 0}
+        if ($WorkspaceApp_Current_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_Current_Release = 1}
+        else {$Script:WorkspaceApp_Current_Release = 0}
+        if ($WorkspaceApp_LTSR_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_LTSR_Release = 1}
+        else {$Script:WorkspaceApp_LTSR_Release = 0}
+        Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
-        })
+    })
+    $form.Controls.Add($OKButton)
 
     # Cancel Button
-    $CancelButton                    = New-Object system.Windows.Forms.Button
-    $CancelButton.text               = "Cancel"
-    $CancelButton.width              = 60
-    $CancelButton.height             = 30
-    $CancelButton.location           = New-Object System.Drawing.Point(486,351)
-        $CancelButton.Add_Click({
-            $Script:install = $true
-            $Script:download = $true
-            Write-Verbose "GUI MODE Canceled - Nothing happens" -Verbose
-            $Form.Close()
-        })
-
-    $Form.controls.AddRange(@($DownloadBox,$InstallBox,$OKButton,$CancelButton))
+    $CancelButton = New-Object system.Windows.Forms.Button
+    $CancelButton.text = "Cancel"
+    $CancelButton.width = 60
+    $CancelButton.height = 30
+    $CancelButton.location = New-Object System.Drawing.Point(170,800)
+    $CancelButton.Add_Click({
+        $Script:install = $true
+        $Script:download = $true
+        Write-Verbose "GUI MODE Canceled - Nothing happens" -Verbose
+        $Form.Close()
+    })
+    $form.Controls.Add($CancelButton)
 
     # Activate the form
     $Form.Add_Shown({$Form.Activate()})
@@ -156,18 +423,20 @@ function gui_mode{
 Write-Verbose "Setting Variables" -Verbose
 Write-Output ""
 
-# Variables
+# Define and Reset Variables
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $Script:install = $install
 $Script:download = $download
 
-if ($gui -eq $True) { 
+if ($gui -eq $True) {
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeepPass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,OneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release
     gui_mode
 }
 else {
     # Select software
     $7ZIP = 0
     $AdobeProDC = 0 #Only Download @ the moment
+    $AdobeReaderDC = 0 #Only Download @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
     $FSLogix = 0
@@ -869,7 +1138,7 @@ if ($install -eq $False) {
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\Current\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        Write-Verbose "Download $Product CR" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
