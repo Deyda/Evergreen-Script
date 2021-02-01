@@ -12,6 +12,8 @@ the script checks the version number and will update the package.
   Creation Date:  2021-01-29
   Purpose/Change:
   2021-01-29    Initial Version
+  2021-01-30    Error solved: No installation without parameters / Add WinSCP Install
+  2021-01-31    Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
 <#
 
 
@@ -90,28 +92,28 @@ Write-Output ""
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 
 # Select software
-$7ZIP = 1
+$7ZIP = 0
 $AdobeProDC = 0 #Only Download @ the moment
 $AdobeReaderDC = 0
 $BISF = 0
 $FSLogix = 0
-$GoogleChrome = 1
+$GoogleChrome = 0
 $KeepPass = 0
 $mRemoteNG = 0
 $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
-$MSEdge = 1
+$MSEdge = 0
 $MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
 $MSTeams = 0
-$NotePadPlusPlus = 1
+$NotePadPlusPlus = 0
 $OneDrive = 1
 $OpenJDK = 0 #Only Download @ the moment
 $OracleJava8 = 0 #Only Download @ the moment
 $TreeSizeFree = 0
-$VLCPlayer = 1
+$VLCPlayer = 0
 $VMWareTools = 0 #Only Download @ the moment
-$WinSCP = 1
-$WorkspaceApp_Current_Relase = 1
-$WorkspaceApp_LTSR_Relase = 0
+$WinSCP = 0
+$WorkspaceApp_Current_Release = 1
+$WorkspaceApp_LTSR_Release = 0
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
@@ -783,7 +785,7 @@ if ($install -eq $False) {
     }
 
     # Download WorkspaceApp Current
-    if ($WorkspaceApp_Current_Relase -eq 1) {
+    if ($WorkspaceApp_Current_Release -eq 1) {
         $Product = "WorkspaceApp"
         $PackageName = "CitrixWorkspaceApp"
         $WSACD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
@@ -817,7 +819,7 @@ if ($install -eq $False) {
     }
 
     # Download WorkspaceApp LTSR
-    if ($WorkspaceApp_LTSR_Relase -eq 1) {
+    if ($WorkspaceApp_LTSR_Release -eq 1) {
         $Product = "WorkspaceApp"
         $PackageName = "CitrixWorkspaceApp"
         $WSALD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
@@ -1387,8 +1389,8 @@ if ($download -eq $False) {
 
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $OneDrive = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
-        IF ($OneDrive -ne $Version) {
+        $OneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+        IF ($OneDriveV -ne $Version) {
             # Installation OneDrive
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
