@@ -14,6 +14,7 @@ the script checks the version number and will update the package.
   2021-01-29    Initial Version
   2021-01-30    Error solved: No installation without parameters / Add WinSCP Install
   2021-01-31    Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
+  2021-02-01    Add Gui Mode
 <#
 
 
@@ -83,6 +84,73 @@ else {
     Write-Verbose "Error! Script is NOT running with Admin rights!" -Verbose
     BREAK
 }
+
+# FUNCTION GUI
+# ========================================================================================================================================
+function gui_mode{
+    Add-Type -AssemblyName System.Windows.Forms
+    [System.Windows.Forms.Application]::EnableVisualStyles()
+
+    # Set the size of your form
+    $Form                            = New-Object system.Windows.Forms.Form
+    $Form.ClientSize                 = New-Object System.Drawing.Point(899,422)
+    $Form.text                       = "Evergreen - Update your Software"
+    $Form.TopMost                    = $false
+
+    # Set the font of the text to be used within the form
+    $Font = New-Object System.Drawing.Font("Times New Roman",12)
+    $Form.Font = $Font
+
+    # Download Checkbox
+    $DownloadBox                     = New-Object system.Windows.Forms.CheckBox
+    $DownloadBox.text                = "Download"
+    $DownloadBox.AutoSize            = $false
+    $DownloadBox.width               = 95
+    $DownloadBox.height              = 20
+    $DownloadBox.location            = New-Object System.Drawing.Point(11,18)
+
+    # Install Checkbox
+    $InstallBox                      = New-Object system.Windows.Forms.CheckBox
+    $InstallBox.text                 = "Install"
+    $InstallBox.AutoSize             = $false
+    $InstallBox.width                = 95
+    $InstallBox.height               = 20
+    $InstallBox.location             = New-Object System.Drawing.Point(108,18)
+
+    # OK Button
+    $OKButton                        = New-Object system.Windows.Forms.Button
+    $OKButton.text                   = "OK"
+    $OKButton.width                  = 60
+    $OKButton.height                 = 30
+    $OKButton.location               = New-Object System.Drawing.Point(406,351)
+    $OKButton.Add_Click({
+        if ($DownloadBox.checked -eq $true) {$Script:install = $false}
+        else {$Script:install = $true}
+        if ($InstallBox.checked -eq $true) {$Script:download = $false}
+        else {$Script:download = $true}
+        Write-Verbose "GUI MODE" -Verbose               
+        $Form.Close()
+        })
+
+    # Cancel Button
+    $CancelButton                    = New-Object system.Windows.Forms.Button
+    $CancelButton.text               = "Cancel"
+    $CancelButton.width              = 60
+    $CancelButton.height             = 30
+    $CancelButton.location           = New-Object System.Drawing.Point(486,351)
+        $CancelButton.Add_Click({
+            $Script:install = $true
+            $Script:download = $true
+            Write-Verbose "GUI MODE Canceled - Nothing happens" -Verbose
+            $Form.Close()
+        })
+
+    $Form.controls.AddRange(@($DownloadBox,$InstallBox,$OKButton,$CancelButton))
+
+    # Activate the form
+    $Form.Add_Shown({$Form.Activate()})
+    [void] $Form.ShowDialog()
+}
 # ========================================================================================================================================
 
 Write-Verbose "Setting Variables" -Verbose
@@ -90,30 +158,37 @@ Write-Output ""
 
 # Variables
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
+$Script:install = $install
+$Script:download = $download
 
-# Select software
-$7ZIP = 0
-$AdobeProDC = 0 #Only Download @ the moment
-$AdobeReaderDC = 0
-$BISF = 0
-$FSLogix = 0
-$GoogleChrome = 0
-$KeepPass = 0
-$mRemoteNG = 0
-$MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
-$MSEdge = 0
-$MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
-$MSTeams = 0
-$NotePadPlusPlus = 0
-$OneDrive = 1
-$OpenJDK = 0 #Only Download @ the moment
-$OracleJava8 = 0 #Only Download @ the moment
-$TreeSizeFree = 0
-$VLCPlayer = 0
-$VMWareTools = 0 #Only Download @ the moment
-$WinSCP = 0
-$WorkspaceApp_Current_Release = 1
-$WorkspaceApp_LTSR_Release = 0
+if ($gui -eq $True) { 
+    gui_mode
+}
+else {
+    # Select software
+    $7ZIP = 0
+    $AdobeProDC = 0 #Only Download @ the moment
+    $AdobeReaderDC = 0
+    $BISF = 0
+    $FSLogix = 0
+    $GoogleChrome = 0
+    $KeepPass = 0
+    $mRemoteNG = 0
+    $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
+    $MSEdge = 0
+    $MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
+    $MSTeams = 0
+    $NotePadPlusPlus = 0
+    $OneDrive = 1
+    $OpenJDK = 0 #Only Download @ the moment
+    $OracleJava8 = 0 #Only Download @ the moment
+    $TreeSizeFree = 0
+    $VLCPlayer = 0
+    $VMWareTools = 0 #Only Download @ the moment
+    $WinSCP = 0
+    $WorkspaceApp_Current_Release = 1
+    $WorkspaceApp_LTSR_Release = 0
+}
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
