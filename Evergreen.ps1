@@ -29,15 +29,15 @@ Start a GUI to select the Software Packages.
 
 .EXAMPLE
 
-& '.\FSLogix-DiffDiskToUniqueDisk.ps1 -path D:\CTXFslogix -tmp D:\TMP -target D:\FSLogixCTX
+& '.\Evergreen.ps1 -download
 
-Copy and rename the disks in the specified locations and in all child items from Path D:\CTXFSLogix to D:\FSLogixCTX, with temporary storage in D:\TMP and create 1 session disk.
+Downlod the selected Software.
 
 .EXAMPLE
 
-& '.\FSLogix-DiffDiskToUniqueDisk.ps1 -path D:\CTXFslogix -count 9 -delete
+& '.\Evergreen.ps1
 
-Copy and rename the disks in the specified locations and in all child items from Path D:\CTXFSLogix to D:\CTXFSLogix, and create 9 session disk. After that the original Difference Container are deleted
+Download and install the selected Software.
 #>
 
 [CmdletBinding()]
@@ -63,7 +63,7 @@ Param (
         )]
         [switch]$gui
     
-    )
+)
 
 # Do you run the script as admin?
 # ========================================================================================================================================
@@ -71,19 +71,16 @@ $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
 $myWindowsPrincipal=new-object System.Security.Principal.WindowsPrincipal($myWindowsID)
 $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
-if ($myWindowsPrincipal.IsInRole($adminRole))
-   {
+if ($myWindowsPrincipal.IsInRole($adminRole)) {
     # OK, runs as admin
     Write-Verbose "OK, script is running with Admin rights" -Verbose
     Write-Output ""
-   }
-
-else
-   {
+}
+else {
     # Script doesn't run as admin, stop!
     Write-Verbose "Error! Script is NOT running with Admin rights!" -Verbose
     BREAK
-   }
+}
 # ========================================================================================================================================
 
 Write-Verbose "Setting Variables" -Verbose
@@ -94,58 +91,57 @@ $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 
 # Select software
 $7ZIP = 1
-$AdobeProDC = 1 #Only Download @ the moment
-$AdobeReaderDC = 1
-$BISF = 1
-$FSLogix = 1
+$AdobeProDC = 0 #Only Download @ the moment
+$AdobeReaderDC = 0
+$BISF = 0
+$FSLogix = 0
 $GoogleChrome = 1
-$KeepPass = 1
-$mRemoteNG = 1
-$MS365Apps = 1 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
+$KeepPass = 0
+$mRemoteNG = 0
+$MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
 $MSEdge = 1
-$MSOffice2019 = 1 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
-$MSTeams = 1
+$MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
+$MSTeams = 0
 $NotePadPlusPlus = 1
 $OneDrive = 1
-$OpenJDK = 1 #Only Download @ the moment
-$OracleJava8 = 1 #Only Download @ the moment
-$TreeSizeFree = 1
+$OpenJDK = 0 #Only Download @ the moment
+$OracleJava8 = 0 #Only Download @ the moment
+$TreeSizeFree = 0
 $VLCPlayer = 1
-$VMWareTools = 1 #Only Download @ the moment
+$VMWareTools = 0 #Only Download @ the moment
 $WinSCP = 1
 $WorkspaceApp_Current_Relase = 1
-$WorkspaceApp_LTSR_Relase = 1
+$WorkspaceApp_LTSR_Relase = 0
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
 
-# Install/Update Evergreen module
-Write-Verbose "Installing/updating Evergreen module... please wait" -Verbose
-Write-Output ""
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-if (!(Test-Path -Path "C:\Program Files\PackageManagement\ProviderAssemblies\nuget")) {Find-PackageProvider -Name 'Nuget' -ForceBootstrap -IncludeDependencies}
-if (!(Get-Module -ListAvailable -Name Evergreen)) {Install-Module Evergreen -Force | Import-Module Evergreen}
-Update-Module Evergreen -force
-
-IF ($install -eq $False) {
+if ($install -eq $False) {
+    # Install/Update Evergreen module
+    Write-Verbose "Installing/updating Evergreen module... please wait" -Verbose
+    Write-Output ""
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    if (!(Test-Path -Path "C:\Program Files\PackageManagement\ProviderAssemblies\nuget")) {Find-PackageProvider -Name 'Nuget' -ForceBootstrap -IncludeDependencies}
+    if (!(Get-Module -ListAvailable -Name Evergreen)) {Install-Module Evergreen -Force | Import-Module Evergreen}
+    Update-Module Evergreen -force
 
     Write-Output "Starting downloads..."
     Write-Output ""
 
     # Download 7-ZIP
-    IF ($7ZIP -eq 1) {
+    if ($7ZIP -eq 1) {
         $Product = "7-Zip"
         $PackageName = "7-Zip_x64"
-        $7Zip = Get-7zip | Where-Object { $_.Architecture -eq "x64" -and $_.URI -like "*exe*" }
-        $Version = $7Zip.Version
-        $URL = $7Zip.uri
+        $7ZipD = Get-7zip | Where-Object { $_.Architecture -eq "x64" -and $_.URI -like "*exe*" }
+        $Version = $7ZipD.Version
+        $URL = $7ZipD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -166,19 +162,19 @@ IF ($install -eq $False) {
     }
 
     # Download Adobe Pro DC Update
-    IF ($AdobeProDC -eq 1) {
+    if ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
         $PackageName = "Adobe_Pro_DC_Update"
-        $Adobe = Get-AdobeAcrobatProDC | Where-Object { $_.Type -eq "Updater" }
-        $Version = $Adobe.Version
-        $URL = $Adobe.uri
+        $AdobeProD = Get-AdobeAcrobatProDC | Where-Object { $_.Type -eq "Updater" }
+        $Version = $AdobeProD.Version
+        $URL = $AdobeProD.uri
         $InstallerType = "msp"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
@@ -199,19 +195,19 @@ IF ($install -eq $False) {
     }
 
     # Download Adobe Reader DC
-    IF ($AdobeReaderDC -eq 1) {
+    if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
         $PackageName = "Adobe_DC_Update"
-        $Adobe = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
-        $Version = $Adobe.Version
-        $URL = $Adobe.uri
+        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
+        $Version = $AdobeReaderD.Version
+        $URL = $AdobeReaderD.uri
         $InstallerType = "msp"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
@@ -231,19 +227,19 @@ IF ($install -eq $False) {
     }
 
     # Download BIS-F
-    IF ($BISF -eq 1) {
+    if ($BISF -eq 1) {
         $Product = "BIS-F"
         $PackageName = "setup-BIS-F"
-        $BISF = Get-BISF | Where-Object { $_.URI -like "*msi*" }
-        $Version = $BISF.Version
-        $URL = $BISF.uri
+        $BISFD = Get-BISF | Where-Object { $_.URI -like "*msi*" }
+        $Version = $BISFD.Version
+        $URL = $BISFD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Exclude *.ps1, *.lnk -Recurse
@@ -264,19 +260,19 @@ IF ($install -eq $False) {
     }
 
     # Download FSLogix
-    IF ($FSLogix -eq 1) {
+    if ($FSLogix -eq 1) {
         $Product = "FSLogix"
         $PackageName = "FSLogixAppsSetup"
-        $FSLogix = Get-MicrosoftFSLogixApps
-        $Version = $FSLogix.Version
-        $URL = $FSLogix.uri
+        $FSLogixD = Get-MicrosoftFSLogixApps
+        $Version = $FSLogixD.Version
+        $URL = $FSLogixD.uri
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product\Install")) { New-Item -Path "$PSScriptRoot\$Product\Install" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\Install\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\Install\*" -Recurse
@@ -302,7 +298,7 @@ IF ($install -eq $False) {
     }
 
     # Download Google Chrome
-    IF ($GoogleChrome -eq 1) {
+    if ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
         $ChromeURL = Get-GoogleChrome | Where-Object { $_.Architecture -eq "x64" } | Select-Object -ExpandProperty URI
         $Version = (Get-GoogleChrome | Where-Object { $_.Architecture -eq "x64" }).Version
@@ -310,7 +306,7 @@ IF ($install -eq $False) {
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -331,19 +327,19 @@ IF ($install -eq $False) {
     }
 
     # Download KeePass
-    IF ($KeepPass -eq 1) {
+    if ($KeepPass -eq 1) {
         $Product = "KeePass"
         $PackageName = "KeePass"
-        $KeepPass = Get-KeePass | Where-Object { $_.URI -like "*msi*" }
-        $Version = $KeepPass.Version
-        $URL = $KeepPass.uri
+        $KeepPassD = Get-KeePass | Where-Object { $_.URI -like "*msi*" }
+        $Version = $KeepPassD.Version
+        $URL = $KeepPassD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -364,19 +360,19 @@ IF ($install -eq $False) {
     }
 
     # Download mRemoteNG
-    IF ($mRemoteNG -eq 1) {
+    if ($mRemoteNG -eq 1) {
         $Product = "mRemoteNG"
         $PackageName = "mRemoteNG"
-        $mRemoteNG = Get-mRemoteNG | Where-Object { $_.URI -like "*msi*" }
-        $Version = $mRemoteNG.Version
-        $URL = $mRemoteNG.uri
+        $mRemoteNGD = Get-mRemoteNG | Where-Object { $_.URI -like "*msi*" }
+        $Version = $mRemoteNGD.Version
+        $URL = $mRemoteNGD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -397,20 +393,20 @@ IF ($install -eq $False) {
     }
 
     # Download MS Office365Apps
-    IF ($MS365Apps -eq 1) {
+    if ($MS365Apps -eq 1) {
         $Product = "MS 365 Apps (Semi Annual Channel)"
         $PackageName = "setup"
-        $MS365Apps = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Semi-Annual Channel"}
-        $Version = $MS365Apps.Version
-        $URL = $MS365Apps.uri
+        $MS365AppsD = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Semi-Annual Channel"}
+        $Version = $MS365AppsD.Version
+        $URL = $MS365AppsD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-    IF (!($CurrentVersion -eq $Version)) {
-        IF (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+    if (!($CurrentVersion -eq $Version)) {
+        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
         Start-Transcript $LogPS
@@ -429,7 +425,7 @@ IF ($install -eq $False) {
     }
 
     # Download MS Edge
-    IF ($MSEdge -eq 1) {
+    if ($MSEdge -eq 1) {
         $Product = "MS Edge"
         $EdgeURL = Get-MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "x64" }
         $EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -438,7 +434,7 @@ IF ($install -eq $False) {
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -459,20 +455,20 @@ IF ($install -eq $False) {
     }
 
     # Download MS Office 2019
-    IF ($MSOffice2019 -eq 1) {
+    if ($MSOffice2019 -eq 1) {
         $Product = "MS Office 2019"
         $PackageName = "setup"
-        $MSOffice2019 = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
-        $Version = $MSOffice2019.Version
-        $URL = $MSOffice2019.uri
+        $MSOffice2019D = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
+        $Version = $MSOffice2019D.Version
+        $URL = $MSOffice2019D.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
-            IF (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+        if (!($CurrentVersion -eq $Version)) {
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
@@ -491,19 +487,19 @@ IF ($install -eq $False) {
     }
 
     # Download MS Teams
-    IF ($MSTeams -eq 1) {
+    if ($MSTeams -eq 1) {
         $Product = "MS Teams"
         $PackageName = "Teams_windows_x64"
-        $Teams = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" }
-        $Version = $Teams.Version
-        $URL = $Teams.uri
+        $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" }
+        $Version = $TeamsD.Version
+        $URL = $TeamsD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
@@ -524,19 +520,19 @@ IF ($install -eq $False) {
     }
 
     # Download Notepad ++
-    IF ($NotePadPlusPlus -eq 1) {
+    if ($NotePadPlusPlus -eq 1) {
         $Product = "NotePadPlusPlus"
         $PackageName = "NotePadPlusPlus_x64"
-        $Notepad = Get-NotepadPlusPlus | Where-Object { $_.Architecture -eq "x64" -and $_.URI -match ".exe" }
-        $Version = $Notepad.Version
-        $URL = $Notepad.uri
+        $NotepadD = Get-NotepadPlusPlus | Where-Object { $_.Architecture -eq "x64" -and $_.URI -match ".exe" }
+        $Version = $NotepadD.Version
+        $URL = $NotepadD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
@@ -557,20 +553,20 @@ IF ($install -eq $False) {
     }
 
     # Download OneDrive
-    IF ($OneDrive -eq 1) {
+    if ($OneDrive -eq 1) {
         $Product = "MS OneDrive"
         $PackageName = "OneDriveSetup"
-        $OneDrive = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "Production" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
-        $Version = $OneDrive.Version
-        $URL = $OneDrive.uri
+        $OneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "Production" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
+        $Version = $OneDriveD.Version
+        $URL = $OneDriveD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
-            IF (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+        if (!($CurrentVersion -eq $Version)) {
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
@@ -590,19 +586,19 @@ IF ($install -eq $False) {
     }
 
     # Download openJDK
-    IF ($OpenJDK -eq 1) {
+    if ($OpenJDK -eq 1) {
         $Product = "open JDK"
         $PackageName = "OpenJDK"
-        $OpenJDK = Get-OpenJDK | Where-Object { $_.Architecture -eq "x64" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
-        $Version = $OpenJDK.Version
-        $URL = $OpenJDK.uri
+        $OpenJDKD = Get-OpenJDK | Where-Object { $_.Architecture -eq "x64" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $Version = $OpenJDKD.Version
+        $URL = $OpenJDKD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -623,19 +619,19 @@ IF ($install -eq $False) {
     }
 
     # Download OracleJava8
-    IF ($OracleJava8 -eq 1) {
+    if ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
         $PackageName = "Oracle Java 8"
-        $OracleJava8 = Get-OracleJava8 | Where-Object { $_.Architecture -eq "x64" }
-        $Version = $OracleJava8.Version
-        $URL = $OracleJava8.uri
+        $OracleJava8D = Get-OracleJava8 | Where-Object { $_.Architecture -eq "x64" }
+        $Version = $OracleJava8D.Version
+        $URL = $OracleJava8D.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -656,19 +652,19 @@ IF ($install -eq $False) {
     }
 
     # Download Tree Size Free
-    IF ($TreeSizeFree -eq 1) {
+    if ($TreeSizeFree -eq 1) {
         $Product = "TreeSizeFree"
         $PackageName = "TreeSizeFree"
-        $TreeSizeFree = Get-JamTreeSizeFree
-        $Version = $TreeSizeFree.Version
-        $URL = $TreeSizeFree.uri
+        $TreeSizeFreeD = Get-JamTreeSizeFree
+        $Version = $TreeSizeFreeD.Version
+        $URL = $TreeSizeFreeD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -689,19 +685,19 @@ IF ($install -eq $False) {
     }
 
     # Download VLC Player
-    IF ($VLCPlayer -eq 1) {
+    if ($VLCPlayer -eq 1) {
         $Product = "VLC Player"
         $PackageName = "VLC-Player"
-        $VLC = Get-VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "x64" -and $_.Type -eq "MSI" }
-        $Version = $VLC.Version
-        $URL = $VLC.uri
+        $VLCD = Get-VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "x64" -and $_.Type -eq "MSI" }
+        $Version = $VLCD.Version
+        $URL = $VLCD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -722,19 +718,19 @@ IF ($install -eq $False) {
     }
 
     # Download VMWareTools
-    IF ($VMWareTools -eq 1) {
+    if ($VMWareTools -eq 1) {
         $Product = "VMWare Tools"
         $PackageName = "VMWareTools"
-        $VMWareTools = Get-VMwareTools | Where-Object { $_.Architecture -eq "x64" }
-        $Version = $VMWareTools.Version
-        $URL = $VMWareTools.uri
+        $VMWareToolsD = Get-VMwareTools | Where-Object { $_.Architecture -eq "x64" }
+        $Version = $VMWareToolsD.Version
+        $URL = $VMWareToolsD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -755,30 +751,30 @@ IF ($install -eq $False) {
     }
 
     # Download WinSCP
-IF ($WinSCP -eq 1) {
-    $Product = "WinSCP"
-    $PackageName = "WinSCP"
-    $WinSCP = Get-WinSCP | Where-Object {$_.URI -like "*Setup*"}
-    $Version = $WinSCP.Version
-    $URL = $WinSCP.uri
-    $InstallerType = "exe"
-    $Source = "$PackageName" + "." + "$InstallerType"
-    $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-    Write-Verbose "Download $Product" -Verbose
-    Write-Host "Download Version: $Version"
-    Write-Host "Current Version: $CurrentVersion"
-    IF (!($CurrentVersion -eq $Version)) {
-        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
-        $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-        Start-Transcript $LogPS
-        New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
-        Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-        Write-Verbose "Starting Download of $Product.txt" -Verbose
-        Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-        Write-Verbose "Stop logging" -Verbose
-        Stop-Transcript
-        Write-Output ""
+    if ($WinSCP -eq 1) {
+        $Product = "WinSCP"
+        $PackageName = "WinSCP"
+        $WinSCPD = Get-WinSCP | Where-Object {$_.URI -like "*Setup*"}
+        $Version = $WinSCPD.Version
+        $URL = $WinSCPD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product.txt" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Output ""
         }
         else {
             Write-Verbose "No new version available" -Verbose
@@ -787,19 +783,19 @@ IF ($WinSCP -eq 1) {
     }
 
     # Download WorkspaceApp Current
-    IF ($WorkspaceApp_Current_Relase -eq 1) {
+    if ($WorkspaceApp_Current_Relase -eq 1) {
         $Product = "WorkspaceApp"
         $PackageName = "CitrixWorkspaceApp"
-        $WSA = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
-        $Version = $WSA.Version
-        $URL = $WSA.uri
+        $WSACD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
+        $Version = $WSACD.Version
+        $URL = $WSACD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\Current\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product\Windows\Current")) { New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\Current" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\Windows\Current\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\Windows\Current\*" -Recurse
@@ -821,19 +817,19 @@ IF ($WinSCP -eq 1) {
     }
 
     # Download WorkspaceApp LTSR
-    IF ($WorkspaceApp_LTSR_Relase -eq 1) {
+    if ($WorkspaceApp_LTSR_Relase -eq 1) {
         $Product = "WorkspaceApp"
         $PackageName = "CitrixWorkspaceApp"
-        $WSA = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
-        $Version = $WSA.Version
-        $URL = $WSA.uri
+        $WSALD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
+        $Version = $WSALD.Version
+        $URL = $WSALD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product LTSR" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        IF (!($CurrentVersion -eq $Version)) {
+        if (!($CurrentVersion -eq $Version)) {
             if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR")) { New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\Windows\LTSR\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\Windows\LTSR\*" -Recurse
@@ -855,51 +851,37 @@ IF ($WinSCP -eq 1) {
     }
 }
 
-IF ($download -eq $False) {
-
-    # define Error handling
-    # note: do not change these values
-    $global:ErrorActionPreference = "Stop"
-    if($verbose){ $global:VerbosePreference = "Continue" }
+if ($download -eq $False) {
 
     # FUNCTION Logging
     #========================================================================================================================================
     Function DS_WriteLog {
-    
+        
         [CmdletBinding()]
-        Param( 
+        Param (
             [Parameter(Mandatory=$true, Position = 0)][ValidateSet("I","S","W","E","-",IgnoreCase = $True)][String]$InformationType,
             [Parameter(Mandatory=$true, Position = 1)][AllowEmptyString()][String]$Text,
             [Parameter(Mandatory=$true, Position = 2)][AllowEmptyString()][String]$LogFile
         )
- 
         begin {
         }
- 
         process {
-        $DateTime = (Get-Date -format dd-MM-yyyy) + " " + (Get-Date -format HH:mm:ss)
- 
+            $DateTime = (Get-Date -format dd-MM-yyyy) + " " + (Get-Date -format HH:mm:ss)
             if ( $Text -eq "" ) {
                 Add-Content $LogFile -value ("") # Write an empty line
             } Else {
                 Add-Content $LogFile -value ($DateTime + " " + $InformationType.ToUpper() + " - " + $Text)
             }
         }
- 
         end {
         }
     }
 
     # Logging
-
-    # Custom variables [edit]
-    $BaseLogDir = "$PSScriptRoot\_Install Logs"      # [edit] add the location of your log directory here
-    $PackageName = "$Product" 		            	# [edit] enter the display name of the software (e.g. 'Arcobat Reader' or 'Microsoft Office')
-
     # Global variables
-    $StartDir = $PSScriptRoot # the directory path of the script currently being executed
-    $LogDir = (Join-Path $BaseLogDir $PackageName)
-    $LogFileName = ("$ENV:COMPUTERNAME - $PackageName.log")
+    #$StartDir = $PSScriptRoot # the directory path of the script currently being executed
+    $LogDir = "$PSScriptRoot\_Install Logs"
+    $LogFileName = ("$ENV:COMPUTERNAME.log")
     $LogFile = Join-path $LogDir $LogFileName
 
     # Create the log directory if it does not exist
@@ -907,58 +889,24 @@ IF ($download -eq $False) {
 
     # Create new log file (overwrite existing one)
     New-Item $LogFile -ItemType "file" -force | Out-Null
-
-    DS_WriteLog "I" "START SCRIPT - $PackageName" $LogFile
+    DS_WriteLog "I" "START SCRIPT - " $LogFile
     DS_WriteLog "-" "" $LogFile
-
-    #========================================================================================================================================
-
-    # FUNCTION MSI Installation
-    #========================================================================================================================================
-    function Install-MSIFile {
-
-        [CmdletBinding()]
-        Param(
-            [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
-            [ValidateNotNullorEmpty()]
-            [string]$msiFile,
-    
-            [parameter()]
-            [ValidateNotNullorEmpty()]
-            [string]$targetDir
-        )
-        if (!(Test-Path $msiFile)){
-            throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
-        }
-        $arguments = @(
-            "/i"
-            "`"$msiFile`""
-            "/qn"
-        )
-        if ($targetDir){
-            if (!(Test-Path $targetDir)){
-                throw "Path to the installation directory $($targetDir) is invalid. Please check path and file name!"
-            }
-            $arguments += "INSTALLDIR=`"$targetDir`""
-        }
-        $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-        if ($process.ExitCode -eq 0){
-        }
-        else {
-            Write-Verbose "Installer Exit Code  $($process.ExitCode) for File  $($msifile)"
-        }
-    }
-    
     #========================================================================================================================================
     
+    # define Error handling
+    # note: do not change these values
+    $global:ErrorActionPreference = "Stop"
+    if ($verbose){ $global:VerbosePreference = "Continue" }
+
 
     # Install 7-ZIP
-    IF ($7ZIP -eq 1) {
+    if ($7ZIP -eq 1) {
         $Product = "7-Zip"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion
-        IF ($SevenZip -ne $Version) {
+        $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+        if ($SevenZip -ne $Version) {
             # 7-Zip
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
@@ -978,12 +926,13 @@ IF ($download -eq $False) {
     }
 
     # Install Adobe Pro DC
-    IF ($AdobeProDC -eq 1) {
+    if ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
-        IF ($Adobe -ne $Version) {
+        if ($Adobe -ne $Version) {
             # Adobe Pro DC
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
@@ -1008,12 +957,13 @@ IF ($download -eq $False) {
     }
 
     # Install Adobe Reader DC
-    IF ($AdobeReaderDC -eq 1) {
+    if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
-        IF ($Adobe -ne $Version) {
+        if ($Adobe -ne $Version) {
             # Adobe Reader DC Update
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
@@ -1038,8 +988,45 @@ IF ($download -eq $False) {
     }
 
     # Install BIS-F
-    IF ($BISF -eq 1) {
+    if ($BISF -eq 1) {
         $Product = "BIS-F"
+        
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSiFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $BISF = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -1056,28 +1043,30 @@ IF ($download -eq $False) {
             DS_WriteLog "-" "" $LogFile
             write-Output ""
         }
-        # Customize scripts, it's best practise to enable Task Offload and RSS and to disable DEP
-        write-Verbose "Customize scripts" -Verbose
-        DS_WriteLog "I" "Customize scripts" $LogFile
-        try {
-            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace "DisableTaskOffload' -Value '1'","DisableTaskOffload' -Value '0'") | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
-            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'nx AlwaysOff','nx OptOut') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
-            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'rss=disable','rss=enable') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
-        } catch {
-            DS_WriteLog "E" "Error beim Anpassen der Skripte (error: $($Error[0]))" $LogFile
-        }
-        DS_WriteLog "-" "" $LogFile
-        write-Output ""
         # Stop, if no new version is available
         Else {
             Write-Verbose "No Update available for $Product" -Verbose
             Write-Output ""
         }
+        # Customize scripts, it's best practise to enable Task Offload and RSS and to disable DEP
+        write-Verbose "Customize scripts" -Verbose
+        DS_WriteLog "I" "Customize scripts" $LogFile
+        $BISFDir = "C:\Program Files (x86)\Base Image Script Framework (BIS-F)\Framework\SubCall"
+        try {
+            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace "DisableTaskOffload' -Value '1'","DisableTaskOffload' -Value '0'") | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
+            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'nx AlwaysOff','nx OptOut') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
+            ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'rss=disable','rss=enable') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
+        } catch {
+            DS_WriteLog "E" "Error when customizing scripts (error: $($Error[0]))" $LogFile
+        }
+        DS_WriteLog "-" "" $LogFile
+        write-Output ""
     }
 
     # Install FSLogix
     IF ($FSLogix -eq 1) {
         $Product = "FSLogix"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt"
         $FSLogix = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion
@@ -1129,6 +1118,43 @@ IF ($download -eq $False) {
     # Install Chrome
     IF ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
@@ -1154,6 +1180,43 @@ IF ($download -eq $False) {
     # Install KeePass
     IF ($KeepPass -eq 1) {
         $Product = "KeePass"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path!"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $KeePass = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion
@@ -1180,6 +1243,43 @@ IF ($download -eq $False) {
     # Install mRemoteNG
     IF ($mRemoteNG -eq 1) {
         $Product = "mRemoteNG"
+        
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path!"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $mRemoteNG = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion
@@ -1206,6 +1306,44 @@ IF ($download -eq $False) {
     # Install MS Edge
     IF ($MSEdge -eq 1) {
         $Product = "MS Edge"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+            
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "DONOTCREATEDESKTOPSHORTCUT=TRUE"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+        
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
@@ -1246,6 +1384,7 @@ IF ($download -eq $False) {
     # Install MS OneDrive
     IF ($OneDrive -eq 1) {
         $Product = "MS OneDrive"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $OneDrive = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
@@ -1274,6 +1413,46 @@ IF ($download -eq $False) {
     # Install MS Teams
     IF ($MSTeams -eq 1) {
         $Product = "MS Teams"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "ALLUSER=1"
+                "ALLUSERS=1"
+                "OPTIONS='noAutoStart=true'"
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+        
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
@@ -1316,6 +1495,7 @@ IF ($download -eq $False) {
     # Install Notepad ++
     IF ($NotePadPlusPlus -eq 1) {
         $Product = "NotepadPlusPlus"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
@@ -1341,6 +1521,7 @@ IF ($download -eq $False) {
     # Install TreeSizeFree
     IF ($TreeSizeFree -eq 1) {
         $Product = "TreeSizeFree"
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Version = $Version.Insert(3,'.')
@@ -1367,6 +1548,43 @@ IF ($download -eq $False) {
     # Install VLC Player
     IF ($VLCPlayer -eq 1) {
         $Product = "VLC Player"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+            
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
@@ -1378,7 +1596,42 @@ IF ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\VLC-Player.msi" | Install-MSIFile
             } catch {
-                DS_WriteLog "E" "Ein Fehler ist aufgetreten beim Installieren von $Product (error: $($Error[0]))" $LogFile       
+                DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install WinSCP
+    IF ($WinSCP -eq 1) {
+        $Product = "WinSCP"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $WSCP = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*WinSCP*"}).DisplayVersion
+        IF ($WSCP -ne $Version) {
+            # WinSCP Installation
+            $Options = @(
+                "/VERYSILENT"
+                "/ALLUSERS"
+                "/NORESTART"
+                "/NOCLOSEAPPLICATIONS"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\WinSCP.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
