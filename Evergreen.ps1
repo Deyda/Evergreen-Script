@@ -26,7 +26,7 @@ Only download the software packages.
 
 Only install the software packages.
 
-.PARAMETER gui
+.PARAMETER list
 
 Start a GUI to select the Software Packages.
 
@@ -64,7 +64,7 @@ Param (
             HelpMessage='Start the Gui to select the Software',
             ValuefromPipelineByPropertyName = $true
         )]
-        [switch]$gui
+        [switch]$list
     
 )
 
@@ -196,14 +196,14 @@ function gui_mode{
     $GoogleChromeBox.location = New-Object System.Drawing.Point(11,220)
     $form.Controls.Add($GoogleChromeBox)
 
-    # KeepPass Checkbox
-    $KeepPassBox = New-Object system.Windows.Forms.CheckBox
-    $KeepPassBox.text = "KeepPass"
-    $KeepPassBox.width = 95
-    $KeepPassBox.height = 20
-    $KeepPassBox.autosize = $true
-    $KeepPassBox.location = New-Object System.Drawing.Point(11,245)
-    $form.Controls.Add($KeepPassBox)
+    # KeePass Checkbox
+    $KeePassBox = New-Object system.Windows.Forms.CheckBox
+    $KeePassBox.text = "KeePass"
+    $KeePassBox.width = 95
+    $KeePassBox.height = 20
+    $KeePassBox.autosize = $true
+    $KeePassBox.location = New-Object System.Drawing.Point(11,245)
+    $form.Controls.Add($KeePassBox)
 
     # mRemoteNG Checkbox
     $mRemoteNGBox = New-Object system.Windows.Forms.CheckBox
@@ -329,7 +329,7 @@ function gui_mode{
     $WorkspaceApp_Current_ReleaseBox.height = 20
     $WorkspaceApp_Current_ReleaseBox.autosize = $true
     $WorkspaceApp_Current_ReleaseBox.location = New-Object System.Drawing.Point(11,595)
-    $form.Controls.Add($WorkspaceApp_Current_ReleaseBox)
+    $form.Controls.Add($WorkspaceApp_Current_ReleaseBox) 
 
     # WorkspaceApp_LTSR_Release Checkbox
     $WorkspaceApp_LTSR_ReleaseBox = New-Object system.Windows.Forms.CheckBox
@@ -339,6 +339,39 @@ function gui_mode{
     $WorkspaceApp_LTSR_ReleaseBox.autosize = $true
     $WorkspaceApp_LTSR_ReleaseBox.location = New-Object System.Drawing.Point(11,620)
     $form.Controls.Add($WorkspaceApp_LTSR_ReleaseBox)
+
+    # SelectAll Checkbox
+    $SelectAllBox = New-Object system.Windows.Forms.CheckBox
+    $SelectAllBox.text = "Select All"
+    $SelectAllBox.width = 95
+    $SelectAllBox.height = 20
+    $SelectAllBox.autosize = $true
+    $SelectAllBox.location = New-Object System.Drawing.Point(11,775)
+    $SelectAllBox.Add_CheckStateChanged({
+        $7ZipBox.Checked = $SelectAllBox.Checked
+        $AdobeProDCBox.Checked = $SelectAllBox.Checked
+        $AdobeReaderDCBox.Checked = $SelectAllBox.Checked
+        $BISFBox.Checked = $SelectAllBox.Checked
+        $FSLogixBox.Checked = $SelectAllBox.Checked
+        $GoogleChromeBox.Checked = $SelectAllBox.Checked
+        $KeePassBox.Checked = $SelectAllBox.Checked
+        $mRemoteNGBox.Checked = $SelectAllBox.Checked
+        $MS365AppsBox.Checked = $SelectAllBox.Checked
+        $MSEdgeBox.Checked = $SelectAllBox.Checked
+        $MSOffice2019Box.Checked = $SelectAllBox.Checked
+        $MSTeamsBox.Checked = $SelectAllBox.Checked
+        $NotePadPlusPlusBox.Checked = $SelectAllBox.Checked
+        $OneDriveBox.Checked = $SelectAllBox.Checked
+        $OpenJDKBox.Checked = $SelectAllBox.Checked
+        $OracleJava8Box.Checked = $SelectAllBox.Checked
+        $TreeSizeFreeBox.Checked = $SelectAllBox.Checked
+        $VLCPlayerBox.Checked = $SelectAllBox.Checked
+        $VMWareToolsBox.Checked = $SelectAllBox.Checked
+        $WinSCPBox.Checked = $SelectAllBox.Checked
+        $WorkspaceApp_Current_ReleaseBox.Checked = $SelectAllBox.Checked
+        $WorkspaceApp_LTSR_ReleaseBox.Checked = $SelectAllBox.Checked
+    })
+    $form.Controls.Add($SelectAllBox)
 
     # OK Button
     $OKButton = New-Object system.Windows.Forms.Button
@@ -363,8 +396,8 @@ function gui_mode{
         else {$Script:FSLogix = 0}
         if ($GoogleChromeBox.checked -eq $true) {$Script:GoogleChrome = 1}
         else {$Script:GoogleChrome = 0}
-        if ($KeepPassBox.checked -eq $true) {$Script:KeepPass = 1}
-        else {$Script:KeepPass = 0}
+        if ($KeePassBox.checked -eq $true) {$Script:KeePass = 1}
+        else {$Script:KeePass = 0}
         if ($mRemoteNGBox.checked -eq $true) {$Script:mRemoteNG = 1}
         else {$Script:mRemoteNG = 0}
         if ($MS365AppsBox.checked -eq $true) {$Script:MS365Apps = 1}
@@ -428,11 +461,7 @@ $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $Script:install = $install
 $Script:download = $download
 
-if ($gui -eq $True) {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeepPass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,OneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release
-    gui_mode
-}
-else {
+if ($list -eq $True) {
     # Select software
     $7ZIP = 0
     $AdobeProDC = 0 #Only Download @ the moment
@@ -441,7 +470,7 @@ else {
     $BISF = 0
     $FSLogix = 0
     $GoogleChrome = 0
-    $KeepPass = 0
+    $KeePass = 0
     $mRemoteNG = 0
     $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
     $MSEdge = 0
@@ -458,6 +487,11 @@ else {
     $WorkspaceApp_Current_Release = 1
     $WorkspaceApp_LTSR_Release = 0
 }
+else {
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,OneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
+    gui_mode
+}
+
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
@@ -673,12 +707,12 @@ if ($install -eq $False) {
     }
 
     # Download KeePass
-    if ($KeepPass -eq 1) {
+    if ($KeePass -eq 1) {
         $Product = "KeePass"
         $PackageName = "KeePass"
-        $KeepPassD = Get-KeePass | Where-Object { $_.URI -like "*msi*" }
-        $Version = $KeepPassD.Version
-        $URL = $KeepPassD.uri
+        $KeePassD = Get-KeePass | Where-Object { $_.URI -like "*msi*" }
+        $Version = $KeePassD.Version
+        $URL = $KeePassD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -1524,7 +1558,7 @@ if ($download -eq $False) {
     }
 
     # Install KeePass
-    IF ($KeepPass -eq 1) {
+    IF ($KeePass -eq 1) {
         $Product = "KeePass"
 
         # FUNCTION MSI Installation
