@@ -3,18 +3,19 @@
 .SYNOPSIS
 Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
 .DESCRIPTION
-To update or download a software package just switch from 0 to 1 in the section "Select software".
+To update or download a software package just switch from 0 to 1 in the section "Select software" (With parameter -list) or select your Software out of the GUI.
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:        1.0
-  Author:         Manuel Winkel <www.deyda.net>
-  Creation Date:  2021-01-29
+  Version:          0.5
+  Author:           Manuel Winkel <www.deyda.net>
+  Creation Date:    2021-01-29
   Purpose/Change:
-  2021-01-29    Initial Version
-  2021-01-30    Error solved: No installation without parameters / Add WinSCP Install
-  2021-01-31    Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
-  2021-02-01    Add Gui Mode
+  2021-01-29        Initial Version
+  2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
+  2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
+  2021-02-01        Add Gui Mode as Standard
+  2021-02-02        Add Install OpenJDK / Add Install Adobe Reader DC
 <#
 
 
@@ -28,7 +29,7 @@ Only install the software packages.
 
 .PARAMETER list
 
-Start a GUI to select the Software Packages.
+Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
 .EXAMPLE
 
@@ -74,6 +75,12 @@ $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
 $myWindowsPrincipal=new-object System.Security.Principal.WindowsPrincipal($myWindowsID)
 $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
+# Script Version
+# ========================================================================================================================================
+$eVersion = "0.5"
+Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
+Write-Output ""
+
 if ($myWindowsPrincipal.IsInRole($adminRole)) {
     # OK, runs as admin
     Write-Verbose "OK, script is running with Admin rights" -Verbose
@@ -98,7 +105,7 @@ function gui_mode{
     # Set the size of your form
     $Form = New-Object system.Windows.Forms.Form
     $Form.ClientSize = New-Object System.Drawing.Point(300,900)
-    $Form.text = "Evergreen - Update your Software"
+    $Form.text = "Evergreen - Update your Software - Version $eVersion"
     $Form.TopMost = $true
     $Form.AutoSize = $true
 
@@ -162,7 +169,7 @@ function gui_mode{
 
     # AdobeReaderDC Checkbox
     $AdobeReaderDCBox = New-Object system.Windows.Forms.CheckBox
-    $AdobeReaderDCBox.text = "Adobe Reader DC #Only Download @ the moment"
+    $AdobeReaderDCBox.text = "Adobe Reader DC"
     $AdobeReaderDCBox.width = 95
     $AdobeReaderDCBox.height = 20
     $AdobeReaderDCBox.autosize = $true
@@ -241,13 +248,22 @@ function gui_mode{
     $MSOffice2019Box.location = New-Object System.Drawing.Point(11,345)
     $form.Controls.Add($MSOffice2019Box)
 
+    # MSOneDrive Checkbox
+    $MSOneDriveBox = New-Object system.Windows.Forms.CheckBox
+    $MSOneDriveBox.text = "Microsoft OneDrive (Machine-Based Install)"
+    $MSOneDriveBox.width = 95
+    $MSOneDriveBox.height = 20
+    $MSOneDriveBox.autosize = $true
+    $MSOneDriveBox.location = New-Object System.Drawing.Point(11,370)
+    $form.Controls.Add($MSOneDriveBox)
+
     # MSTeams Checkbox
     $MSTeamsBox = New-Object system.Windows.Forms.CheckBox
     $MSTeamsBox.text = "Microsoft Teams (Machine-Based Install)"
     $MSTeamsBox.width = 95
     $MSTeamsBox.height = 20
     $MSTeamsBox.autosize = $true
-    $MSTeamsBox.location = New-Object System.Drawing.Point(11,370)
+    $MSTeamsBox.location = New-Object System.Drawing.Point(11,395)
     $form.Controls.Add($MSTeamsBox)
 
     # NotePadPlusPlus Checkbox
@@ -256,21 +272,12 @@ function gui_mode{
     $NotePadPlusPlusBox.width = 95
     $NotePadPlusPlusBox.height = 20
     $NotePadPlusPlusBox.autosize = $true
-    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,395)
+    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,420)
     $form.Controls.Add($NotePadPlusPlusBox)
-
-    # OneDrive Checkbox
-    $OneDriveBox = New-Object system.Windows.Forms.CheckBox
-    $OneDriveBox.text = "Microsoft OneDrive (Machine-Based Install)"
-    $OneDriveBox.width = 95
-    $OneDriveBox.height = 20
-    $OneDriveBox.autosize = $true
-    $OneDriveBox.location = New-Object System.Drawing.Point(11,420)
-    $form.Controls.Add($OneDriveBox)
 
     # OpenJDK Checkbox
     $OpenJDKBox = New-Object system.Windows.Forms.CheckBox
-    $OpenJDKBox.text = "Open JDK #Only Download @ the moment"
+    $OpenJDKBox.text = "Open JDK"
     $OpenJDKBox.width = 95
     $OpenJDKBox.height = 20
     $OpenJDKBox.autosize = $true
@@ -359,9 +366,9 @@ function gui_mode{
         $MS365AppsBox.Checked = $SelectAllBox.Checked
         $MSEdgeBox.Checked = $SelectAllBox.Checked
         $MSOffice2019Box.Checked = $SelectAllBox.Checked
+        $MSOneDriveBox.Checked = $SelectAllBox.Checked
         $MSTeamsBox.Checked = $SelectAllBox.Checked
         $NotePadPlusPlusBox.Checked = $SelectAllBox.Checked
-        $OneDriveBox.Checked = $SelectAllBox.Checked
         $OpenJDKBox.Checked = $SelectAllBox.Checked
         $OracleJava8Box.Checked = $SelectAllBox.Checked
         $TreeSizeFreeBox.Checked = $SelectAllBox.Checked
@@ -406,12 +413,12 @@ function gui_mode{
         else {$Script:MSEdge = 0}
         if ($MSOffice2019Box.checked -eq $true) {$Script:MSOffice2019 = 1}
         else {$Script:MSOffice2019 = 0}
+        if ($MSOneDriveBox.checked -eq $true) {$Script:MSOneDrive = 1}
+        else {$Script:MSOneDrive = 0}
         if ($MSTeamsBox.checked -eq $true) {$Script:MSTeams = 1}
         else {$Script:MSTeams = 0}
         if ($NotePadPlusPlusBox.checked -eq $true) {$Script:NotePadPlusPlus = 1}
         else {$Script:NotePadPlusPlus = 0}
-        if ($OneDriveBox.checked -eq $true) {$Script:OneDrive = 1}
-        else {$Script:OneDrive = 0}
         if ($OpenJDKBox.checked -eq $true) {$Script:OpenJDK = 1}
         else {$Script:OpenJDK = 0}
         if ($OracleJava8Box.checked -eq $true) {$Script:OracleJava8 = 1}
@@ -429,6 +436,7 @@ function gui_mode{
         if ($WorkspaceApp_LTSR_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_LTSR_Release = 1}
         else {$Script:WorkspaceApp_LTSR_Release = 0}
         Write-Verbose "GUI MODE" -Verbose
+        Write-Output ""
         $Form.Close()
     })
     $form.Controls.Add($OKButton)
@@ -465,7 +473,6 @@ if ($list -eq $True) {
     # Select software
     $7ZIP = 0
     $AdobeProDC = 0 #Only Download @ the moment
-    $AdobeReaderDC = 0 #Only Download @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
     $FSLogix = 0
@@ -475,10 +482,10 @@ if ($list -eq $True) {
     $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
     $MSEdge = 0
     $MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
+    $MSOneDrive = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
-    $OneDrive = 1
-    $OpenJDK = 0 #Only Download @ the moment
+    $OpenJDK = 0
     $OracleJava8 = 0 #Only Download @ the moment
     $TreeSizeFree = 0
     $VLCPlayer = 0
@@ -488,7 +495,7 @@ if ($list -eq $True) {
     $WorkspaceApp_LTSR_Release = 0
 }
 else {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,OneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -577,11 +584,11 @@ if ($install -eq $False) {
     # Download Adobe Reader DC
     if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
-        $PackageName = "Adobe_DC_Update"
-        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Updater" -and $_.Language -eq "Multi"}
+        $PackageName = "Adobe_Reader_DC"
+        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "English"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
-        $InstallerType = "msp"
+        $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
         Write-Verbose "Download $Product" -Verbose
@@ -866,6 +873,39 @@ if ($install -eq $False) {
         }
     }
 
+    # Download MSOneDrive
+    if ($MSOneDrive -eq 1) {
+        $Product = "MS OneDrive"
+        $PackageName = "OneDriveSetup"
+        $MSOneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "Production" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
+        $Version = $MSOneDriveD.Version
+        $URL = $MSOneDriveD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
     # Download MS Teams
     if ($MSTeams -eq 1) {
         $Product = "MS Teams"
@@ -921,39 +961,6 @@ if ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Download OneDrive
-    if ($OneDrive -eq 1) {
-        $Product = "MS OneDrive"
-        $PackageName = "OneDriveSetup"
-        $OneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "Production" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
-        $Version = $OneDriveD.Version
-        $URL = $OneDriveD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
             Write-Verbose "Download of the new version $Version finished" -Verbose
@@ -1292,6 +1299,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
                 Start-Process "$PSScriptRoot\$Product\7-Zip_x64.exe" –ArgumentList /S –NoNewWindow -Wait
+                $p = Get-Process 7-Zip_x64
+                if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1319,6 +1331,11 @@ if ($download -eq $False) {
             try {
                 $mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_Pro_DC_Update.msp`" /quiet /qn"
                 Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 # Update Dienst und Task deaktivieren
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
@@ -1344,18 +1361,28 @@ if ($download -eq $False) {
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
         if ($Adobe -ne $Version) {
-            # Adobe Reader DC Update
+            # Adobe Reader DC
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
-            try {
-                $mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_DC_MUI_Update.msp`" /quiet /qn"
-                Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
+            $Options = @(
+                "/sAll"
+                "/rs"
+                "/msi"
+                "EULA_ACCEPT=YES"
+            )
+            try	{
+                Start-Process "$PSScriptRoot\$Product\Adobe_Reader_DC.exe" –ArgumentList $Options –NoNewWindow
+                $p = Get-Process Adobe_Reader_DC
+                if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 # Update Dienst und Task deaktivieren
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
                 Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
             } catch {
-                DS_WriteLog "E" "Error installinng $Product (error: $($Error[0]))" $LogFile
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -1417,6 +1444,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\setup-BIS-F.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1481,6 +1513,11 @@ if ($download -eq $False) {
             try	{
                 Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow -Wait
                 Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow -Wait
+                $p = Get-Process FSLogixAppsSetup
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 reg add "HKLM\SOFTWARE\FSLogix\Profiles" /v GroupPolicyState /t REG_DWORD /d 0 /f | Out-Null
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -1544,6 +1581,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\googlechromestandaloneenterprise64.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1607,6 +1649,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\KeePass.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1670,6 +1717,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\mRemoteNG.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1733,9 +1785,14 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\MicrosoftEdgeEnterpriseX64.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 # Update Task deaktivieren
-                # Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
-                # Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
+                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
+                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
@@ -1761,20 +1818,25 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MS OneDrive
-    IF ($OneDrive -eq 1) {
+    # Install MSOneDrive
+    IF ($MSOneDrive -eq 1) {
         $Product = "MS OneDrive"
 
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $OneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
-        IF ($OneDriveV -ne $Version) {
-            # Installation OneDrive
+        $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+        IF ($MSOneDriveV -ne $Version) {
+            # Installation MSOneDrive
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
+            $Options = @(
+                "/ALLUSERS"
+                "/SILENT"
+            )
             try	{
-                $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList '/allusers' –NoNewWindow -PassThru
+                $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList $Options –NoNewWindow -PassThru
                 while (Get-Process -Name "OneDriveSetup" -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                Write-Verbose "Installation $Product finished!" -Verbose
                 # onedrive starts automatically after setup. kill!
                 Stop-Process -Name "OneDrive" -Force
             } catch {
@@ -1856,6 +1918,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\Teams_windows_x64.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 Start-Sleep 5
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
                 Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
@@ -1885,8 +1952,82 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
                 Start-Process "$PSScriptRoot\$Product\NotePadPlusPlus_x64.exe" –ArgumentList /S –NoNewWindow -Wait
+                $p = Get-Process NotePadPlusPlus_x64
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install OpenJDK
+    IF ($OpenJDK -eq 1) {
+        $Product = "open JDK"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "/log $PSScriptRoot\$Product\verbose.log"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $OpenJDK = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+        IF ($Version) {$Version = $Version -replace ".-"}
+        IF ($OpenJDK -ne $Version) {
+            # OpenJDK
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try {
+                "$PSScriptRoot\$Product\OpenJDK.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -1912,6 +2053,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
                 Start-Process "$PSScriptRoot\$Product\TreeSizeFree.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
+                $p = Get-Process TreeSizeFree
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
@@ -1975,6 +2121,11 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\VLC-Player.msi" | Install-MSIFile
+                $p = Get-Process msiexec
+		        if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
             }
@@ -2009,6 +2160,7 @@ if ($download -eq $False) {
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\WinSCP.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
                 }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2048,6 +2200,7 @@ if ($download -eq $False) {
                 $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\WorkspaceApp\Windows\Current\CitrixWorkspaceAppWeb.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
                 } 
                 reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
                 reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
@@ -2092,6 +2245,7 @@ if ($download -eq $False) {
                 $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\WorkspaceApp\Windows\LTSR\CitrixWorkspaceAppWeb.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
                 } 
                 reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
                 reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
