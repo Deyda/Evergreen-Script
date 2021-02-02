@@ -15,7 +15,7 @@ the script checks the version number and will update the package.
   2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
   2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
   2021-02-01        Add Gui Mode as Standard
-  2021-02-02        Add Install OpenJDK / Add Install Adobe Reader DC
+  2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
 <#
 
 
@@ -160,7 +160,7 @@ function gui_mode{
 
     # AdobeProDC Checkbox
     $AdobeProDCBox = New-Object system.Windows.Forms.CheckBox
-    $AdobeProDCBox.text = "Adobe Pro DC #Only Download @ the moment"
+    $AdobeProDCBox.text = "Adobe Pro DC #Only Update @ the moment"
     $AdobeProDCBox.width = 95
     $AdobeProDCBox.height = 20
     $AdobeProDCBox.autosize = $true
@@ -286,7 +286,7 @@ function gui_mode{
 
     # OracleJava8 Checkbox
     $OracleJava8Box = New-Object system.Windows.Forms.CheckBox
-    $OracleJava8Box.text = "Oracle Java 8 #Only Download @ the moment"
+    $OracleJava8Box.text = "Oracle Java 8"
     $OracleJava8Box.width = 95
     $OracleJava8Box.height = 20
     $OracleJava8Box.autosize = $true
@@ -313,7 +313,7 @@ function gui_mode{
 
     # VMWareTools Checkbox
     $VMWareToolsBox = New-Object system.Windows.Forms.CheckBox
-    $VMWareToolsBox.text = "VMWare Tools #Only Download @ the moment"
+    $VMWareToolsBox.text = "VMWare Tools"
     $VMWareToolsBox.width = 95
     $VMWareToolsBox.height = 20
     $VMWareToolsBox.autosize = $true
@@ -435,8 +435,8 @@ function gui_mode{
         else {$Script:WorkspaceApp_Current_Release = 0}
         if ($WorkspaceApp_LTSR_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_LTSR_Release = 1}
         else {$Script:WorkspaceApp_LTSR_Release = 0}
+        
         Write-Verbose "GUI MODE" -Verbose
-        Write-Output ""
         $Form.Close()
     })
     $form.Controls.Add($OKButton)
@@ -472,7 +472,7 @@ $Script:download = $download
 if ($list -eq $True) {
     # Select software
     $7ZIP = 0
-    $AdobeProDC = 0 #Only Download @ the moment
+    $AdobeProDC = 0 #Only Update @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
     $FSLogix = 0
@@ -481,15 +481,15 @@ if ($list -eq $True) {
     $mRemoteNG = 0
     $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
     $MSEdge = 0
-    $MSOffice2019 = 0 # Deployment Toolkit for installing Office 2019 / Only Download @ the moment
+    $MSOffice2019 = 0 # Office Deployment Toolkit for installing Office 2019 / Only Download @ the moment
     $MSOneDrive = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
-    $OracleJava8 = 0 #Only Download @ the moment
+    $OracleJava8 = 0
     $TreeSizeFree = 0
     $VLCPlayer = 0
-    $VMWareTools = 0 #Only Download @ the moment
+    $VMWareTools = 0
     $WinSCP = 0
     $WorkspaceApp_Current_Release = 1
     $WorkspaceApp_LTSR_Release = 0
@@ -505,6 +505,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 if ($install -eq $False) {
     # Install/Update Evergreen module
+    Write-Output ""
     Write-Verbose "Installing/updating Evergreen module... please wait" -Verbose
     Write-Output ""
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -1331,11 +1332,6 @@ if ($download -eq $False) {
             try {
                 $mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_Pro_DC_Update.msp`" /quiet /qn"
                 Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
                 # Update Dienst und Task deaktivieren
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
@@ -1444,11 +1440,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\setup-BIS-F.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1581,11 +1572,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\googlechromestandaloneenterprise64.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1649,11 +1635,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\KeePass.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1717,11 +1698,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\mRemoteNG.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1785,11 +1761,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\MicrosoftEdgeEnterpriseX64.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
                 # Update Task deaktivieren
                  Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
                  Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
@@ -1918,11 +1889,7 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\Teams_windows_x64.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
+
                 Start-Sleep 5
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
                 Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
@@ -2021,11 +1988,51 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\OpenJDK.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
+                Start-Sleep 25
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install OracleJava8
+    if ($OracleJava8 -eq 1) {
+        $Product = "Oracle Java 8"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        IF ($Version) {$Version = $Version -replace "^.{2}"}
+        IF ($Version) {$Version = $Version -replace "-.*(0)"}
+        IF ($Version) {$Version = $Version -replace "._"}
+        IF ($Version) {$Version = $Version -replace "\."}
+        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java*"}).DisplayVersion
+        IF ($OracleJava) {$OracleJava = $OracleJava -replace "^.{2}"}
+        IF ($OracleJava) {$OracleJava = $OracleJava -replace "\."}
+        if ($OracleJava -ne $Version) {
+            # Oracle Java 8
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            $Options = @(
+                "/s"
+            )
+            try	{
+                Start-Process "$PSScriptRoot\$Product\Oracle Java 8.exe" –ArgumentList $Options –NoNewWindow -PassThru
+                $p = Get-Process "Oracle Java 8"
+                if ($p) {
                     $p.WaitForExit()
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
+                # Update Dienst und Task deaktivieren
+                Stop-Service AdobeARMservice
+                Set-Service AdobeARMservice -StartupType Disabled
+                Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2121,13 +2128,47 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\VLC-Player.msi" | Install-MSIFile
-                $p = Get-Process msiexec
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install VMWareTools
+    IF ($VMWareTools -eq 1) {
+        $Product = "VMWare Tools"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
+        IF ($VMWT) {$VMWT = $VMWT -replace ".{9}$"}
+        IF ($VMWT -ne $Version) {
+            # VMWareTools Installation
+            $Options = @(
+                "/s"
+                "/v"
+                "/qn REBOOT=Y"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\VMWareTools.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                    Write-Output ""
+                    Write-Verbose "Server needs to reboot, start script again after reboot" -Verbose
+                    Write-Output ""
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
