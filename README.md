@@ -37,11 +37,6 @@ IF ($Teams) {$Teams = $Teams.Insert(5,'0')}
 
 # Evergreen-Admx
 
-[![Release][github-release-badge]][github-release]
-[![Codacy][code-quality-badge]][code-quality]
-[![License][license-badge]][license]
-[![Twitter][twitter-follow-badge]][twitter-follow]
-
 After deploying several Windows Virtual Desktop environments I decided I no longer wanted to manually download the Admx files I needed, and I wanted a way to keep them up-to-date.
 
 This script solves both problems.
