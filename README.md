@@ -5,10 +5,11 @@ https://github.com/aaronparker/Evergreen
 I'm no powershell expert, so I'm sure there is much room for improvements! 
 
 ## How To
-The idea is to select a client or server that periodically checks for updates and if updates are available, downloads them. This can be done every day or once a week by launching the script "Evergreen Software Updater.ps1" via scheduled task. You decide which software do download by giving it a "0" or "1" in the script. 
+The idea is to select a client or server that periodically checks for updates and if updates are available, downloads them. This can be done every day or once a week by launching the script "Evergreen.ps1 -list" via scheduled task. You decide which software do download by giving it a "0" or "1" in the script.
 
-The "Evergreen Software Installer.ps1" script must be launched on your clients. If you have a golden master like in Citrix MCS/PVS environments it's sufficient to launch the script only on this machine. This can be done manually or automatic, like you prefer. 
-Again, you decide which package gets installed by "0" or "1". 
+The "Evergreen.ps1" script must be launched on your clients. If you have a golden master like in Citrix MCS/PVS environments it's sufficient to launch the script only on this machine. This can be done manually or automatic, like you prefer.
+
+If it is run manually, do not use the -list parameter and you will be taken to the GUI to select the software and mode (Download or Install).
 
 ## Version check
 The updater always checks for the latest version of the Evergreen module, so you don't have to do this. Sometimes the software version found with Evergreen differs from the installed version in the registry, that's stupid, but we can't influence that. Don't blame the Evergreen module!
