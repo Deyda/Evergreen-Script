@@ -42,6 +42,12 @@ Downlod the selected Software.
 & '.\Evergreen.ps1
 
 Download and install the selected Software.
+
+.EXAMPLE
+
+& '.\Evergreen.ps1 -list
+
+Download and install the selected Software out of the script.
 #>
 
 [CmdletBinding()]
@@ -1363,9 +1369,7 @@ if ($download -eq $False) {
             $Options = @(
                 "/sAll"
                 "/rs"
-                "/msi"
-                "EULA_ACCEPT=YES"
-            )
+            )githu
             try	{
                 Start-Process "$PSScriptRoot\$Product\Adobe_Reader_DC.exe" –ArgumentList $Options –NoNewWindow
                 $p = Get-Process Adobe_Reader_DC
