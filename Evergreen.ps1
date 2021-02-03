@@ -1305,7 +1305,7 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\7-Zip_x64.exe" –ArgumentList /S –NoNewWindow -Wait
+                Start-Process "$PSScriptRoot\$Product\7-Zip_x64.exe" –ArgumentList /S –NoNewWindow
                 $p = Get-Process 7-Zip_x64
                 if ($p) {
                     $p.WaitForExit()
@@ -1337,11 +1337,18 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 $mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_Pro_DC_Update.msp`" /quiet /qn"
-                Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
+                $inst = Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
                 # Update Dienst und Task deaktivieren
+                Write-Verbose "Customize Service & Scheduled Task" -Verbose
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
+                Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
                 Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
+                Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installinng $Product (error: $($Error[0]))" $LogFile
             }
@@ -1378,9 +1385,12 @@ if ($download -eq $False) {
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
                 # Update Dienst und Task deaktivieren
+                Write-Verbose "Customize Service & Scheduled Task" -Verbose
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
+                Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
                 Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
+                Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1425,7 +1435,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1450,13 +1464,14 @@ if ($download -eq $False) {
             DS_WriteLog "-" "" $LogFile
             write-Output ""
             # Customize scripts, it's best practise to enable Task Offload and RSS and to disable DEP
-            write-Verbose "Customize scripts" -Verbose
-            DS_WriteLog "I" "Customize scripts" $LogFile
+            write-Verbose "Customize scripts $Product" -Verbose
+            DS_WriteLog "I" "Customize scripts $Product" $LogFile
             $BISFDir = "C:\Program Files (x86)\Base Image Script Framework (BIS-F)\Framework\SubCall"
             try {
                 ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace "DisableTaskOffload' -Value '1'","DisableTaskOffload' -Value '0'") | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
                 ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'nx AlwaysOff','nx OptOut') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
                 ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'rss=disable','rss=enable') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
+                Write-Verbose "Customize scripts $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error when customizing scripts (error: $($Error[0]))" $LogFile
             }
@@ -1506,12 +1521,15 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow -Wait
-                Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow -Wait
-                $p = Get-Process FSLogixAppsSetup
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product Setup finished!" -Verbose
+                }
+                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product Rule Editor finished!" -Verbose
                 }
                 reg add "HKLM\SOFTWARE\FSLogix\Profiles" /v GroupPolicyState /t REG_DWORD /d 0 /f | Out-Null
             } catch {
@@ -1558,7 +1576,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if ($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1576,6 +1598,17 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\googlechromestandaloneenterprise64.msi" | Install-MSIFile
+                # Update Dienst und Task deaktivieren
+                Write-Verbose "Customize Service & Scheduled Task" -Verbose
+                Stop-Service gupdate
+                Set-Service gupdate -StartupType Disabled
+                Stop-Service gupdatem
+                Set-Service gupdatem -StartupType Disabled
+                Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
+                Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" | Out-Null
+                Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA" | Out-Null
+                Disable-ScheduledTask -TaskName "GPUpdate on Startup" | Out-Null
+                Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1620,7 +1653,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1683,7 +1720,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1747,7 +1788,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1766,8 +1811,10 @@ if ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\MicrosoftEdgeEnterpriseX64.msi" | Install-MSIFile
                 # Update Task deaktivieren
-                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
-                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
+                Write-Verbose "Customize Scheduled Task" -Verbose
+                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
+                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
+                Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
@@ -1777,12 +1824,14 @@ if ($download -eq $False) {
             $(
                 $RegPath = "HKLM:SYSTEM\CurrentControlSet\services\CtxUvi"
                 IF (Test-Path $RegPath) {
+                    Write-Verbose "Disable Citrix API Hooks" -Verbose
                     $RegName = "UviProcessExcludes"
                     $EdgeRegvalue = "msedge.exe"
                     # Get current values in UviProcessExcludes
                     $CurrentValues = Get-ItemProperty -Path $RegPath | Select-Object -ExpandProperty $RegName
                     # Add the msedge.exe value to existing values in UviProcessExcludes
                     Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;"
+                    Write-Verbose "Disable Citrix API Hooks for $Product finished!" -Verbose
                 }
             ) | Out-Null
         }
@@ -1861,7 +1910,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -1883,11 +1936,11 @@ if ($download -eq $False) {
                 $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
                 Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn"
                 Start-Sleep 20
+                Write-Verbose "Uninstalling $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Ein Fehler ist aufgetreten beim Deinstallieren von $Product (error: $($Error[0]))" $LogFile       
             }
             DS_WriteLog "-" "" $LogFile
-            Write-Verbose " ...ready!" -Verbose
             #MS Teams Installation
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
@@ -1896,7 +1949,9 @@ if ($download -eq $False) {
 
                 Start-Sleep 5
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
+                Write-Verbose "Customize $Product Autorun" -Verbose
                 Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                Write-Verbose "Customize $Product Autorun finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
@@ -1922,7 +1977,7 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\NotePadPlusPlus_x64.exe" –ArgumentList /S –NoNewWindow -Wait
+                Start-Process "$PSScriptRoot\$Product\NotePadPlusPlus_x64.exe" –ArgumentList /S –NoNewWindow
                 $p = Get-Process NotePadPlusPlus_x64
 		        if ($p) {
                     $p.WaitForExit()
@@ -1973,7 +2028,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
@@ -2027,16 +2086,12 @@ if ($download -eq $False) {
                 "/s"
             )
             try	{
-                Start-Process "$PSScriptRoot\$Product\Oracle Java 8.exe" –ArgumentList $Options –NoNewWindow -PassThru
+                Start-Process "$PSScriptRoot\$Product\Oracle Java 8.exe" –ArgumentList $Options –NoNewWindow
                 $p = Get-Process "Oracle Java 8"
                 if ($p) {
                     $p.WaitForExit()
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
-                # Update Dienst und Task deaktivieren
-                Stop-Service AdobeARMservice
-                Set-Service AdobeARMservice -StartupType Disabled
-                Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2113,7 +2168,11 @@ if ($download -eq $False) {
                 }
                 $arguments += "INSTALLDIR=`"$targetDir`""
             }
-            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
             if ($process.ExitCode -eq 0) {
             }
             else {
