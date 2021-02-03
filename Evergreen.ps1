@@ -1369,7 +1369,7 @@ if ($download -eq $False) {
             $Options = @(
                 "/sAll"
                 "/rs"
-            )githu
+            ))
             try	{
                 Start-Process "$PSScriptRoot\$Product\Adobe_Reader_DC.exe" –ArgumentList $Options –NoNewWindow
                 $p = Get-Process Adobe_Reader_DC
