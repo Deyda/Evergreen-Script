@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          0.5
+  Version:          0.6
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   Purpose/Change:
@@ -16,6 +16,8 @@ the script checks the version number and will update the package.
   2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
   2021-02-01        Add Gui Mode as Standard
   2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
+  2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
+  2021-02-04        Correction OracleJava8 detection
 <#
 
 
@@ -83,7 +85,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "0.5"
+$eVersion = "0.6"
 Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
@@ -2075,7 +2077,7 @@ if ($download -eq $False) {
         IF ($Version) {$Version = $Version -replace "-.*(0)"}
         IF ($Version) {$Version = $Version -replace "._"}
         IF ($Version) {$Version = $Version -replace "\."}
-        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java*"}).DisplayVersion
+        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java Auto Updater*"}).DisplayVersion
         IF ($OracleJava) {$OracleJava = $OracleJava -replace "^.{2}"}
         IF ($OracleJava) {$OracleJava = $OracleJava -replace "\."}
         if ($OracleJava -ne $Version) {
