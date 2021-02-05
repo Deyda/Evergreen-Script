@@ -17,7 +17,7 @@ the script checks the version number and will update the package.
   2021-02-01        Add Gui Mode as Standard
   2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
   2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
-  2021-02-04        Correction OracleJava8 detection
+  2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
 <#
 
 
@@ -114,7 +114,7 @@ function gui_mode{
     $Form = New-Object system.Windows.Forms.Form
     $Form.ClientSize = New-Object System.Drawing.Point(300,900)
     $Form.text = "Evergreen - Update your Software - Version $eVersion"
-    $Form.TopMost = $true
+    $Form.TopMost = $false
     $Form.AutoSize = $true
 
     # Set the font of the text to be used within the form
@@ -476,6 +476,9 @@ Write-Output ""
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $Script:install = $install
 $Script:download = $download
+Write-Verbose "Setting Environment Variable Evergreen" -Verbose
+Write-Output ""
+$Env:evergreen = $PSScriptRoot
 
 if ($list -eq $True) {
     # Select software
