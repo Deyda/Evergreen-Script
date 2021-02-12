@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          0.6
+  Version:          0.7
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   Purpose/Change:
@@ -18,6 +18,7 @@ the script checks the version number and will update the package.
   2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
   2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
   2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
+  2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
 <#
 
 
@@ -85,7 +86,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "0.6"
+$eVersion = "0.7"
 Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
@@ -193,13 +194,67 @@ function gui_mode{
     $BISFBox.location = New-Object System.Drawing.Point(11,170)
     $form.Controls.Add($BISFBox)
 
+    # Citrix Hypervisor Tools Checkbox
+    $Citrix_HypervisorBox = New-Object system.Windows.Forms.CheckBox
+    $Citrix_HypervisorBox.text = "Citrix Hypervisor Tools"
+    $Citrix_HypervisorBox.width = 95
+    $Citrix_HypervisorBox.height = 20
+    $Citrix_HypervisorBox.autosize = $true
+    $Citrix_HypervisorBox.location = New-Object System.Drawing.Point(11,195)
+    $form.Controls.Add($Citrix_HypervisorBox)
+
+    # Citrix WorkspaceApp_Current_Release Checkbox
+    $Citrix_WorkspaceApp_CRBox = New-Object system.Windows.Forms.CheckBox
+    $Citrix_WorkspaceApp_CRBox.text = "Citrix WorkspaceApp CR"
+    $Citrix_WorkspaceApp_CRBox.width = 95
+    $Citrix_WorkspaceApp_CRBox.height = 20
+    $Citrix_WorkspaceApp_CRBox.autosize = $true
+    $Citrix_WorkspaceApp_CRBox.location = New-Object System.Drawing.Point(11,220)
+    $form.Controls.Add($Citrix_WorkspaceApp_CRBox)
+
+    # Citrix WorkspaceApp_LTSR_Release Checkbox
+    $Citrix_WorkspaceApp_LTSRBox = New-Object system.Windows.Forms.CheckBox
+    $Citrix_WorkspaceApp_LTSRBox.text = "Citrix WorkspaceApp LTSR"
+    $Citrix_WorkspaceApp_LTSRBox.width = 95
+    $Citrix_WorkspaceApp_LTSRBox.height = 20
+    $Citrix_WorkspaceApp_LTSRBox.autosize = $true
+    $Citrix_WorkspaceApp_LTSRBox.location = New-Object System.Drawing.Point(11,245)
+    $form.Controls.Add($Citrix_WorkspaceApp_LTSRBox)
+
+    # Filezilla Checkbox
+    $FilezillaBox = New-Object system.Windows.Forms.CheckBox
+    $FilezillaBox.text = "Filezilla"
+    $FilezillaBox.width = 95
+    $FilezillaBox.height = 20
+    $FilezillaBox.autosize = $true
+    $FilezillaBox.location = New-Object System.Drawing.Point(11,270)
+    $form.Controls.Add($FilezillaBox)
+
+    # Firefox Checkbox
+    $FirefoxBox = New-Object system.Windows.Forms.CheckBox
+    $FirefoxBox.text = "Firefox"
+    $FirefoxBox.width = 95
+    $FirefoxBox.height = 20
+    $FirefoxBox.autosize = $true
+    $FirefoxBox.location = New-Object System.Drawing.Point(11,295)
+    $form.Controls.Add($FirefoxBox)
+
+    # Foxit Reader Checkbox
+    $Foxit_ReaderBox = New-Object system.Windows.Forms.CheckBox
+    $Foxit_ReaderBox.text = "Foxit Reader # No Silent Install"
+    $Foxit_ReaderBox.width = 95
+    $Foxit_ReaderBox.height = 20
+    $Foxit_ReaderBox.autosize = $true
+    $Foxit_ReaderBox.location = New-Object System.Drawing.Point(11,320)
+    $form.Controls.Add($Foxit_ReaderBox)
+
     # FSLogix Checkbox
     $FSLogixBox = New-Object system.Windows.Forms.CheckBox
     $FSLogixBox.text = "FSLogix"
     $FSLogixBox.width = 95
     $FSLogixBox.height = 20
     $FSLogixBox.autosize = $true
-    $FSLogixBox.location = New-Object System.Drawing.Point(11,195)
+    $FSLogixBox.location = New-Object System.Drawing.Point(11,345)
     $form.Controls.Add($FSLogixBox)
 
     # GoogleChrome Checkbox
@@ -208,8 +263,17 @@ function gui_mode{
     $GoogleChromeBox.width = 95
     $GoogleChromeBox.height = 20
     $GoogleChromeBox.autosize = $true
-    $GoogleChromeBox.location = New-Object System.Drawing.Point(11,220)
+    $GoogleChromeBox.location = New-Object System.Drawing.Point(11,370)
     $form.Controls.Add($GoogleChromeBox)
+
+    # Greenshot Checkbox
+    $GreenshotBox = New-Object system.Windows.Forms.CheckBox
+    $GreenshotBox.text = "Greenshot"
+    $GreenshotBox.width = 95
+    $GreenshotBox.height = 20
+    $GreenshotBox.autosize = $true
+    $GreenshotBox.location = New-Object System.Drawing.Point(11,395)
+    $form.Controls.Add($GreenshotBox)
 
     # KeePass Checkbox
     $KeePassBox = New-Object system.Windows.Forms.CheckBox
@@ -217,7 +281,7 @@ function gui_mode{
     $KeePassBox.width = 95
     $KeePassBox.height = 20
     $KeePassBox.autosize = $true
-    $KeePassBox.location = New-Object System.Drawing.Point(11,245)
+    $KeePassBox.location = New-Object System.Drawing.Point(11,420)
     $form.Controls.Add($KeePassBox)
 
     # mRemoteNG Checkbox
@@ -226,7 +290,7 @@ function gui_mode{
     $mRemoteNGBox.width = 95
     $mRemoteNGBox.height = 20
     $mRemoteNGBox.autosize = $true
-    $mRemoteNGBox.location = New-Object System.Drawing.Point(11,270)
+    $mRemoteNGBox.location = New-Object System.Drawing.Point(11,445)
     $form.Controls.Add($mRemoteNGBox)
 
     # MS365Apps Checkbox
@@ -235,7 +299,7 @@ function gui_mode{
     $MS365AppsBox.width = 95
     $MS365AppsBox.height = 20
     $MS365AppsBox.autosize = $true
-    $MS365AppsBox.location = New-Object System.Drawing.Point(11,295)
+    $MS365AppsBox.location = New-Object System.Drawing.Point(11,470)
     $form.Controls.Add($MS365AppsBox)
 
     # MSEdge Checkbox
@@ -244,7 +308,7 @@ function gui_mode{
     $MSEdgeBox.width = 95
     $MSEdgeBox.height = 20
     $MSEdgeBox.autosize = $true
-    $MSEdgeBox.location = New-Object System.Drawing.Point(11,320)
+    $MSEdgeBox.location = New-Object System.Drawing.Point(11,495)
     $form.Controls.Add($MSEdgeBox)
 
     # MSOffice2019 Checkbox
@@ -253,7 +317,7 @@ function gui_mode{
     $MSOffice2019Box.width = 95
     $MSOffice2019Box.height = 20
     $MSOffice2019Box.autosize = $true
-    $MSOffice2019Box.location = New-Object System.Drawing.Point(11,345)
+    $MSOffice2019Box.location = New-Object System.Drawing.Point(11,520)
     $form.Controls.Add($MSOffice2019Box)
 
     # MSOneDrive Checkbox
@@ -262,7 +326,7 @@ function gui_mode{
     $MSOneDriveBox.width = 95
     $MSOneDriveBox.height = 20
     $MSOneDriveBox.autosize = $true
-    $MSOneDriveBox.location = New-Object System.Drawing.Point(11,370)
+    $MSOneDriveBox.location = New-Object System.Drawing.Point(11,545)
     $form.Controls.Add($MSOneDriveBox)
 
     # MSTeams Checkbox
@@ -271,7 +335,7 @@ function gui_mode{
     $MSTeamsBox.width = 95
     $MSTeamsBox.height = 20
     $MSTeamsBox.autosize = $true
-    $MSTeamsBox.location = New-Object System.Drawing.Point(11,395)
+    $MSTeamsBox.location = New-Object System.Drawing.Point(11,570)
     $form.Controls.Add($MSTeamsBox)
 
     # NotePadPlusPlus Checkbox
@@ -280,7 +344,7 @@ function gui_mode{
     $NotePadPlusPlusBox.width = 95
     $NotePadPlusPlusBox.height = 20
     $NotePadPlusPlusBox.autosize = $true
-    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,420)
+    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,595)
     $form.Controls.Add($NotePadPlusPlusBox)
 
     # OpenJDK Checkbox
@@ -289,7 +353,7 @@ function gui_mode{
     $OpenJDKBox.width = 95
     $OpenJDKBox.height = 20
     $OpenJDKBox.autosize = $true
-    $OpenJDKBox.location = New-Object System.Drawing.Point(11,445)
+    $OpenJDKBox.location = New-Object System.Drawing.Point(11,620)
     $form.Controls.Add($OpenJDKBox)
 
     # OracleJava8 Checkbox
@@ -298,7 +362,7 @@ function gui_mode{
     $OracleJava8Box.width = 95
     $OracleJava8Box.height = 20
     $OracleJava8Box.autosize = $true
-    $OracleJava8Box.location = New-Object System.Drawing.Point(11,470)
+    $OracleJava8Box.location = New-Object System.Drawing.Point(11,645)
     $form.Controls.Add($OracleJava8Box)
 
     # TreeSizeFree Checkbox
@@ -307,7 +371,7 @@ function gui_mode{
     $TreeSizeFreeBox.width = 95
     $TreeSizeFreeBox.height = 20
     $TreeSizeFreeBox.autosize = $true
-    $TreeSizeFreeBox.location = New-Object System.Drawing.Point(11,495)
+    $TreeSizeFreeBox.location = New-Object System.Drawing.Point(11,670)
     $form.Controls.Add($TreeSizeFreeBox)
 
     # VLCPlayer Checkbox
@@ -316,7 +380,7 @@ function gui_mode{
     $VLCPlayerBox.width = 95
     $VLCPlayerBox.height = 20
     $VLCPlayerBox.autosize = $true
-    $VLCPlayerBox.location = New-Object System.Drawing.Point(11,520)
+    $VLCPlayerBox.location = New-Object System.Drawing.Point(11,695)
     $form.Controls.Add($VLCPlayerBox)
 
     # VMWareTools Checkbox
@@ -325,7 +389,7 @@ function gui_mode{
     $VMWareToolsBox.width = 95
     $VMWareToolsBox.height = 20
     $VMWareToolsBox.autosize = $true
-    $VMWareToolsBox.location = New-Object System.Drawing.Point(11,545)
+    $VMWareToolsBox.location = New-Object System.Drawing.Point(11,720)
     $form.Controls.Add($VMWareToolsBox)
 
     # WinSCP Checkbox
@@ -334,26 +398,8 @@ function gui_mode{
     $WinSCPBox.width = 95
     $WinSCPBox.height = 20
     $WinSCPBox.autosize = $true
-    $WinSCPBox.location = New-Object System.Drawing.Point(11,570)
+    $WinSCPBox.location = New-Object System.Drawing.Point(11,745)
     $form.Controls.Add($WinSCPBox)
-
-    # WorkspaceApp_Current_Release Checkbox
-    $WorkspaceApp_Current_ReleaseBox = New-Object system.Windows.Forms.CheckBox
-    $WorkspaceApp_Current_ReleaseBox.text = "Citrix WorkspaceApp Current Release"
-    $WorkspaceApp_Current_ReleaseBox.width = 95
-    $WorkspaceApp_Current_ReleaseBox.height = 20
-    $WorkspaceApp_Current_ReleaseBox.autosize = $true
-    $WorkspaceApp_Current_ReleaseBox.location = New-Object System.Drawing.Point(11,595)
-    $form.Controls.Add($WorkspaceApp_Current_ReleaseBox) 
-
-    # WorkspaceApp_LTSR_Release Checkbox
-    $WorkspaceApp_LTSR_ReleaseBox = New-Object system.Windows.Forms.CheckBox
-    $WorkspaceApp_LTSR_ReleaseBox.text = "Citrix WorkspaceApp LTSR Release"
-    $WorkspaceApp_LTSR_ReleaseBox.width = 95
-    $WorkspaceApp_LTSR_ReleaseBox.height = 20
-    $WorkspaceApp_LTSR_ReleaseBox.autosize = $true
-    $WorkspaceApp_LTSR_ReleaseBox.location = New-Object System.Drawing.Point(11,620)
-    $form.Controls.Add($WorkspaceApp_LTSR_ReleaseBox)
 
     # SelectAll Checkbox
     $SelectAllBox = New-Object system.Windows.Forms.CheckBox
@@ -361,12 +407,14 @@ function gui_mode{
     $SelectAllBox.width = 95
     $SelectAllBox.height = 20
     $SelectAllBox.autosize = $true
-    $SelectAllBox.location = New-Object System.Drawing.Point(11,775)
+    $SelectAllBox.location = New-Object System.Drawing.Point(11,780)
     $SelectAllBox.Add_CheckStateChanged({
         $7ZipBox.Checked = $SelectAllBox.Checked
         $AdobeProDCBox.Checked = $SelectAllBox.Checked
         $AdobeReaderDCBox.Checked = $SelectAllBox.Checked
         $BISFBox.Checked = $SelectAllBox.Checked
+        $Citrix_WorkspaceApp_CRBox.Checked = $SelectAllBox.Checked
+        $Citrix_WorkspaceApp_LTSRBox.Checked = $SelectAllBox.Checked
         $FSLogixBox.Checked = $SelectAllBox.Checked
         $GoogleChromeBox.Checked = $SelectAllBox.Checked
         $KeePassBox.Checked = $SelectAllBox.Checked
@@ -383,8 +431,7 @@ function gui_mode{
         $VLCPlayerBox.Checked = $SelectAllBox.Checked
         $VMWareToolsBox.Checked = $SelectAllBox.Checked
         $WinSCPBox.Checked = $SelectAllBox.Checked
-        $WorkspaceApp_Current_ReleaseBox.Checked = $SelectAllBox.Checked
-        $WorkspaceApp_LTSR_ReleaseBox.Checked = $SelectAllBox.Checked
+        
     })
     $form.Controls.Add($SelectAllBox)
 
@@ -393,7 +440,7 @@ function gui_mode{
     $OKButton.text = "OK"
     $OKButton.width = 60
     $OKButton.height = 30
-    $OKButton.location = New-Object System.Drawing.Point(70,800)
+    $OKButton.location = New-Object System.Drawing.Point(70,815)
     $OKButton.Add_Click({
         if ($DownloadBox.checked -eq $true) {$Script:install = $false}
         else {$Script:install = $true}
@@ -407,10 +454,24 @@ function gui_mode{
         else {$Script:AdobeReaderDC = 0}
         if ($BISFBox.checked -eq $true) {$Script:BISF = 1}
         else {$Script:BISF = 0}
+        if ($Citrix_HypervisorBox.checked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
+        else {$Script:Citrix_Hypervisor_Tools = 0}
+        if ($Citrix_WorkspaceApp_CRBox.checked -eq $true) {$Script:Citrix_WorkspaceApp_CR = 1}
+        else {$Script:Citrix_WorkspaceApp_CR = 0}
+        if ($Citrix_WorkspaceApp_LTSRBox.checked -eq $true) {$Script:Citrix_WorkspaceApp_LTSR = 1}
+        else {$Script:Citrix_WorkspaceApp_LTSR = 0}
+        if ($FilezillaBox.checked -eq $true) {$Script:Filezilla = 1}
+        else {$Script:Filezilla = 0}
+        if ($FirefoxBox.checked -eq $true) {$Script:Firefox = 1}
+        else {$Script:Firefox = 0}
         if ($FSLogixBox.checked -eq $true) {$Script:FSLogix = 1}
         else {$Script:FSLogix = 0}
+        if ($Foxit_ReaderBox.checked -eq $true) {$Script:Foxit_Reader = 1}
+        else {$Script:Foxit_Reader = 0}
         if ($GoogleChromeBox.checked -eq $true) {$Script:GoogleChrome = 1}
         else {$Script:GoogleChrome = 0}
+        if ($GreenshotBox.checked -eq $true) {$Script:Greenshot = 1}
+        else {$Script:Greenshot = 0}
         if ($KeePassBox.checked -eq $true) {$Script:KeePass = 1}
         else {$Script:KeePass = 0}
         if ($mRemoteNGBox.checked -eq $true) {$Script:mRemoteNG = 1}
@@ -439,10 +500,6 @@ function gui_mode{
         else {$Script:VMWareTools = 0}
         if ($WinSCPBox.checked -eq $true) {$Script:WinSCP = 1}
         else {$Script:WinSCP = 0}
-        if ($WorkspaceApp_Current_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_Current_Release = 1}
-        else {$Script:WorkspaceApp_Current_Release = 0}
-        if ($WorkspaceApp_LTSR_ReleaseBox.checked -eq $true) {$Script:WorkspaceApp_LTSR_Release = 1}
-        else {$Script:WorkspaceApp_LTSR_Release = 0}
         
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
@@ -454,7 +511,7 @@ function gui_mode{
     $CancelButton.text = "Cancel"
     $CancelButton.width = 60
     $CancelButton.height = 30
-    $CancelButton.location = New-Object System.Drawing.Point(170,800)
+    $CancelButton.location = New-Object System.Drawing.Point(170,815)
     $CancelButton.Add_Click({
         $Script:install = $true
         $Script:download = $true
@@ -483,11 +540,18 @@ $Env:evergreen = $PSScriptRoot
 if ($list -eq $True) {
     # Select software
     $7ZIP = 0
-    $AdobeProDC = 0 #Only Update @ the moment
+    $AdobeProDC = 0 # Only Update @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
+    $Citrix_Hypervisor_Tools = 0
+    $Citrix_WorkspaceApp_CR = 1
+    $Citrix_WorkspaceApp_LTSR = 0
+    $Filezilla = 0
+    $Firefox = 0
+    $Foxit_Reader = 0  # No Silent Install
     $FSLogix = 0
     $GoogleChrome = 0
+    $Greenshot = 0
     $KeePass = 0
     $mRemoteNG = 0
     $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
@@ -502,11 +566,10 @@ if ($list -eq $True) {
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
-    $WorkspaceApp_Current_Release = 1
-    $WorkspaceApp_LTSR_Release = 0
+    
 }
 else {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,FSLogix,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,WorkspaceApp_Current_Release,WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp_CR,Citrix_WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -541,6 +604,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -574,6 +638,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
@@ -607,6 +672,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
@@ -639,9 +705,230 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Exclude *.ps1, *.lnk -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Download Citrix Hypervisor Tools
+    if ($Citrix_Hypervisor_Tools -eq 1) {
+        $Product = "Citrix Hypervisor Tools"
+        $PackageName = "managementagentx64"
+        $CitrixHypervisor = Get-CitrixVMTools | Where-Object {$_.Architecture -eq "x64"} | Select-Object -Last 1
+        $Version = $CitrixHypervisor.Version
+        $URL = $CitrixHypervisor.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Download Citrix WorkspaceApp Current
+    if ($Citrix_WorkspaceApp_CR -eq 1) {
+        $Product = "Citrix WorkspaceApp Current Release"
+        $PackageName = "CitrixWorkspaceApp"
+        $WSACD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
+        $Version = $WSACD.Version
+        $URL = $WSACD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
+        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility")) { New-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility" -ItemType Directory | Out-Null }
+        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe")) {
+            Write-Verbose "Download Citrix Receiver Cleanup Utility" -Verbose
+            Invoke-WebRequest -Uri https://fileservice.citrix.com/downloadspecial/support/article/CTX137494/downloads/ReceiverCleanupUtility.zip -OutFile ("$PSScriptRoot\Citrix\ReceiverCleanupUtility\" + "ReceiverCleanupUtility.zip")
+            Expand-Archive -path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -destinationpath "$PSScriptRoot\Citrix\ReceiverCleanupUtility\"
+            Remove-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -Force
+            Write-Verbose "Download Citrix Receiver Cleanup Utility finished" -Verbose
+        }
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Download Citrix WorkspaceApp LTSR
+    if ($Citrix_WorkspaceApp_LTSR -eq 1) {
+        $Product = "Citrix WorkspaceApp LTSR"
+        $PackageName = "CitrixWorkspaceApp"
+        $WSALD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
+        $Version = $WSALD.Version
+        $URL = $WSALD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
+        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility")) { New-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility" -ItemType Directory | Out-Null }
+        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe")) {
+            Write-Verbose "Download Citrix Receiver Cleanup Utility" -Verbose
+            Invoke-WebRequest -Uri https://fileservice.citrix.com/downloadspecial/support/article/CTX137494/downloads/ReceiverCleanupUtility.zip -OutFile ("$PSScriptRoot\Citrix\ReceiverCleanupUtility\" + "ReceiverCleanupUtility.zip")
+            Expand-Archive -path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -destinationpath "$PSScriptRoot\Citrix\ReceiverCleanupUtility\"
+            Remove-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -Force
+            Write-Verbose "Download Citrix Receiver Cleanup Utility finished" -Verbose
+        }
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Download Filezilla
+    if ($Filezilla -eq 1) {
+        $Product = "Filezilla"
+        $PackageName = "Filezilla-win64"
+        $FilezillaD = Get-Filezilla | Where-Object { $_.URI -like "*win64*"}
+        $Version = $FilezillaD.Version
+        $URL = $FilezillaD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+   # Download Firefox
+   if ($Firefox -eq 1) {
+        $Product = "Firefox"
+        $PackageName = "Firefox_Setup_x64_enUS"
+        $FirefoxD = Get-MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "x64" -and $_.Channel -eq "LATEST_FIREFOX_VERSION" -and $_.Language -eq "en-US"}
+        $Version = $FirefoxD.Version
+        $URL = $FirefoxD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Download Foxit Reader
+    if ($Foxit_Reader -eq 1) {
+        $Product = "Foxit Reader"
+        $PackageName = "FoxitReader-Setup-English"
+        $Foxit_ReaderD = Get-FoxitReader | Where-Object {$_.Language -eq "English"}
+        $Version = $Foxit_ReaderD.Version
+        $URL = $Foxit_ReaderD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
             New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -672,6 +959,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product\Install")) { New-Item -Path "$PSScriptRoot\$Product\Install" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\Install\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\Install\*" -Recurse
@@ -696,6 +984,40 @@ if ($install -eq $False) {
         }
     }
 
+    # Download Greenshot
+    if ($Greenshot -eq 1) {
+        $Product = "Greenshot"
+        $PackageName = "Greenshot-INSTALLER-x86"
+        $GreenshotD = Get-Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
+        $Version = $GreenshotD.Version
+        $URL = $GreenshotD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
     # Download Google Chrome
     if ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
@@ -706,6 +1028,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -739,6 +1062,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -772,6 +1096,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -791,7 +1116,7 @@ if ($install -eq $False) {
         }
     }
 
-    # Download MS Office365Apps
+    # Download MS 365 Apps
     if ($MS365Apps -eq 1) {
         $Product = "MS 365 Apps (Semi Annual Channel)"
         $PackageName = "setup"
@@ -805,6 +1130,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
     if (!($CurrentVersion -eq $Version)) {
+        Write-Verbose "Update available" -Verbose
         if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -834,6 +1160,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -867,6 +1194,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -885,7 +1213,7 @@ if ($install -eq $False) {
         }
     }
 
-    # Download MSOneDrive
+    # Download MS OneDrive
     if ($MSOneDrive -eq 1) {
         $Product = "MS OneDrive"
         $PackageName = "OneDriveSetup"
@@ -899,6 +1227,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -932,6 +1261,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
@@ -965,6 +1295,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
@@ -998,6 +1329,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1031,6 +1363,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1064,6 +1397,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1097,6 +1431,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1130,6 +1465,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1163,6 +1499,7 @@ if ($install -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
@@ -1173,74 +1510,6 @@ if ($install -eq $False) {
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Download WorkspaceApp Current
-    if ($WorkspaceApp_Current_Release -eq 1) {
-        $Product = "WorkspaceApp"
-        $PackageName = "CitrixWorkspaceApp"
-        $WSACD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
-        $Version = $WSACD.Version
-        $URL = $WSACD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\Current\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product CR" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product\Windows\Current")) { New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\Current" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\Citrix\$Product\Windows\Current\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\Citrix\$Product\Windows\Current\*" -Recurse
-            Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\Current" -Name "Download date $Date" | Out-Null
-            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\Current\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version Current Release" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\Windows\Current\" + ($Source))
-            Copy-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\Current\CitrixWorkspaceApp.exe" -Destination "$PSScriptRoot\Citrix\$Product\Windows\Current\CitrixWorkspaceAppWeb.exe" | Out-Null
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Download WorkspaceApp LTSR
-    if ($WorkspaceApp_LTSR_Release -eq 1) {
-        $Product = "WorkspaceApp"
-        $PackageName = "CitrixWorkspaceApp"
-        $WSALD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
-        $Version = $WSALD.Version
-        $URL = $WSALD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product LTSR" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR")) { New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\Citrix\$Product\Windows\LTSR\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\Citrix\$Product\Windows\LTSR\*" -Recurse
-            Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR" -Name "Download date $Date" | Out-Null
-            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version LTSR Release" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\Windows\LTSR\" + ($Source))
-            Copy-Item -Path "$PSScriptRoot\Citrix\$Product\Windows\LTSR\CitrixWorkspaceApp.exe" -Destination "$PSScriptRoot\Citrix\$Product\Windows\LTSR\CitrixWorkspaceAppWeb.exe" | Out-Null
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
         else {
@@ -1490,6 +1759,333 @@ if ($download -eq $False) {
         write-Output ""
     }
 
+    # Install Citrix Hypervisor Tools
+    IF ($Citrix_Hypervisor_Tools -eq 1) {
+        $Product = "Citrix Hypervisor Tools"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/quiet"
+                "/norestart"
+                )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if ($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
+        $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+        $HypTools = $HypTools.Insert(3,'.0')
+        IF ($HypTools -ne $Version) {
+            # Citrix Hypervisor Tools
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try {
+                "$PSScriptRoot\Citrix\$Product\managementagentx64.msi" | Install-MSIFile
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Citrix WorkspaceApp Current
+    IF ($Citrix_WorkspaceApp_CR -eq 1) {
+        $Product = "Citrix WorkspaceApp Current Release"
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
+        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
+        $UninstallWSACR = "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe"
+        IF ($WSA -ne $Version) {
+            # Citrix WSA Uninstallation
+            Write-Verbose "Uninstalling Citrix Workspace App / Receiver" -Verbose
+            DS_WriteLog "I" "Uninstalling Citrix Workspace App / Receiver" $LogFile
+            try	{
+                Start-process $UninstallWSACR -ArgumentList '/silent /disableCEIP' –NoNewWindow -Wait
+            } catch {
+                DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Verbose "Uninstalling & Cleanup Citrix Workspace App / Receiver finished!" -Verbose
+
+            # Citrix WSA Installation
+            $Options = @(
+                "/forceinstall"
+                "/silent"
+                "/EnableCEIP=false"
+                "/FORCE_LAA=1"
+                "/AutoUpdateCheck=disabled"
+                "/EnableCEIP=false"
+                "/ALLOWADDSTORE=S"
+                "/ALLOWSAVEPWD=S"
+                "/includeSSON"
+                "/ENABLE_SSON=Yes"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\CitrixWorkspaceApp.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+                Write-Verbose "Customize $Product" -Verbose
+                reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
+                reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
+                reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
+                Write-Verbose "Customizing $Product finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Verbose " ... ready!" -Verbose
+            Write-Verbose "Server needs to reboot after installation!" -Verbose
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Citrix WorkspaceApp LTSR
+    IF ($Citrix_WorkspaceApp_LTSR -eq 1) {
+        $Product = "Citrix WorkspaceApp LTSR"
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
+        $UninstallWSALTSR = "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe"
+        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
+        IF ($WSA -ne $Version) {
+            # Citrix WSA Uninstallation
+            Write-Verbose "Uninstalling Citrix Workspace App / Receiver" -Verbose
+            DS_WriteLog "I" "Uninstalling Citrix Workspace App / Receiver" $LogFile
+            try	{
+                Start-process $UninstallWSALTSR -ArgumentList '/silent /disableCEIP' –NoNewWindow -Wait
+            } catch {
+                DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Verbose "Uninstalling & Cleanup Citrix Workspace App / Receiver finished!" -Verbose
+
+            # Citrix WSA Installation
+            $Options = @(
+                "/forceinstall"
+                "/silent"
+                "/EnableCEIP=false"
+                "/FORCE_LAA=1"
+                "/AutoUpdateCheck=disabled"
+                "/EnableCEIP=false"
+                "/ALLOWADDSTORE=S"
+                "/ALLOWSAVEPWD=S"
+                "/includeSSON"
+                "/ENABLE_SSON=Yes"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\CitrixWorkspaceApp.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+                Write-Verbose "Customize $Product" -Verbose
+                reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
+                reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
+                reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
+                Write-Verbose "Customizing $Product finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Verbose " ... ready!" -Verbose
+            Write-Verbose "Server needs to reboot after installation!" -Verbose
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Filezilla
+    IF ($Filezilla -eq 1) {
+        $Product = "Filezilla"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Filezilla = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion
+        IF ($Filezilla -ne $Version) {
+            # Filezilla
+            $Options = @(
+                "/S"
+                "/user=all"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Filezilla-win64.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Firefox
+    IF ($Firefox -eq 1) {
+        $Product = "Firefox"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/q"
+                "DESKTOP_SHORTCUT=false"
+                "TASKBAR_SHORTCUT=false"
+                "INSTALL_MAINTENANCE_SERVICE=false"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if ($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Firefox = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        IF ($Firefox -ne $Version) {
+            # Firefox
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try {
+                "$PSScriptRoot\$Product\Firefox_Setup_x64_enUS.msi" | Install-MSIFile
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Foxit Reader
+    IF ($Foxit_Reader -eq 1) {
+        $Product = "Foxit Reader"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $FReader = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion
+        IF ($FReader -ne $Version) {
+            # Foxit Reader
+            $Options = @(
+                "/VERYSILENT"
+                "/ALLUSERS"
+                "/NORESTART"
+                "/NOCLOSEAPPLICATIONS"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\FoxitReader-Setup-English.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
     # Install FSLogix
     IF ($FSLogix -eq 1) {
         $Product = "FSLogix"
@@ -1550,7 +2146,42 @@ if ($download -eq $False) {
         }
     }
 
-    # Install Chrome
+    # Install Greenshot
+    IF ($Greenshot -eq 1) {
+        $Product = "Greenshot"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Greenshot = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion
+        IF ($Greenshot -ne $Version) {
+            # Greenshot
+            $Options = @(
+                "/VERYSILENT"
+                "/NORESTART"
+                "/SUPPRESSMSGBOXES"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Greenshot-INSTALLER-x86.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install Google Chrome
     IF ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
 
@@ -1815,10 +2446,12 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\MicrosoftEdgeEnterpriseX64.msi" | Install-MSIFile
-                # Update Task deaktivieren
+                # Disable update tasks
                 Write-Verbose "Customize Scheduled Task" -Verbose
+                Start-Sleep -s 5
                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
                 Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
+                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateBrowserReplacementTask | Out-Null
                 Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
@@ -1847,7 +2480,7 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MSOneDrive
+    # Install MS OneDrive
     IF ($MSOneDrive -eq 1) {
         $Product = "MS OneDrive"
 
@@ -1951,7 +2584,6 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\Teams_windows_x64.msi" | Install-MSIFile
-
                 Start-Sleep 5
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
                 Write-Verbose "Customize $Product Autorun" -Verbose
@@ -2275,96 +2907,6 @@ if ($download -eq $False) {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Install WorkspaceApp Current
-    IF ($WorkspaceApp_Current_Release -eq 1) {
-        $Product = "WorkspaceApp Current Release"
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\Citrix\WorkspaceApp\Windows\Current\Version.txt"
-        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
-        IF ($WSA -ne $Version) {
-            # Citrix WSA Installation
-            $Options = @(
-                "/silent"
-                "/EnableCEIP=false"
-                "/FORCE_LAA=1"
-                "/AutoUpdateCheck=disabled"
-                "/EnableCEIP=false"
-                "/ALLOWADDSTORE=S"
-                "/ALLOWSAVEPWD=S"
-                "/includeSSON"
-                "/ENABLE_SSON=Yes"
-            )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\WorkspaceApp\Windows\Current\CitrixWorkspaceAppWeb.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                if($inst -ne $null) {
-                    Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                } 
-                reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
-                reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
-                reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Verbose " ... ready!" -Verbose
-            Write-Verbose "Server needs to reboot after installation!" -Verbose
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Install WorkspaceApp LTSR
-    IF ($WorkspaceApp_LTSR_Release -eq 1) {
-        $Product = "WorkspaceApp LTSR"
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\Citrix\WorkspaceApp\Windows\LTSR\Version.txt"
-        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
-        IF ($WSA -ne $Version) {
-            # Citrix WSA Installation
-            $Options = @(
-                "/silent"
-                "/EnableCEIP=false"
-                "/FORCE_LAA=1"
-                "/AutoUpdateCheck=disabled"
-                "/EnableCEIP=false"
-                "/ALLOWADDSTORE=S"
-                "/ALLOWSAVEPWD=S"
-                "/includeSSON"
-                "/ENABLE_SSON=Yes"
-            )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\WorkspaceApp\Windows\LTSR\CitrixWorkspaceAppWeb.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                if($inst -ne $null) {
-                    Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                } 
-                reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
-                reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
-                reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Verbose " ... ready!" -Verbose
-            Write-Verbose "Server needs to reboot after installation!" -Verbose
             Write-Output ""
         }
         # Stop, if no new version is available
