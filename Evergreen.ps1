@@ -19,7 +19,8 @@ the script checks the version number and will update the package.
   2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
   2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
   2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
-<#
+  2021-02-14        Change Adobe Acrobat DC Downloader
+  <#
 
 
 .PARAMETER download
@@ -628,7 +629,7 @@ if ($install -eq $False) {
     if ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
         $PackageName = "Adobe_Pro_DC_Update"
-        $AdobeProD = Get-AdobeAcrobatProDC | Where-Object { $_.Type -eq "Updater" }
+        $AdobeProD = Get-AdobeAcrobat | Where-Object { $_.Type -eq "Updater" -and $_.Track -eq "DC" }
         $Version = $AdobeProD.Version
         $URL = $AdobeProD.uri
         $InstallerType = "msp"
