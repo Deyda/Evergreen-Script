@@ -20,6 +20,7 @@ the script checks the version number and will update the package.
   2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
   2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
   2021-02-14        Change Adobe Acrobat DC Downloader
+  2021-02-15        Change MS Teams Downloader / Correction GUI Select All
   <#
 
 
@@ -414,10 +415,15 @@ function gui_mode{
         $AdobeProDCBox.Checked = $SelectAllBox.Checked
         $AdobeReaderDCBox.Checked = $SelectAllBox.Checked
         $BISFBox.Checked = $SelectAllBox.Checked
+        $Citrix_HypervisorBox.Checked = $SelectAllBox.Checked
         $Citrix_WorkspaceApp_CRBox.Checked = $SelectAllBox.Checked
         $Citrix_WorkspaceApp_LTSRBox.Checked = $SelectAllBox.Checked
+        $FilezillaBox.Checked = $SelectAllBox.Checked
+        $FirefoxBox.Checked = $SelectAllBox.Checked
+        $Foxit_ReaderBox.Checked = $SelectAllBox.Checked
         $FSLogixBox.Checked = $SelectAllBox.Checked
         $GoogleChromeBox.Checked = $SelectAllBox.Checked
+        $GreenshotBox.Checked = $SelectAllBox.Checked
         $KeePassBox.Checked = $SelectAllBox.Checked
         $mRemoteNGBox.Checked = $SelectAllBox.Checked
         $MS365AppsBox.Checked = $SelectAllBox.Checked
@@ -1130,6 +1136,29 @@ if ($install -eq $False) {
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
+        if (!(Test-Path "$PSScriptRoot\$Product\remove.xml" -PathType leaf)) {
+            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+            $XML.appendChild($Root)
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Remove"))
+            $Node1.SetAttribute("All","True")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+            $Node1.SetAttribute("Level","None")
+            $Node1.SetAttribute("AcceptEULA","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+            $Node1.SetAttribute("Name","AUTOACTIVATE")
+            $Node1.SetAttribute("Value","0")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+            $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+            $Node1.SetAttribute("Value","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+            $Node1.SetAttribute("Name","SharedComputerLicensing")
+            $Node1.SetAttribute("Value","0")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+            $Node1.SetAttribute("Name","PinIconsToTaskbar")
+            $Node1.SetAttribute("Value","FALSE")
+            $XML.Save("$PSScriptRoot\$Product\remove.xml")
+        }
     if (!($CurrentVersion -eq $Version)) {
         Write-Verbose "Update available" -Verbose
         if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
