@@ -1252,7 +1252,7 @@ if ($install -eq $False) {
     if ($MSTeams -eq 1) {
         $Product = "MS Teams"
         $PackageName = "Teams_windows_x64"
-        $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" }
+        $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "General"}
         $Version = $TeamsD.Version
         $URL = $TeamsD.uri
         $InstallerType = "msi"
