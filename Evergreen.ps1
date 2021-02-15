@@ -2587,9 +2587,9 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\Teams_windows_x64.msi" | Install-MSIFile
                 Start-Sleep 5
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
-                Write-Verbose "Customize $Product Autorun" -Verbose
-                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
-                Write-Verbose "Customize $Product Autorun finished!" -Verbose
+                # Write-Verbose "Customize $Product Autorun" -Verbose
+                # Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                # Write-Verbose "Customize $Product Autorun finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
