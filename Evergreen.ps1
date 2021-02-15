@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          0.7
+  Version:          0.8
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   Purpose/Change:
@@ -20,7 +20,7 @@ the script checks the version number and will update the package.
   2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
   2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
   2021-02-14        Change Adobe Acrobat DC Downloader
-  2021-02-15        Change MS Teams Downloader / Correction GUI Select All
+  2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   <#
 
 
@@ -88,7 +88,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "0.7"
+$eVersion = "0.8"
 Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
@@ -297,7 +297,7 @@ function gui_mode{
 
     # MS365Apps Checkbox
     $MS365AppsBox = New-Object system.Windows.Forms.CheckBox
-    $MS365AppsBox.text = "Microsoft 365 Apps # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment"
+    $MS365AppsBox.text = "Microsoft 365 Apps (64Bit / Match OS Language / Semi Annual Channel)"
     $MS365AppsBox.width = 95
     $MS365AppsBox.height = 20
     $MS365AppsBox.autosize = $true
@@ -315,7 +315,7 @@ function gui_mode{
 
     # MSOffice2019 Checkbox
     $MSOffice2019Box = New-Object system.Windows.Forms.CheckBox
-    $MSOffice2019Box.text = "Microsoft Office 2019 # OfficeDeployment Toolkit for installing Office 2019 / Only Download @ the moment"
+    $MSOffice2019Box.text = "Microsoft Office 2019 (64Bit / Match OS Language)"
     $MSOffice2019Box.width = 95
     $MSOffice2019Box.height = 20
     $MSOffice2019Box.autosize = $true
@@ -551,7 +551,7 @@ if ($list -eq $True) {
     $AdobeReaderDC = 0
     $BISF = 0
     $Citrix_Hypervisor_Tools = 0
-    $Citrix_WorkspaceApp_CR = 1
+    $Citrix_WorkspaceApp_CR = 0
     $Citrix_WorkspaceApp_LTSR = 0
     $Filezilla = 0
     $Firefox = 0
@@ -561,9 +561,9 @@ if ($list -eq $True) {
     $Greenshot = 0
     $KeePass = 0
     $mRemoteNG = 0
-    $MS365Apps = 0 # Office Deployment Toolkit for installing Office 365 / Only Download @ the moment
+    $MS365Apps = 1 # 64Bit / Match OS Language / Semi Annual Channel
     $MSEdge = 0
-    $MSOffice2019 = 0 # Office Deployment Toolkit for installing Office 2019 / Only Download @ the moment
+    $MSOffice2019 = 0 # 64Bit / Match OS Language
     $MSOneDrive = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
@@ -1133,48 +1133,101 @@ if ($install -eq $False) {
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        Write-Verbose "Download $Product setup file" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
+        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
         if (!(Test-Path "$PSScriptRoot\$Product\remove.xml" -PathType leaf)) {
+            Write-Verbose "Create remove.xml" -Verbose
             [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
             [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
-            $XML.appendChild($Root)
+                $XML.appendChild($Root) | out-null
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Remove"))
-            $Node1.SetAttribute("All","True")
+                $Node1.SetAttribute("All","True")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
-            $Node1.SetAttribute("Level","None")
-            $Node1.SetAttribute("AcceptEULA","TRUE")
+                $Node1.SetAttribute("Level","None")
+                $Node1.SetAttribute("AcceptEULA","TRUE")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-            $Node1.SetAttribute("Name","AUTOACTIVATE")
-            $Node1.SetAttribute("Value","0")
+                $Node1.SetAttribute("Name","AUTOACTIVATE")
+                $Node1.SetAttribute("Value","0")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-            $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
-            $Node1.SetAttribute("Value","TRUE")
+                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                $Node1.SetAttribute("Value","TRUE")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-            $Node1.SetAttribute("Name","SharedComputerLicensing")
-            $Node1.SetAttribute("Value","0")
+                $Node1.SetAttribute("Name","SharedComputerLicensing")
+                $Node1.SetAttribute("Value","0")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-            $Node1.SetAttribute("Name","PinIconsToTaskbar")
-            $Node1.SetAttribute("Value","FALSE")
+                $Node1.SetAttribute("Name","PinIconsToTaskbar")
+                $Node1.SetAttribute("Value","FALSE")
             $XML.Save("$PSScriptRoot\$Product\remove.xml")
+            Write-Verbose "Create remove.xml finished!" -Verbose
         }
-    if (!($CurrentVersion -eq $Version)) {
-        Write-Verbose "Update available" -Verbose
-        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
-        $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-        Start-Transcript $LogPS
-        New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
-        Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-        Write-Verbose "Starting Download of $Product $Version" -Verbose
-        Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-        Write-Verbose "Stop logging" -Verbose
-        Stop-Transcript
-        Write-Output ""
+        if (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
+            Write-Verbose "Create install.xml" -Verbose
+            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                $XML.appendChild($Root) | out-null
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
+                $Node1.SetAttribute("OfficeClientEdition","64")
+                $Node1.SetAttribute("Channel","SemiAnnual")
+            [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                $Node2.SetAttribute("ID","O365ProPlusRetail")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                $Node3.SetAttribute("ID","MatchOS")
+                $Node3.SetAttribute("Fallback","en-us")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Teams")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Lync")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Groove")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","OneDrive")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                $Node1.SetAttribute("Level","None")
+                $Node1.SetAttribute("AcceptEULA","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                $Node1.SetAttribute("Level","Standard")
+                $Node1.SetAttribute("Path","%temp%")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","SharedComputerLicensing")
+                $Node1.SetAttribute("Value","1")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                $Node1.SetAttribute("Value","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                $Node1.SetAttribute("Enabled","FALSE")
+                $XML.Save("$PSScriptRoot\$Product\install.xml")
+            Write-Verbose "Create install.xml finished!" -Verbose
+        }
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
+            Start-Transcript $LogPS
+            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version setup file" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Output ""
         }
         else {
             Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+        # Download Apps 365 install files
+        if (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
+            Write-Verbose "Download $Product $Version install files" -Verbose
+            $DApps365 = @(
+                "/download install.xml"
+            )
+            cd $Product
+            Start-Process ".\setup.exe" -ArgumentList $DApps365 -wait -NoNewWindow
+            Stop-Process -Name Setup
+            cd ..
             Write-Output ""
         }
     }
@@ -1220,14 +1273,78 @@ if ($install -eq $False) {
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        Write-Verbose "Download $Product setup file" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
+        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+        if (!(Test-Path "$PSScriptRoot\$Product\remove.xml" -PathType leaf)) {
+            Write-Verbose "Create remove.xml" -Verbose
+            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                $XML.appendChild($Root) | out-null
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Remove"))
+                $Node1.SetAttribute("All","True")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                $Node1.SetAttribute("Level","None")
+                $Node1.SetAttribute("AcceptEULA","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","AUTOACTIVATE")
+                $Node1.SetAttribute("Value","0")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                $Node1.SetAttribute("Value","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","SharedComputerLicensing")
+                $Node1.SetAttribute("Value","0")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","PinIconsToTaskbar")
+                $Node1.SetAttribute("Value","FALSE")
+            $XML.Save("$PSScriptRoot\$Product\remove.xml")
+            Write-Verbose "Create remove.xml finished!" -Verbose
+        }
+        if (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
+            Write-Verbose "Create install.xml" -Verbose
+            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                $XML.appendChild($Root) | out-null
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
+                $Node1.SetAttribute("OfficeClientEdition","64")
+                $Node1.SetAttribute("Channel","PerpetualVL2019")
+            [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                $Node2.SetAttribute("ID","ProPlus2019Volume")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                $Node3.SetAttribute("ID","MatchOS")
+                $Node3.SetAttribute("Fallback","en-us")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Teams")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Lync")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","Groove")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                $Node3.SetAttribute("ID","OneDrive")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                $Node1.SetAttribute("Level","None")
+                $Node1.SetAttribute("AcceptEULA","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                $Node1.SetAttribute("Level","Standard")
+                $Node1.SetAttribute("Path","%temp%")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","SharedComputerLicensing")
+                $Node1.SetAttribute("Value","1")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                $Node1.SetAttribute("Value","TRUE")
+            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                $Node1.SetAttribute("Enabled","FALSE")
+                $XML.Save("$PSScriptRoot\$Product\install.xml")
+            Write-Verbose "Create install.xml finished!" -Verbose
+        }
         if (!($CurrentVersion -eq $Version)) {
             Write-Verbose "Update available" -Verbose
-            if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
             Start-Transcript $LogPS
             New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -1239,6 +1356,17 @@ if ($install -eq $False) {
         }
         else {
             Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+        # Download MS Office 2019 install files
+        if (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
+            Write-Verbose "Download $Product $Version install files" -Verbose
+            $DOffice2019 = @(
+                "/download install.xml"
+            )
+            cd $Product
+            Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
+            cd ..
             Write-Output ""
         }
     }
@@ -2422,6 +2550,54 @@ if ($download -eq $False) {
         }
     }
 
+    # Install MS Apps 365
+    IF ($MS365Apps -eq 1) {
+        $Product = "MS 365 Apps (Semi Annual Channel)"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+        IF ($MS365AppsV -ne $Version) {
+            # MS365Apps Uninstallation
+            $Options = @(
+                "/configure remove.xml"
+            )
+            Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
+            DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
+            try	{
+                cd $Product
+                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                cd ..
+                Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+            # MS365Apps Installation
+            $Options = @(
+                "/configure install.xml"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                cd $Product
+                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                cd ..
+                Write-Verbose "Installation $Product finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
     # Install MS Edge
     IF ($MSEdge -eq 1) {
         $Product = "MS Edge"
@@ -2502,6 +2678,54 @@ if ($download -eq $False) {
                     Write-Verbose "Disable Citrix API Hooks for $Product finished!" -Verbose
                 }
             ) | Out-Null
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    # Install MS Office 2019
+    IF ($MSOffice2019 -eq 1) {
+        $Product = "MS Office 2019"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office 2019*"}).DisplayVersion
+        IF ($MSOffice2019V -ne $Version) {
+            # MS Office 2019 Uninstallation
+            $Options = @(
+                "/configure remove.xml"
+            )
+            Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
+            DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
+            try	{
+                cd $Product
+                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                cd ..
+                Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+            # MS Office 2019 Installation
+            $Options = @(
+                "/configure install.xml"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                cd $Product
+                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                cd ..
+                Write-Verbose "Installation $Product finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
         }
         # Stop, if no new version is available
         Else {
