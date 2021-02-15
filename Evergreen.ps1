@@ -2692,7 +2692,7 @@ if ($download -eq $False) {
 
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office 2019*"}).DisplayVersion
+        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion
         IF ($MSOffice2019V -ne $Version) {
             # MS Office 2019 Uninstallation
             $Options = @(
