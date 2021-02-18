@@ -1224,10 +1224,10 @@ if ($install -eq $False) {
             $DApps365 = @(
                 "/download install.xml"
             )
-            Set-Location $Product
+            cd $Product
             Start-Process ".\setup.exe" -ArgumentList $DApps365 -wait -NoNewWindow
             Stop-Process -Name Setup
-            Set-Location ..
+            cd ..
             Write-Output ""
         }
     }
@@ -1364,9 +1364,9 @@ if ($install -eq $False) {
             $DOffice2019 = @(
                 "/download install.xml"
             )
-            Set-Location $Product
+            cd $Product
             Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
-            Set-Location ..
+            cd ..
             Write-Output ""
         }
     }
@@ -1775,7 +1775,7 @@ if ($download -eq $False) {
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
                 # Update Dienst und Task deaktivieren
-                Write-Verbose "Customize Service & Scheduled Task" -Verbose
+                Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
                 Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
@@ -1817,7 +1817,7 @@ if ($download -eq $False) {
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
                 # Update Dienst und Task deaktivieren
-                Write-Verbose "Customize Service & Scheduled Task" -Verbose
+                Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
                 Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
@@ -2393,7 +2393,7 @@ if ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\googlechromestandaloneenterprise64.msi" | Install-MSIFile
                 # Update Dienst und Task deaktivieren
-                Write-Verbose "Customize Service & Scheduled Task" -Verbose
+                Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service gupdate
                 Set-Service gupdate -StartupType Disabled
                 Stop-Service gupdatem
@@ -2565,9 +2565,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                Set-Location $Product
+                cd $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                Set-Location ..
+                cd ..
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2581,9 +2581,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Set-Location $Product
+                cd $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                Set-Location ..
+                cd ..
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2701,9 +2701,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                Set-Location $Product
+                cd $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                Set-Location ..
+                cd ..
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2717,9 +2717,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Set-Location $Product
+                cd $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                Set-Location ..
+                cd ..
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
