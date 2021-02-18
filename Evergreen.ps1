@@ -1224,10 +1224,10 @@ if ($install -eq $False) {
             $DApps365 = @(
                 "/download install.xml"
             )
-            cd $Product
+            Set-Location $Product
             Start-Process ".\setup.exe" -ArgumentList $DApps365 -wait -NoNewWindow
             Stop-Process -Name Setup
-            cd ..
+            Set-Location ..
             Write-Output ""
         }
     }
@@ -1364,9 +1364,9 @@ if ($install -eq $False) {
             $DOffice2019 = @(
                 "/download install.xml"
             )
-            cd $Product
+            Set-Location $Product
             Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
-            cd ..
+            Set-Location ..
             Write-Output ""
         }
     }
@@ -2002,7 +2002,7 @@ if ($download -eq $False) {
                 DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
-            Write-Verbose "Uninstalling & Cleanup Citrix Workspace App / Receiver finished!" -Verbose
+            Write-Verbose "Uninstalling and Cleanup Citrix Workspace App / Receiver finished!" -Verbose
 
             # Citrix WSA Installation
             $Options = @(
@@ -2062,7 +2062,7 @@ if ($download -eq $False) {
                 DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
-            Write-Verbose "Uninstalling & Cleanup Citrix Workspace App / Receiver finished!" -Verbose
+            Write-Verbose "Uninstalling and Cleanup Citrix Workspace App / Receiver finished!" -Verbose
 
             # Citrix WSA Installation
             $Options = @(
@@ -2565,9 +2565,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                cd $Product
+                Set-Location $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                Set-Location ..
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2581,9 +2581,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                cd $Product
+                Set-Location $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                Set-Location ..
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2701,9 +2701,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                cd $Product
+                Set-Location $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                Set-Location ..
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2717,9 +2717,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                cd $Product
+                Set-Location $Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                Set-Location ..
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
