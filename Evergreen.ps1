@@ -616,7 +616,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -650,7 +650,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
@@ -684,7 +684,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
@@ -717,7 +717,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Exclude *.ps1, *.lnk -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -869,7 +869,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -903,7 +903,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -937,7 +937,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1010,7 +1010,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1040,7 +1040,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $ChromeURL -OutFile ("$PSScriptRoot\$Product\" + ($ChromeURL | Split-Path -Leaf))
@@ -1074,7 +1074,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1108,7 +1108,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1206,7 +1206,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version setup file" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1224,10 +1224,9 @@ if ($install -eq $False) {
             $DApps365 = @(
                 "/download install.xml"
             )
-            cd $Product
+            set-location $PSScriptRoot\$Product
             Start-Process ".\setup.exe" -ArgumentList $DApps365 -wait -NoNewWindow
-            Stop-Process -Name Setup
-            cd ..
+            set-location $PSScriptRoot
             Write-Output ""
         }
     }
@@ -1248,7 +1247,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $EdgeURL.Uri -OutFile ("$PSScriptRoot\$Product\" + ($EdgeURL.URI | Split-Path -Leaf))
@@ -1346,7 +1345,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1364,9 +1363,9 @@ if ($install -eq $False) {
             $DOffice2019 = @(
                 "/download install.xml"
             )
-            cd $Product
+            set-location $PSScriptRoot\$Product
             Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
-            cd ..
+            set-location $PSScriptRoot
             Write-Output ""
         }
     }
@@ -1390,7 +1389,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1424,7 +1423,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1458,7 +1457,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1492,7 +1491,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1526,7 +1525,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1560,7 +1559,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1594,7 +1593,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1628,7 +1627,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -1662,7 +1661,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
+            #New-Item -Path "$PSScriptRoot\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product.txt" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
@@ -2565,9 +2564,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                cd $Product
+                set-location $PSScriptRoot\$Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                set-location $PSScriptRoot
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2581,9 +2580,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                cd $Product
+                set-location $PSScriptRoot\$Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                set-location $PSScriptRoot
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2701,9 +2700,9 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                cd $Product
+                set-location $PSScriptRoot\$Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                set-location $PSScriptRoot
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error uninstalling Office 2019 or Microsoft 365 Apps (error: $($Error[0]))" $LogFile
@@ -2717,9 +2716,9 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                cd $Product
+                set-location $PSScriptRoot\$Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                cd ..
+                set-location $PSScriptRoot
                 Write-Verbose "Installation $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
