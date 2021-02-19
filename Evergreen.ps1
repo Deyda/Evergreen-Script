@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          0.8
+  Version:          0.9
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   Purpose/Change:
@@ -22,8 +22,7 @@ the script checks the version number and will update the package.
   2021-02-14        Change Adobe Acrobat DC Downloader
   2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
-  <#
-
+  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC
 
 .PARAMETER download
 
@@ -89,7 +88,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "0.8"
+$eVersion = "0.9"
 Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
@@ -106,433 +105,294 @@ else {
 
 # FUNCTION GUI
 # ========================================================================================================================================
+
 function gui_mode{
-    Add-Type -AssemblyName System.Windows.Forms
-    [System.Windows.Forms.Application]::EnableVisualStyles()
+
+#XAML Code
+$inputXML = @"
+<Window x:Class="GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GUI"
+        mc:Ignorable="d"
+        Title="Evergreen - Update your Software, the lazy way" Height="470" Width="840">
+    <Grid x:Name="Evergreen_GUI">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="13*"/>
+            <ColumnDefinition Width="234*"/>
+            <ColumnDefinition Width="586*"/>
+        </Grid.ColumnDefinitions>
+        <Image x:Name="Image_Logo" Height="100" Margin="467,0,19,0" VerticalAlignment="Top" Width="100" Source="https://www.deyda.net/wp-content/uploads/2020/03/Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15.5,10,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15.5,41,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="102.5,41,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="86,37,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+            <ListBoxItem Content="Danish"/>
+            <ListBoxItem Content="Dutch"/>
+            <ListBoxItem Content="English"/>
+            <ListBoxItem Content="Finnish"/>
+            <ListBoxItem Content="French"/>
+            <ListBoxItem Content="German"/>
+            <ListBoxItem Content="Italian"/>
+            <ListBoxItem Content="Japanese"/>
+            <ListBoxItem Content="Korean"/>
+            <ListBoxItem Content="Norwegian"/>
+            <ListBoxItem Content="Polish"/>
+            <ListBoxItem Content="Portuguese"/>
+            <ListBoxItem Content="Russian"/>
+            <ListBoxItem Content="Spanish"/>
+            <ListBoxItem Content="Swedish"/>
+        </ComboBox>
+        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="241,10,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="275,37,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
+            <ListBoxItem Content="x64"/>
+            <ListBoxItem Content="x86"/>
+        </ComboBox>
+        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="58,59,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15.5,70,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15.5,101,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15.5,121,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
+        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15.5,141,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15.5,161,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15.5,181,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15.5,201,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_CitrixWorksapceApp" HorizontalAlignment="Left" Margin="173,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+            <ListBoxItem Content="Current Release"/>
+            <ListBoxItem Content="Long Term Service Release"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15.5,221,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15.5,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1" ToolTip="No sileent installation"/>
+        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15.5,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15.5,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="16.5,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="16.5,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="243,101,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="243,121,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="243,141,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="243,161,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="407,154,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+            <ListBoxItem Content="Insider Ring"/>
+            <ListBoxItem Content="Production Ring"/>
+            <ListBoxItem Content="Enterprise Ring"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="243,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="407,176,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2" ToolTip="Machine Based Install">
+            <ListBoxItem Content="Preview Ring"/>
+            <ListBoxItem Content="General Ring"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="243,201,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="407,198,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="ESR"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="243,221,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="243,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="243,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="243,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="407,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Free"/>
+            <ListBoxItem Content="Professional"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="243,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="243,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="243,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="9,386,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021" HorizontalAlignment="Left" Margin="309,404,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="17,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="173,337,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Current (Preview)"/>
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="Monthly Enterprise"/>
+            <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
+            <ListBoxItem Content="Semi-Annual Enterprise"/>
+        </ComboBox>
+    </Grid>
+</Window>
+"@
+
+    #Correction XAML
+    $inputXML = $inputXML -replace 'mc:Ignorable="d"','' -replace "x:N",'N' -replace 'x:Class=".*?"','' -replace 'd:DesignHeight="\d*?"','' -replace 'd:DesignWidth="\d*?"',''
+    [void][System.Reflection.Assembly]::LoadWithPartialName('presentationframework')
+    [xml]$XAML = $inputXML
+
+    #Read XAML
+    $reader=(New-Object System.Xml.XmlNodeReader $xaml)
+    try{
+        $Form=[Windows.Markup.XamlReader]::Load( $reader )
+    }
+    catch{
+        Write-Warning "Unable to parse XML, with error: $($Error[0])`n Ensure that there are NO SelectionChanged or TextChanged properties in your textboxes (PowerShell cannot process them)"
+        throw
+    }
+
+    # Load XAML Objects In PowerShell  
+    $xaml.SelectNodes("//*[@Name]") | %{"trying item $($_.Name)";
+        try {Set-Variable –Name "WPF$($_.Name)" –Value $Form.FindName($_.Name) –ErrorAction Stop}
+        catch{throw}
+    } | out-null
+ 
+    Function Get-FormVariables{
+    if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" –ForegroundColor Yellow;$global:ReadmeDisplay=$true}
+        write-host "Found the following interactable elements from our form" –ForegroundColor Cyan
+        get-variable WPF*
+    }
+
+    Get-FormVariables | out-null
 
     # Set Variable
     $Script:install = $true
     $Script:download = $true
 
-    # Set the size of your form
-    $Form = New-Object system.Windows.Forms.Form
-    $Form.ClientSize = New-Object System.Drawing.Point(300,900)
-    $Form.text = "Evergreen - Update your Software - Version $eVersion"
-    $Form.TopMost = $false
-    $Form.AutoSize = $true
-
-    # Set the font of the text to be used within the form
-    $Font = New-Object System.Drawing.Font("Times New Roman",12)
-    $Form.Font = $Font
-
-    # Download / Install Headline
-    $Headline1 = New-Object system.Windows.Forms.Label
-    $Headline1.text = "Select Mode"
-    $Headline1.AutoSize = $true
-    $Headline1.width = 25
-    $Headline1.height = 10
-    $Headline1.location = New-Object System.Drawing.Point(11,4)
-    $form.Controls.Add($Headline1)
-
-    # Download Checkbox
-    $DownloadBox = New-Object system.Windows.Forms.CheckBox
-    $DownloadBox.text = "Download"
-    $DownloadBox.AutoSize = $false
-    $DownloadBox.width = 95
-    $DownloadBox.height = 20
-    $DownloadBox.location = New-Object System.Drawing.Point(11,35)
-    $form.Controls.Add($DownloadBox)
-
-    # Install Checkbox
-    $InstallBox = New-Object system.Windows.Forms.CheckBox
-    $InstallBox.text = "Install"
-    $InstallBox.AutoSize = $false
-    $InstallBox.width = 95
-    $InstallBox.height = 20
-    $InstallBox.location = New-Object System.Drawing.Point(108,35)
-    $form.Controls.Add($InstallBox)
-
-    # Software Headline
-    $Headline2 = New-Object system.Windows.Forms.Label
-    $Headline2.text = "Select Software"
-    $Headline2.AutoSize = $true
-    $Headline2.width = 25
-    $Headline2.height = 10
-    $Headline2.location = New-Object System.Drawing.Point(11,70)
-    $form.Controls.Add($Headline2)
-
-    # 7Zip Checkbox
-    $7ZipBox = New-Object system.Windows.Forms.CheckBox
-    $7ZipBox.text = "7 Zip"
-    $7ZipBox.width = 95
-    $7ZipBox.height = 20
-    $7ZipBox.autosize = $true
-    $7ZipBox.location = New-Object System.Drawing.Point(11,95)
-    $form.Controls.Add($7ZipBox)
-
-    # AdobeProDC Checkbox
-    $AdobeProDCBox = New-Object system.Windows.Forms.CheckBox
-    $AdobeProDCBox.text = "Adobe Pro DC #Only Update @ the moment"
-    $AdobeProDCBox.width = 95
-    $AdobeProDCBox.height = 20
-    $AdobeProDCBox.autosize = $true
-    $AdobeProDCBox.location = New-Object System.Drawing.Point(11,120)
-    $form.Controls.Add($AdobeProDCBox)
-
-    # AdobeReaderDC Checkbox
-    $AdobeReaderDCBox = New-Object system.Windows.Forms.CheckBox
-    $AdobeReaderDCBox.text = "Adobe Reader DC"
-    $AdobeReaderDCBox.width = 95
-    $AdobeReaderDCBox.height = 20
-    $AdobeReaderDCBox.autosize = $true
-    $AdobeReaderDCBox.location = New-Object System.Drawing.Point(11,145)
-    $form.Controls.Add($AdobeReaderDCBox)
-
-    # BISF Checkbox
-    $BISFBox = New-Object system.Windows.Forms.CheckBox
-    $BISFBox.text = "BIS-F"
-    $BISFBox.width = 95
-    $BISFBox.height = 20
-    $BISFBox.autosize = $true
-    $BISFBox.location = New-Object System.Drawing.Point(11,170)
-    $form.Controls.Add($BISFBox)
-
-    # Citrix Hypervisor Tools Checkbox
-    $Citrix_HypervisorBox = New-Object system.Windows.Forms.CheckBox
-    $Citrix_HypervisorBox.text = "Citrix Hypervisor Tools"
-    $Citrix_HypervisorBox.width = 95
-    $Citrix_HypervisorBox.height = 20
-    $Citrix_HypervisorBox.autosize = $true
-    $Citrix_HypervisorBox.location = New-Object System.Drawing.Point(11,195)
-    $form.Controls.Add($Citrix_HypervisorBox)
-
-    # Citrix WorkspaceApp_Current_Release Checkbox
-    $Citrix_WorkspaceApp_CRBox = New-Object system.Windows.Forms.CheckBox
-    $Citrix_WorkspaceApp_CRBox.text = "Citrix WorkspaceApp CR"
-    $Citrix_WorkspaceApp_CRBox.width = 95
-    $Citrix_WorkspaceApp_CRBox.height = 20
-    $Citrix_WorkspaceApp_CRBox.autosize = $true
-    $Citrix_WorkspaceApp_CRBox.location = New-Object System.Drawing.Point(11,220)
-    $form.Controls.Add($Citrix_WorkspaceApp_CRBox)
-
-    # Citrix WorkspaceApp_LTSR_Release Checkbox
-    $Citrix_WorkspaceApp_LTSRBox = New-Object system.Windows.Forms.CheckBox
-    $Citrix_WorkspaceApp_LTSRBox.text = "Citrix WorkspaceApp LTSR"
-    $Citrix_WorkspaceApp_LTSRBox.width = 95
-    $Citrix_WorkspaceApp_LTSRBox.height = 20
-    $Citrix_WorkspaceApp_LTSRBox.autosize = $true
-    $Citrix_WorkspaceApp_LTSRBox.location = New-Object System.Drawing.Point(11,245)
-    $form.Controls.Add($Citrix_WorkspaceApp_LTSRBox)
-
-    # Filezilla Checkbox
-    $FilezillaBox = New-Object system.Windows.Forms.CheckBox
-    $FilezillaBox.text = "Filezilla"
-    $FilezillaBox.width = 95
-    $FilezillaBox.height = 20
-    $FilezillaBox.autosize = $true
-    $FilezillaBox.location = New-Object System.Drawing.Point(11,270)
-    $form.Controls.Add($FilezillaBox)
-
-    # Firefox Checkbox
-    $FirefoxBox = New-Object system.Windows.Forms.CheckBox
-    $FirefoxBox.text = "Firefox"
-    $FirefoxBox.width = 95
-    $FirefoxBox.height = 20
-    $FirefoxBox.autosize = $true
-    $FirefoxBox.location = New-Object System.Drawing.Point(11,295)
-    $form.Controls.Add($FirefoxBox)
-
-    # Foxit Reader Checkbox
-    $Foxit_ReaderBox = New-Object system.Windows.Forms.CheckBox
-    $Foxit_ReaderBox.text = "Foxit Reader # No Silent Install"
-    $Foxit_ReaderBox.width = 95
-    $Foxit_ReaderBox.height = 20
-    $Foxit_ReaderBox.autosize = $true
-    $Foxit_ReaderBox.location = New-Object System.Drawing.Point(11,320)
-    $form.Controls.Add($Foxit_ReaderBox)
-
-    # FSLogix Checkbox
-    $FSLogixBox = New-Object system.Windows.Forms.CheckBox
-    $FSLogixBox.text = "FSLogix"
-    $FSLogixBox.width = 95
-    $FSLogixBox.height = 20
-    $FSLogixBox.autosize = $true
-    $FSLogixBox.location = New-Object System.Drawing.Point(11,345)
-    $form.Controls.Add($FSLogixBox)
-
-    # GoogleChrome Checkbox
-    $GoogleChromeBox = New-Object system.Windows.Forms.CheckBox
-    $GoogleChromeBox.text = "Google Chrome"
-    $GoogleChromeBox.width = 95
-    $GoogleChromeBox.height = 20
-    $GoogleChromeBox.autosize = $true
-    $GoogleChromeBox.location = New-Object System.Drawing.Point(11,370)
-    $form.Controls.Add($GoogleChromeBox)
-
-    # Greenshot Checkbox
-    $GreenshotBox = New-Object system.Windows.Forms.CheckBox
-    $GreenshotBox.text = "Greenshot"
-    $GreenshotBox.width = 95
-    $GreenshotBox.height = 20
-    $GreenshotBox.autosize = $true
-    $GreenshotBox.location = New-Object System.Drawing.Point(11,395)
-    $form.Controls.Add($GreenshotBox)
-
-    # KeePass Checkbox
-    $KeePassBox = New-Object system.Windows.Forms.CheckBox
-    $KeePassBox.text = "KeePass"
-    $KeePassBox.width = 95
-    $KeePassBox.height = 20
-    $KeePassBox.autosize = $true
-    $KeePassBox.location = New-Object System.Drawing.Point(11,420)
-    $form.Controls.Add($KeePassBox)
-
-    # mRemoteNG Checkbox
-    $mRemoteNGBox = New-Object system.Windows.Forms.CheckBox
-    $mRemoteNGBox.text = "mRemoteNG"
-    $mRemoteNGBox.width = 95
-    $mRemoteNGBox.height = 20
-    $mRemoteNGBox.autosize = $true
-    $mRemoteNGBox.location = New-Object System.Drawing.Point(11,445)
-    $form.Controls.Add($mRemoteNGBox)
-
-    # MS365Apps Checkbox
-    $MS365AppsBox = New-Object system.Windows.Forms.CheckBox
-    $MS365AppsBox.text = "Microsoft 365 Apps (64Bit / Match OS Language / Semi Annual Channel)"
-    $MS365AppsBox.width = 95
-    $MS365AppsBox.height = 20
-    $MS365AppsBox.autosize = $true
-    $MS365AppsBox.location = New-Object System.Drawing.Point(11,470)
-    $form.Controls.Add($MS365AppsBox)
-
-    # MSEdge Checkbox
-    $MSEdgeBox = New-Object system.Windows.Forms.CheckBox
-    $MSEdgeBox.text = "Microsoft Edge"
-    $MSEdgeBox.width = 95
-    $MSEdgeBox.height = 20
-    $MSEdgeBox.autosize = $true
-    $MSEdgeBox.location = New-Object System.Drawing.Point(11,495)
-    $form.Controls.Add($MSEdgeBox)
-
-    # MSOffice2019 Checkbox
-    $MSOffice2019Box = New-Object system.Windows.Forms.CheckBox
-    $MSOffice2019Box.text = "Microsoft Office 2019 (64Bit / Match OS Language)"
-    $MSOffice2019Box.width = 95
-    $MSOffice2019Box.height = 20
-    $MSOffice2019Box.autosize = $true
-    $MSOffice2019Box.location = New-Object System.Drawing.Point(11,520)
-    $form.Controls.Add($MSOffice2019Box)
-
-    # MSOneDrive Checkbox
-    $MSOneDriveBox = New-Object system.Windows.Forms.CheckBox
-    $MSOneDriveBox.text = "Microsoft OneDrive (Machine-Based Install)"
-    $MSOneDriveBox.width = 95
-    $MSOneDriveBox.height = 20
-    $MSOneDriveBox.autosize = $true
-    $MSOneDriveBox.location = New-Object System.Drawing.Point(11,545)
-    $form.Controls.Add($MSOneDriveBox)
-
-    # MSTeams Checkbox
-    $MSTeamsBox = New-Object system.Windows.Forms.CheckBox
-    $MSTeamsBox.text = "Microsoft Teams (Machine-Based Install)"
-    $MSTeamsBox.width = 95
-    $MSTeamsBox.height = 20
-    $MSTeamsBox.autosize = $true
-    $MSTeamsBox.location = New-Object System.Drawing.Point(11,570)
-    $form.Controls.Add($MSTeamsBox)
-
-    # NotePadPlusPlus Checkbox
-    $NotePadPlusPlusBox = New-Object system.Windows.Forms.CheckBox
-    $NotePadPlusPlusBox.text = "NotePad++"
-    $NotePadPlusPlusBox.width = 95
-    $NotePadPlusPlusBox.height = 20
-    $NotePadPlusPlusBox.autosize = $true
-    $NotePadPlusPlusBox.location = New-Object System.Drawing.Point(11,595)
-    $form.Controls.Add($NotePadPlusPlusBox)
-
-    # OpenJDK Checkbox
-    $OpenJDKBox = New-Object system.Windows.Forms.CheckBox
-    $OpenJDKBox.text = "Open JDK"
-    $OpenJDKBox.width = 95
-    $OpenJDKBox.height = 20
-    $OpenJDKBox.autosize = $true
-    $OpenJDKBox.location = New-Object System.Drawing.Point(11,620)
-    $form.Controls.Add($OpenJDKBox)
-
-    # OracleJava8 Checkbox
-    $OracleJava8Box = New-Object system.Windows.Forms.CheckBox
-    $OracleJava8Box.text = "Oracle Java 8"
-    $OracleJava8Box.width = 95
-    $OracleJava8Box.height = 20
-    $OracleJava8Box.autosize = $true
-    $OracleJava8Box.location = New-Object System.Drawing.Point(11,645)
-    $form.Controls.Add($OracleJava8Box)
-
-    # TreeSizeFree Checkbox
-    $TreeSizeFreeBox = New-Object system.Windows.Forms.CheckBox
-    $TreeSizeFreeBox.text = "TreeSize Free"
-    $TreeSizeFreeBox.width = 95
-    $TreeSizeFreeBox.height = 20
-    $TreeSizeFreeBox.autosize = $true
-    $TreeSizeFreeBox.location = New-Object System.Drawing.Point(11,670)
-    $form.Controls.Add($TreeSizeFreeBox)
-
-    # VLCPlayer Checkbox
-    $VLCPlayerBox = New-Object system.Windows.Forms.CheckBox
-    $VLCPlayerBox.text = "VLC Player"
-    $VLCPlayerBox.width = 95
-    $VLCPlayerBox.height = 20
-    $VLCPlayerBox.autosize = $true
-    $VLCPlayerBox.location = New-Object System.Drawing.Point(11,695)
-    $form.Controls.Add($VLCPlayerBox)
-
-    # VMWareTools Checkbox
-    $VMWareToolsBox = New-Object system.Windows.Forms.CheckBox
-    $VMWareToolsBox.text = "VMWare Tools"
-    $VMWareToolsBox.width = 95
-    $VMWareToolsBox.height = 20
-    $VMWareToolsBox.autosize = $true
-    $VMWareToolsBox.location = New-Object System.Drawing.Point(11,720)
-    $form.Controls.Add($VMWareToolsBox)
-
-    # WinSCP Checkbox
-    $WinSCPBox = New-Object system.Windows.Forms.CheckBox
-    $WinSCPBox.text = "WinSCP"
-    $WinSCPBox.width = 95
-    $WinSCPBox.height = 20
-    $WinSCPBox.autosize = $true
-    $WinSCPBox.location = New-Object System.Drawing.Point(11,745)
-    $form.Controls.Add($WinSCPBox)
-
-    # SelectAll Checkbox
-    $SelectAllBox = New-Object system.Windows.Forms.CheckBox
-    $SelectAllBox.text = "Select All"
-    $SelectAllBox.width = 95
-    $SelectAllBox.height = 20
-    $SelectAllBox.autosize = $true
-    $SelectAllBox.location = New-Object System.Drawing.Point(11,780)
-    $SelectAllBox.Add_CheckStateChanged({
-        $7ZipBox.Checked = $SelectAllBox.Checked
-        $AdobeProDCBox.Checked = $SelectAllBox.Checked
-        $AdobeReaderDCBox.Checked = $SelectAllBox.Checked
-        $BISFBox.Checked = $SelectAllBox.Checked
-        $Citrix_HypervisorBox.Checked = $SelectAllBox.Checked
-        $Citrix_WorkspaceApp_CRBox.Checked = $SelectAllBox.Checked
-        $Citrix_WorkspaceApp_LTSRBox.Checked = $SelectAllBox.Checked
-        $FilezillaBox.Checked = $SelectAllBox.Checked
-        $FirefoxBox.Checked = $SelectAllBox.Checked
-        $Foxit_ReaderBox.Checked = $SelectAllBox.Checked
-        $FSLogixBox.Checked = $SelectAllBox.Checked
-        $GoogleChromeBox.Checked = $SelectAllBox.Checked
-        $GreenshotBox.Checked = $SelectAllBox.Checked
-        $KeePassBox.Checked = $SelectAllBox.Checked
-        $mRemoteNGBox.Checked = $SelectAllBox.Checked
-        $MS365AppsBox.Checked = $SelectAllBox.Checked
-        $MSEdgeBox.Checked = $SelectAllBox.Checked
-        $MSOffice2019Box.Checked = $SelectAllBox.Checked
-        $MSOneDriveBox.Checked = $SelectAllBox.Checked
-        $MSTeamsBox.Checked = $SelectAllBox.Checked
-        $NotePadPlusPlusBox.Checked = $SelectAllBox.Checked
-        $OpenJDKBox.Checked = $SelectAllBox.Checked
-        $OracleJava8Box.Checked = $SelectAllBox.Checked
-        $TreeSizeFreeBox.Checked = $SelectAllBox.Checked
-        $VLCPlayerBox.Checked = $SelectAllBox.Checked
-        $VMWareToolsBox.Checked = $SelectAllBox.Checked
-        $WinSCPBox.Checked = $SelectAllBox.Checked
+    # Event Handler
+    # Checkbox SelectAll
+    $WPFCheckbox_SelectAll.Add_Checked({
+        $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AdobeProDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AdobeReaderDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_BISF.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_CitrixHypervisorTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_CitrixWorkspaceApp.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Filezilla.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Greenshot.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_mRemoteNG.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_NotePadPlusPlus.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OracleJava8.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TreeSize.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         
     })
-    $form.Controls.Add($SelectAllBox)
-
-    # OK Button
-    $OKButton = New-Object system.Windows.Forms.Button
-    $OKButton.text = "OK"
-    $OKButton.width = 60
-    $OKButton.height = 30
-    $OKButton.location = New-Object System.Drawing.Point(70,815)
-    $OKButton.Add_Click({
-        if ($DownloadBox.checked -eq $true) {$Script:install = $false}
+    $WPFCheckbox_SelectAll.Add_Unchecked({
+        $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AdobeProDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AdobeReaderDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_BISF.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_CitrixHypervisorTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_CitrixWorkspaceApp.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Filezilla.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Greenshot.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_mRemoteNG.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_NotePadPlusPlus.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OracleJava8.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TreeSize.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        
+    })
+    # Button Start                                                                    
+    $WPFButton_Start.Add_Click({
+        if ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
         else {$Script:install = $true}
-        if ($InstallBox.checked -eq $true) {$Script:download = $false}
+        if ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
         else {$Script:download = $true}
-        if ($7ZipBox.checked -eq $true) {$Script:7ZIP = 1}
+        if ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
         else {$Script:7ZIP = 0}
-        if ($AdobeProDCBox.checked -eq $true) {$Script:AdobeProDC = 1}
+        if ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
         else {$Script:AdobeProDC = 0}
-        if ($AdobeReaderDCBox.checked -eq $true) {$Script:AdobeReaderDC = 1}
+        if ($WPFCheckbox_AdobeReaderDC.IsChecked -eq $true) {$Script:AdobeReaderDC = 1}
         else {$Script:AdobeReaderDC = 0}
-        if ($BISFBox.checked -eq $true) {$Script:BISF = 1}
+        if ($WPFCheckbox_BISF.IsChecked -eq $true) {$Script:BISF = 1}
         else {$Script:BISF = 0}
-        if ($Citrix_HypervisorBox.checked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
+        if ($WPFCheckbox_CitrixHypervisorTools.IsChecked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
         else {$Script:Citrix_Hypervisor_Tools = 0}
-        if ($Citrix_WorkspaceApp_CRBox.checked -eq $true) {$Script:Citrix_WorkspaceApp_CR = 1}
-        else {$Script:Citrix_WorkspaceApp_CR = 0}
+        if ($WPFCheckbox_CitrixWorkspaceApp.IsChecked -eq $true) {$Script:Citrix_WorkspaceApp = 1}
+        else {$Script:Citrix_WorkspaceApp = 0}
         if ($Citrix_WorkspaceApp_LTSRBox.checked -eq $true) {$Script:Citrix_WorkspaceApp_LTSR = 1}
         else {$Script:Citrix_WorkspaceApp_LTSR = 0}
-        if ($FilezillaBox.checked -eq $true) {$Script:Filezilla = 1}
+        if ($WPFCheckbox_Filezilla.IsChecked -eq $true) {$Script:Filezilla = 1}
         else {$Script:Filezilla = 0}
-        if ($FirefoxBox.checked -eq $true) {$Script:Firefox = 1}
+        if ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
         else {$Script:Firefox = 0}
-        if ($FSLogixBox.checked -eq $true) {$Script:FSLogix = 1}
+        if ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:FSLogix = 1}
         else {$Script:FSLogix = 0}
-        if ($Foxit_ReaderBox.checked -eq $true) {$Script:Foxit_Reader = 1}
+        if ($WPFCheckbox_Foxit_Reader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
         else {$Script:Foxit_Reader = 0}
-        if ($GoogleChromeBox.checked -eq $true) {$Script:GoogleChrome = 1}
+        if ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
         else {$Script:GoogleChrome = 0}
-        if ($GreenshotBox.checked -eq $true) {$Script:Greenshot = 1}
+        if ($WPFCheckbox_Greenshot.ischecked -eq $true) {$Script:Greenshot = 1}
         else {$Script:Greenshot = 0}
-        if ($KeePassBox.checked -eq $true) {$Script:KeePass = 1}
+        if ($WPFCheckbox_KeePass.ischecked -eq $true) {$Script:KeePass = 1}
         else {$Script:KeePass = 0}
-        if ($mRemoteNGBox.checked -eq $true) {$Script:mRemoteNG = 1}
+        if ($WPFCheckbox_mRemoteNG.ischecked -eq $true) {$Script:mRemoteNG = 1}
         else {$Script:mRemoteNG = 0}
-        if ($MS365AppsBox.checked -eq $true) {$Script:MS365Apps = 1}
+        if ($WPFCheckbox_MS365Apps.ischecked -eq $true) {$Script:MS365Apps = 1}
         else {$Script:MS365Apps = 0}
-        if ($MSEdgeBox.checked -eq $true) {$Script:MSEdge = 1}
+        if ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         else {$Script:MSEdge = 0}
-        if ($MSOffice2019Box.checked -eq $true) {$Script:MSOffice2019 = 1}
+        if ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
         else {$Script:MSOffice2019 = 0}
-        if ($MSOneDriveBox.checked -eq $true) {$Script:MSOneDrive = 1}
+        if ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
         else {$Script:MSOneDrive = 0}
-        if ($MSTeamsBox.checked -eq $true) {$Script:MSTeams = 1}
+        if ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
         else {$Script:MSTeams = 0}
-        if ($NotePadPlusPlusBox.checked -eq $true) {$Script:NotePadPlusPlus = 1}
+        if ($WPFCheckbox_NotePadPlusPlus.ischecked -eq $true) {$Script:NotePadPlusPlus = 1}
         else {$Script:NotePadPlusPlus = 0}
-        if ($OpenJDKBox.checked -eq $true) {$Script:OpenJDK = 1}
+        if ($WPFCheckbox_OpenJDK.ischecked -eq $true) {$Script:OpenJDK = 1}
         else {$Script:OpenJDK = 0}
-        if ($OracleJava8Box.checked -eq $true) {$Script:OracleJava8 = 1}
+        if ($WPFCheckbox_OracleJava8.ischecked -eq $true) {$Script:OracleJava8 = 1}
         else {$Script:OracleJava8 = 0}
-        if ($TreeSizeFreeBox.checked -eq $true) {$Script:TreeSizeFree = 1}
+        if ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSizeFree = 1}
         else {$Script:TreeSizeFree = 0}
-        if ($VLCPlayerBox.checked -eq $true) {$Script:VLCPlayer = 1}
+        if ($WPFCheckbox_VLCPlayer.ischecked -eq $true) {$Script:VLCPlayer = 1}
         else {$Script:VLCPlayer = 0}
-        if ($VMWareToolsBox.checked -eq $true) {$Script:VMWareTools = 1}
+        if ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
         else {$Script:VMWareTools = 0}
-        if ($WinSCPBox.checked -eq $true) {$Script:WinSCP = 1}
+        if ($WPFCheckbox_WinSCP.ischecked -eq $true) {$Script:WinSCP = 1}
         else {$Script:WinSCP = 0}
-        
+        $Script:Language = $WPFBox_Language.SelectedIndex
+        $Script:Architecture = $WPFBox_Architecture.SelectedIndex
+        $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
+        $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
+        $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
+        $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
+        $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
+        $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
     })
-    $form.Controls.Add($OKButton)
 
-    # Cancel Button
-    $CancelButton = New-Object system.Windows.Forms.Button
-    $CancelButton.text = "Cancel"
-    $CancelButton.width = 60
-    $CancelButton.height = 30
-    $CancelButton.location = New-Object System.Drawing.Point(170,815)
-    $CancelButton.Add_Click({
+    # Button Cancel                                                                    
+    $WPFButton_Cancel.Add_Click({
         $Script:install = $true
         $Script:download = $true
         Write-Verbose "GUI MODE Canceled - Nothing happens" -Verbose
         $Form.Close()
     })
-    $form.Controls.Add($CancelButton)
 
-    # Activate the form
-    $Form.Add_Shown({$Form.Activate()})
-    [void] $Form.ShowDialog()
+    # Shows the form
+    $Form.ShowDialog() | out-null
 }
-# ========================================================================================================================================
+
+#===========================================================================
 
 Write-Verbose "Setting Variables" -Verbose
 Write-Output ""
@@ -544,16 +404,74 @@ $Script:download = $download
 Write-Verbose "Setting Environment Variable Evergreen" -Verbose
 Write-Output ""
 $Env:evergreen = $PSScriptRoot
-
 if ($list -eq $True) {
+    # Select Language (If this is selectable at download)
+    # 0 = Danish
+    # 1 = Dutch
+    # 2 = English
+    # 3 = Finnish
+    # 4 = French
+    # 5 = German
+    # 6 = Italian
+    # 7 = Japanese
+    # 8 = Korean
+    # 9 = Norwegian
+    # 10 = Polish
+    # 11 = Portuguese
+    # 12 = Russian
+    # 13 = Spanish
+    # 14 = Swedish
+    $Language = 2
+
+    # Select Architecture (If this is selectable at download)
+    # 0 = x64
+    # 1 = x86
+    $Architecture = 0
+
+    # Software Release / Ring / Channel / Type ?!
+    # Citrix Workspace App
+    # 0 = Current Release
+    # 1 = Long Term Service Release
+    $CitrixWorkspaceAppRelease = 1
+
+    # Microsoft 365 Apps
+    # 0 = Current (Preview) Channel
+    # 1 = Current Channel
+    # 2 = Monthly Enterprise Channel
+    # 3 = Semi-Annual Enterprise (Preview) Channel
+    # 4 = Semi-Annual Enterprise Channel
+    $MS365AppsChannel = 4
+
+    # Microsoft OneDrive
+    # 0 = Insider Ring
+    # 1 = Production Ring
+    # 2 = Enterprise Ring
+    $MSOneDriveRing = 2
+
+    # Microsoft Teams
+    # 0 = Preview Ring
+    # 1 = General Ring
+    $MSTeamsRing = 1
+
+    # Mozilla Firefox
+    # 0 = Current
+    # 1 = ESR
+    $MSTeamsRing = 0
+
+    # TreeSize
+    # 0 = Free
+    # 1 = Professional
+    $TreeSizeType = 0
+
     # Select software
+    # 0 = Not selected
+    # 1 = Selected
     $7ZIP = 0
     $AdobeProDC = 0 # Only Update @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
     $Citrix_Hypervisor_Tools = 0
-    $Citrix_WorkspaceApp_CR = 0
-    $Citrix_WorkspaceApp_LTSR = 0
+    $Citrix_WorkspaceApp = 0
     $Filezilla = 0
     $Firefox = 0
     $Foxit_Reader = 0  # No Silent Install
@@ -562,9 +480,9 @@ if ($list -eq $True) {
     $Greenshot = 0
     $KeePass = 0
     $mRemoteNG = 0
-    $MS365Apps = 1 # 64Bit / Match OS Language / Semi Annual Channel
+    $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSEdge = 0
-    $MSOffice2019 = 0 # 64Bit / Match OS Language
+    $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
@@ -577,13 +495,37 @@ if ($list -eq $True) {
     
 }
 else {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp_CR,Citrix_WorkspaceApp_LTSR_Release -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType -ErrorAction SilentlyContinue
     gui_mode
 }
 
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
+
+# Variable definition (Architecture,Language etc)
+switch ($Architecture) {
+    0 { $ArchitectureClear = 'x64'}
+    1 { $ArchitectureClear = 'x86'}
+}
+
+switch ($Language) {
+    0 { $LanguageClear = 'Danish'}
+    1 { $LanguageClear = 'Dutch'}
+    2 { $LanguageClear = 'English'}
+    3 { $LanguageClear = 'Finnish'}
+    4 { $LanguageClear = 'French'}
+    5 { $LanguageClear = 'German'}
+    6 { $LanguageClear = 'Italian'}
+    7 { $LanguageClear = 'Japanese'}
+    8 { $LanguageClear = 'Korean'}
+    9 { $LanguageClear = 'Norwegian'}
+    10 { $LanguageClear = 'Polish'}
+    11 { $LanguageClear = 'Portuguese'}
+    12 { $LanguageClear = 'Russian'}
+    13 { $LanguageClear = 'Spanish'}
+    14 { $LanguageClear = 'Swedish'}
+}
 
 if ($install -eq $False) {
     # Install/Update Evergreen module
@@ -601,14 +543,15 @@ if ($install -eq $False) {
     # Download 7-ZIP
     if ($7ZIP -eq 1) {
         $Product = "7-Zip"
-        $PackageName = "7-Zip_x64"
-        $7ZipD = Get-7zip | Where-Object { $_.Architecture -eq "x64" -and $_.URI -like "*exe*" }
+        $PackageName = "7-Zip_" + "$ArchitectureClear"
+        $7ZipD = Get-7zip | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*exe*" }
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -617,8 +560,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -667,14 +610,21 @@ if ($install -eq $False) {
     # Download Adobe Reader DC
     if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
-        $PackageName = "Adobe_Reader_DC"
-        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "English"}
+        $PackageName = "Adobe_Reader_DC_"
+        $AdobeLanguageClear = $LanguageClear
+        switch ($LanguageClear) {
+            Polish { $AdobeLanguageClear = 'English'}
+            Portuguese { $AdobeLanguageClear = 'English'}
+            Russian { $AdobeLanguageClear = 'English'}
+            Swedish { $AdobeLanguageClear = 'English'}
+        }
+        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
         $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
+        $Source = "$PackageName" + "$AdobeLanguageClear" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        Write-Verbose "Download $Product $AdobeLanguageClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -684,7 +634,7 @@ if ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Write-Verbose "Starting Download of $Product $AdobeLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1707,18 +1657,20 @@ if ($download -eq $False) {
         $Product = "7-Zip"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+        $7ZipInstaller = "7-Zip_" + "$ArchitectureClear" + ".exe"
         if ($SevenZip -ne $Version) {
             # 7-Zip
-            Write-Verbose "Installing $Product" -Verbose
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\7-Zip_x64.exe" –ArgumentList /S –NoNewWindow
-                $p = Get-Process 7-Zip_x64
+                Start-Process "$PSScriptRoot\$Product\$7ZipInstaller" –ArgumentList /S
+                $p = Get-Process 7-Zip_$ArchitectureClear
                 if ($p) {
                     $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                    Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
                 }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -1778,20 +1730,21 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
+        $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeLanguageClear" + ".exe"
         if ($Adobe -ne $Version) {
             # Adobe Reader DC
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $AdobeLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $AdobeLanguageClear" $LogFile
             $Options = @(
                 "/sAll"
                 "/rs"
             )
             try	{
-                Start-Process "$PSScriptRoot\$Product\Adobe_Reader_DC.exe" –ArgumentList $Options –NoNewWindow
-                $p = Get-Process Adobe_Reader_DC
+                Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" –ArgumentList $Options
+                $p = Get-Process Adobe_Reader_DC_$AdobeLanguageClear
                 if ($p) {
                     $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                    Write-Verbose "Installation $Product $AdobeLanguageClear finished!" -Verbose
                 }
                 # Update Dienst und Task deaktivieren
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
