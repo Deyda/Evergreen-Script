@@ -25,35 +25,41 @@ the script checks the version number and will update the package.
   <#
 
 
-.PARAMETER download
-
-Only download the software packages.
-
-.PARAMETER install
-
-Only install the software packages.
-
 .PARAMETER list
 
 Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
-.EXAMPLE
+.PARAMETER download
 
-& '.\Evergreen.ps1 -download
+Only download the software packages in list Mode (-list).
 
-Downlod the selected Software.
+.PARAMETER install
 
-.EXAMPLE
-
-& '.\Evergreen.ps1
-
-Download and install the selected Software.
+Only install the software packages in list Mode (-list).
 
 .EXAMPLE
 
-& '.\Evergreen.ps1 -list
+.\Evergreen.ps1 -list -download
 
-Download and install the selected Software out of the script.
+Downlod the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -list -install
+
+Install the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -list
+
+Download and install the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1
+
+Start the GUI to select the mode (Install and/or Download) and the Software.
 #>
 
 [CmdletBinding()]
