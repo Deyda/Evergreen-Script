@@ -22,37 +22,44 @@ the script checks the version number and will update the package.
   2021-02-14        Change Adobe Acrobat DC Downloader
   2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
-  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC / Choice of architecture option in Citrix Hypervisor Tools / Choice of release option in Citrix Workspace App
-
-.PARAMETER download
-
-Only download the software packages.
-
-.PARAMETER install
-
-Only install the software packages.
+  2021-02-19        Implementation of new GUI / Add choice of architecture option in 7-Zip / Add choice of language option in Adobe Reader DC / Add choice of architecture option in Citrix Hypervisor Tools / Add choice of release option in Citrix Workspace App (Merge LTSR and CR script part)
+  2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Firefox
 
 .PARAMETER list
 
 Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
-.EXAMPLE
+.PARAMETER download
 
-& '.\Evergreen.ps1 -download
+Only download the software packages in list Mode (-list).
 
-Downlod the selected Software.
+.PARAMETER install
 
-.EXAMPLE
-
-& '.\Evergreen.ps1
-
-Download and install the selected Software.
+Only install the software packages in list Mode (-list).
 
 .EXAMPLE
 
-& '.\Evergreen.ps1 -list
+.\Evergreen.ps1 -list -download
 
-Download and install the selected Software out of the script.
+Downlod the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -list -install
+
+Install the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -list
+
+Download and install the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1
+
+Start the GUI to select the mode (Install and/or Download) and the Software.
 #>
 
 [CmdletBinding()]
@@ -532,6 +539,14 @@ switch ($Language) {
     14 { $LanguageClear = 'Swedish'}
 }
 
+$AdobeLanguageClear = $LanguageClear
+switch ($LanguageClear) {
+    Polish { $AdobeLanguageClear = 'English'}
+    Portuguese { $AdobeLanguageClear = 'English'}
+    Russian { $AdobeLanguageClear = 'English'}
+    Swedish { $AdobeLanguageClear = 'English'}
+}
+
 switch ($CitrixWorkspaceAppRelease) {
     0 { $CitrixWorkspaceAppReleaseClear = 'Current Release'}
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
@@ -540,6 +555,24 @@ switch ($CitrixWorkspaceAppRelease) {
 switch ($FirefoxChannel) {
     0 { $FirefoxChannelClear = 'LATEST'}
     1 { $FirefoxChannelClear = 'ESR'}
+}
+
+switch ($LanguageClear) {
+    English { $FFLanguageClear = 'en-US'}
+    Danish { $FFLanguageClear = 'en-US'}
+    Russian { $FFLanguageClear = 'ru'}
+    Dutch { $FFLanguageClear = 'nl'}
+    Finnish { $FFLanguageClear = 'en-US'}
+    French { $FFLanguageClear = 'fr'}
+    German { $FFLanguageClear = 'de'}
+    Italian { $FFLanguageClear = 'it'}
+    Japanese { $FFLanguageClear = 'ja'}
+    Korean { $FFLanguageClear = 'en-US'}
+    Norwegian { $FFLanguageClear = 'en-US'}
+    Polish { $FFLanguageClear = 'en-US'}
+    Portuguese { $FFLanguageClear = 'pt-PT'}
+    Spanish { $FFLanguageClear = 'es-ES'}
+    Swedish { $FFLanguageClear = 'sv-SE'}
 }
 
 if ($install -eq $False) {
@@ -626,13 +659,6 @@ if ($install -eq $False) {
     if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
         $PackageName = "Adobe_Reader_DC_"
-        $AdobeLanguageClear = $LanguageClear
-        switch ($LanguageClear) {
-            Polish { $AdobeLanguageClear = 'English'}
-            Portuguese { $AdobeLanguageClear = 'English'}
-            Russian { $AdobeLanguageClear = 'English'}
-            Swedish { $AdobeLanguageClear = 'English'}
-        }
         $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
@@ -806,23 +832,6 @@ if ($install -eq $False) {
    # Download Firefox
    if ($Firefox -eq 1) {
         $Product = "Firefox"
-        switch ($LanguageClear) {
-            English { $FFLanguageClear = 'en-US'}
-            Danish { $FFLanguageClear = 'en-US'}
-            Russian { $FFLanguageClear = 'ru'}
-            Dutch { $FFLanguageClear = 'nl'}
-            Finnish { $FFLanguageClear = 'en-US'}
-            French { $FFLanguageClear = 'fr'}
-            German { $FFLanguageClear = 'de'}
-            Italian { $FFLanguageClear = 'it'}
-            Japanese { $FFLanguageClear = 'ja'}
-            Korean { $FFLanguageClear = 'en-US'}
-            Norwegian { $FFLanguageClear = 'en-US'}
-            Polish { $FFLanguageClear = 'en-US'}
-            Portuguese { $FFLanguageClear = 'pt-PT'}
-            Spanish { $FFLanguageClear = 'es-ES'}
-            Swedish { $FFLanguageClear = 'sv-SE'}
-        }
         $PackageName = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear"
         $FirefoxD = Get-MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
         $Version = $FirefoxD.Version
