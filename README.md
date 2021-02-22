@@ -2,7 +2,10 @@
 Download and Install several Software the lazy way with the [Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein](https://github.com/aaronparker/Evergreen). 
 
 To update or download a software package just switch from 0 to 1 in the section "Select software" (With PowerShell parameter -list) or select your Software out of the GUI.
-A new folder for every single package will be created, together with a version file and a log file. If a new version is available the script checks the version number and will update the package.
+
+A new folder for every single package will be created, together with a version file and a log file. 
+
+If a new version is available the script checks the version number and will update the package.
 
 I'm no powershell expert, so I'm sure there is much room for improvements!
 
@@ -30,9 +33,6 @@ So let me hear your feedback, I will try to include everything as much as I can.
   2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   
   2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
-  
-  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC / Choice of architecture option in Citrix Hypervisor Tools / Choice of release option in Citrix Workspace App
-  
 
 ## Parameter
 
