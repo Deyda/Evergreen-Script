@@ -75,22 +75,22 @@ Only install the selected software packages in list Mode (-list).
 
 ## Example
 
-& '.\Evergreen.ps1 -list -download
+.\Evergreen.ps1 -list -download
 
 Downlod the selected Software out of the list.
 
 
-& '.\Evergreen.ps1 -list -install
+.\Evergreen.ps1 -list -install
 
 Install the selected Software out of the list.
 
 
-& '.\Evergreen.ps1 -list
+.\Evergreen.ps1 -list
 
 Download and install the selected Software out of the list.
 
 
-& '.\Evergreen.ps1
+.\Evergreen.ps1
 
 Start the GUI to select the mode (Install and/or Download) and the Software.
 
