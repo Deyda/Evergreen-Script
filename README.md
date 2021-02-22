@@ -103,3 +103,225 @@ Download and install the selected Software out of the list.
 & '.\Evergreen.ps1
 
 Start the GUI to select the mode (Install and/or Download) and the Software.
+
+## Notes
+
+### Evergreen PowerShell Module
+If Download is selected, the module is checked each time the script is run and reinstalled if a new version is available.
+
+### 7-ZIP
+Line 605 defines which package is downloaded (You can change the architecture).
+
+For 7-ZIP this is the x64 exe file.
+
+### Adobe Pro DC
+Line 638 defines which package is downloaded (You can change the version).
+
+For Adobe Pro DC this is the update Package (msp file).
+
+Only Update @ the moment, no installer!
+
+### Adobe Reader DC
+Line 671 defines which package is downloaded (You can change the language).
+
+For Adobe Reader DC this is the english exe file.
+
+### BIS-F
+Line 703 defines which package is downloaded.
+
+For BIS-F this is the msi file.
+
+### Citrix Hypervisor Tools
+Line 736 defines which package is downloaded (You can change the architecture and the version).
+
+For Citrix Hypervisor Tools this is the x64 msi file (LTSR Path).
+
+For Windows 7, Windows Server 2008 SP2, Windows Server 2008 R2 SP1 you can switch to the version 7.2.0.1555.
+
+### Citrix WorkspaceApp Current Release
+Line 770 defines which package is downloaded (You can change the release or use the Citrix_Workspace_LTSR switch).
+
+For Citrix Workspace App this is the exe file (CR Path).
+
+Before the installation of the new receiver, the old one is uninstalled via Receiver CleanUp Tool.
+As always, after installing the new Workspace Agent, the system should be rebooted.
+
+### Citrix WorkspaceApp Long Term Service Release
+Line 812 defines which package is downloaded (You can change the release or use the Citrix_Workspace_CR switch).
+
+For Citrix Workspace App this is the exe file (LTSR Path).
+
+Before the installation of the new receiver, the old one is uninstalled via Receiver CleanUp Tool.
+As always, after installing the new Workspace Agent, the system should be rebooted.
+
+### Filezilla
+Line 854 defines which package is downloaded.
+
+For Filezilla this is the exe file.
+
+### Firefox
+Line 887 defines which package is downloaded (You can change the architecture, language and the channel(to ESR)).
+
+For Firefox this is the english x64 msi file (Latest Firefox Version).
+
+### Foxit_Reader
+Line 920 defines which package is downloaded (You can change the language).
+
+For Foxit Reader this is the english exe file.
+
+Unfortunately, a silent install is not possible at the moment.
+
+### FSLogix
+Line 953 defines which package is downloaded.
+
+For FSLogix this is the zip package.
+
+With FSLogix installation, the old installation, if present, is uninstalled first and a restart is requested. 
+Then the script must be started again, so that the new version is installed cleanly.
+Not only the FSLogix Agent is installed, but also the FSLogix AppRule Editor.
+
+### GoogleChrome
+Line 1024 defines which package is downloaded (You can change the architecture).
+
+For Google Chrome this is the x64 msi file.
+
+### Greenshot
+Line 992 defines which package is downloaded.
+
+For Greenshot this is the exe file.
+
+### KeePass
+Line 1054 defines which package is downloaded.
+
+For KeePass this is the msi file.
+
+### mRemoteNG
+Line 1087 defines which package is downloaded.
+
+For mRemoteNG this is the msi file.
+
+### Microsoft 365 Apps
+Line 1120 defines which package is downloaded (You can change the channel).
+
+For Microsoft 365 Apps this is the exe setup file for the Semi-Annual Channel.
+
+During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
+
+remove.xml (from line 1132)
+
+install.xml (from line 1157)
+
+Afterwards the install.xml is used to download the required install files.
+
+Before installing the new Microsoft 365 Apps version, the previous installation is removed (remove.xml).
+
+After that the reinstall of the software starts (install.xml).
+
+An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages, App Extension or Inclusion (Visio & Project)).
+
+By default, the following is defined in install.xml (64Bit / Match OS Language / Semi Annual Channel):
+
+    <Configuration>
+      <Add Channel="SemiAnnual" OfficeClientEdition="64" SourcePath="<Path to Evergreen Folder>\MS 365 Apps (Semi Annual Channel)">
+        <Product ID="O365ProPlusRetail">
+          <Language ID="MatchOS" Fallback="en-us"/>
+          <ExcludeApp ID="Teams"/>
+          <ExcludeApp ID="Lync"/>
+          <ExcludeApp ID="Groove"/>
+          <ExcludeApp ID="OneDrive"/>
+        </Product>
+      </Add>
+      <Display AcceptEULA="TRUE" Level="None"/>
+      <Logging Level="Standard" Path="%temp%"/>
+      <Property Value="1" Name="SharedComputerLicensing"/>
+      <Property Value="TRUE" Name="FORCEAPPSHUTDOWN"/>
+      <Updates Enabled="FALSE"/>
+    </Configuration>
+
+### Microsoft Edge
+Line 1226 defines which package is downloaded (You can change the architecture).
+
+For Microsoft Edge this is the x64 msi file.
+
+### Microsoft Office 2019
+Line 1257 defines which package is downloaded (You can change the channel).
+
+For Microsoft Office 2019 this is the exe setup file for Office 2019 Enterprise.
+
+During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
+
+remove.xml (from line 1269)
+
+install.xml (from line 1294)
+
+Afterwards the install.xml is used to download the required install files.
+
+Before installing the new Microsoft Office 2019 version, the previous installation is removed (remove.xml).
+
+After that the reinstall of the software starts (install.xml).
+
+An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages or architecture).
+
+By default, the following is defined in install.xml (64Bit / Match OS Language):
+
+    <Configuration>
+      <Add Channel="PerpetualVL2019" OfficeClientEdition="64" SourcePath="<Path to Evergreen Folder>\MS2019">
+        <Product ID="ProPlus2019Volume">
+          <Language ID="MatchOS" Fallback="en-us"/>
+          <ExcludeApp ID="Teams"/>
+          <ExcludeApp ID="Lync"/>
+          <ExcludeApp ID="Groove"/>
+          <ExcludeApp ID="OneDrive"/>
+        </Product>
+      </Add>
+      <Display AcceptEULA="TRUE" Level="None"/>
+      <Logging Level="Standard" Path="%temp%"/>
+      <Property Value="1" Name="SharedComputerLicensing"/>
+      <Property Value="TRUE" Name="FORCEAPPSHUTDOWN"/>
+      <Updates Enabled="FALSE"/>
+    </Configuration>
+    
+### Microsoft OneDrive
+Line 1364 defines which package is downloaded (You can change the update ring).
+
+For Microsoft OneDrive this is the Production Ring exe file.
+
+### Microsoft Teams
+Line 1397 defines which package is downloaded (You can change the architecture and update ring).
+
+For Microsoft Teams this is the x64 msi file (General Ring).
+
+### NotePad++
+Line 1430 defines which package is downloaded (You can change the architecture).
+
+For Notepad++ this is the x64 exe file.
+
+### OpenJDK
+Line 1463 defines which package is downloaded (You can change the architecture).
+
+For OpenJDK this is the x64 msi file.
+
+### Oracle Java 8
+Line 1496 defines which package is downloaded (You can change the architecture).
+
+For Oracle Java 8 this is the x64 msi file.
+
+### TreeSize Free
+Line 1529 defines which package is downloaded.
+
+For TreeSize Free this is the exe file.
+
+### VLC Player
+Line 1562 defines which package is downloaded (You can change the architecture).
+
+For VLC Player this is the x64 msi file.
+
+### VMWare Tools
+Line 1595 defines which package is downloaded (You can change the architecture).
+
+For VMWare Tools this is the x64 exe file.
+    
+### WinSCP
+Line 1628 defines which package is downloaded.
+
+For WinSCP this is the exe file.
