@@ -22,7 +22,7 @@ the script checks the version number and will update the package.
   2021-02-14        Change Adobe Acrobat DC Downloader
   2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
-  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC
+  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC / Choice of architecture option in Citrix Hypervisor Tools / Choice of release option in Citrix Workspace App
 
 .PARAMETER download
 
@@ -161,7 +161,7 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15.5,161,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15.5,181,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15.5,201,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_CitrixWorksapceApp" HorizontalAlignment="Left" Margin="173,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="173,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Current Release"/>
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
@@ -388,6 +388,11 @@ $inputXML = @"
         $Form.Close()
     })
 
+    # Image Logo
+    $WPFImage_Logo.Add_MouseLeftButtonUp({
+        [system.Diagnostics.Process]::start('https://www.deyda.net')
+    })
+
     # Shows the form
     $Form.ShowDialog() | out-null
 }
@@ -456,7 +461,7 @@ if ($list -eq $True) {
     # Mozilla Firefox
     # 0 = Current
     # 1 = ESR
-    $MSTeamsRing = 0
+    $FirefoxChannel = 0
 
     # TreeSize
     # 0 = Free
@@ -525,6 +530,16 @@ switch ($Language) {
     12 { $LanguageClear = 'Russian'}
     13 { $LanguageClear = 'Spanish'}
     14 { $LanguageClear = 'Swedish'}
+}
+
+switch ($CitrixWorkspaceAppRelease) {
+    0 { $CitrixWorkspaceAppReleaseClear = 'Current Release'}
+    1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
+}
+
+switch ($FirefoxChannel) {
+    0 { $FirefoxChannelClear = 'LATEST'}
+    1 { $FirefoxChannelClear = 'ESR'}
 }
 
 if ($install -eq $False) {
@@ -623,7 +638,8 @@ if ($install -eq $False) {
         $URL = $AdobeReaderD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "$AdobeLanguageClear" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeLanguageClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
         Write-Verbose "Download $Product $AdobeLanguageClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
@@ -633,7 +649,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $AdobeLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging" -Verbose
@@ -682,14 +698,15 @@ if ($install -eq $False) {
     # Download Citrix Hypervisor Tools
     if ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
-        $PackageName = "managementagentx64"
-        $CitrixHypervisor = Get-CitrixVMTools | Where-Object {$_.Architecture -eq "x64"} | Select-Object -Last 1
+        $PackageName = "managementagent" + "$ArchitectureClear"
+        $CitrixHypervisor = Get-CitrixVMTools | Where-Object {$_.Architecture -eq "$ArchitectureClear"} | Select-Object -Last 1
         $Version = $CitrixHypervisor.Version
         $URL = $CitrixHypervisor.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -698,9 +715,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
-            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -713,11 +729,11 @@ if ($install -eq $False) {
         }
     }
 
-    # Download Citrix WorkspaceApp Current
-    if ($Citrix_WorkspaceApp_CR -eq 1) {
-        $Product = "Citrix WorkspaceApp Current Release"
-        $PackageName = "CitrixWorkspaceApp"
-        $WSACD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*Current*" -and $_.Platform -eq "Windows" -and $_.Title -like "*Current*" }
+    # Download Citrix WorkspaceApp
+    if ($Citrix_WorkspaceApp -eq 1) {
+        $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
+        $PackageName = "CitrixWorkspaceApp_" + "$CitrixWorkspaceAppReleaseClear"
+        $WSACD = Get-CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and "*$CitrixWorkspaceAppReleaseClear*" -and $_.Platform -eq "Windows" -and $_.Title -like "*$CitrixWorkspaceAppReleaseClear*" }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
         $InstallerType = "exe"
@@ -740,49 +756,6 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
             Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
-            Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Download Citrix WorkspaceApp LTSR
-    if ($Citrix_WorkspaceApp_LTSR -eq 1) {
-        $Product = "Citrix WorkspaceApp LTSR"
-        $PackageName = "CitrixWorkspaceApp"
-        $WSALD = Get-CitrixWorkspaceApp | Where-Object { $_.Title -like "*Workspace*" -and "*LTSR*" -and $_.Platform -eq "Windows" -and $_.Title -like "*LTSR*" }
-        $Version = $WSALD.Version
-        $URL = $WSALD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
-        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility")) { New-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility" -ItemType Directory | Out-Null }
-        if (!(Test-Path -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe")) {
-            Write-Verbose "Download Citrix Receiver Cleanup Utility" -Verbose
-            Invoke-WebRequest -Uri https://fileservice.citrix.com/downloadspecial/support/article/CTX137494/downloads/ReceiverCleanupUtility.zip -OutFile ("$PSScriptRoot\Citrix\ReceiverCleanupUtility\" + "ReceiverCleanupUtility.zip")
-            Expand-Archive -path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -destinationpath "$PSScriptRoot\Citrix\ReceiverCleanupUtility\"
-            Remove-Item -Path "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.zip" -Force
-            Write-Verbose "Download Citrix Receiver Cleanup Utility finished" -Verbose
-        }
-        Write-Verbose "Download $Product" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            Write-Verbose "Update available" -Verbose
-            if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
-            Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\Citrix\$Product" -Name "Download date $Date" | Out-Null
             Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
@@ -833,14 +806,32 @@ if ($install -eq $False) {
    # Download Firefox
    if ($Firefox -eq 1) {
         $Product = "Firefox"
-        $PackageName = "Firefox_Setup_x64_enUS"
-        $FirefoxD = Get-MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "x64" -and $_.Channel -eq "LATEST_FIREFOX_VERSION" -and $_.Language -eq "en-US"}
+        switch ($LanguageClear) {
+            English { $FFLanguageClear = 'en-US'}
+            Danish { $FFLanguageClear = 'en-US'}
+            Russian { $FFLanguageClear = 'ru'}
+            Dutch { $FFLanguageClear = 'nl'}
+            Finnish { $FFLanguageClear = 'en-US'}
+            French { $FFLanguageClear = 'fr'}
+            German { $FFLanguageClear = 'de'}
+            Italian { $FFLanguageClear = 'it'}
+            Japanese { $FFLanguageClear = 'ja'}
+            Korean { $FFLanguageClear = 'en-US'}
+            Norwegian { $FFLanguageClear = 'en-US'}
+            Polish { $FFLanguageClear = 'en-US'}
+            Portuguese { $FFLanguageClear = 'pt-PT'}
+            Spanish { $FFLanguageClear = 'es-ES'}
+            Swedish { $FFLanguageClear = 'sv-SE'}
+        }
+        $PackageName = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear"
+        $FirefoxD = Get-MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
         $Version = $FirefoxD.Version
         $URL = $FirefoxD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -849,8 +840,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1728,7 +1719,8 @@ if ($download -eq $False) {
         $Product = "Adobe Reader DC"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeLanguageClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeLanguageClear" + ".exe"
         if ($Adobe -ne $Version) {
@@ -1850,7 +1842,7 @@ if ($download -eq $False) {
     # Install Citrix Hypervisor Tools
     IF ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
-
+        
         # FUNCTION MSI Installation
         #========================================================================================================================================
         function Install-MSIFile {
@@ -1882,7 +1874,7 @@ if ($download -eq $False) {
             $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -1893,15 +1885,17 @@ if ($download -eq $False) {
         #========================================================================================================================================
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
-        $HypTools = $HypTools.Insert(3,'.0')
+        If ($HypTools) {$HypTools = $HypTools.Insert(3,'.0')}
+        $HypToolsInstaller = "managementagent" + "$ArchitectureClear" + ".msi"
         IF ($HypTools -ne $Version) {
             # Citrix Hypervisor Tools
-            Write-Verbose "Installing $Product" -Verbose
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
-                "$PSScriptRoot\Citrix\$Product\managementagentx64.msi" | Install-MSIFile
+                "$PSScriptRoot\Citrix\$Product\$HypToolsInstaller" | Install-MSIFile
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -1915,9 +1909,9 @@ if ($download -eq $False) {
         }
     }
 
-    # Install Citrix WorkspaceApp Current
-    IF ($Citrix_WorkspaceApp_CR -eq 1) {
-        $Product = "Citrix WorkspaceApp Current Release"
+    # Install Citrix WorkspaceApp
+    IF ($Citrix_WorkspaceApp -eq 1) {
+        $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
         $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
@@ -1962,66 +1956,6 @@ if ($download -eq $False) {
                 Write-Verbose "Customizing $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Verbose " ... ready!" -Verbose
-            Write-Verbose "Server needs to reboot after installation!" -Verbose
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
-        }
-    }
-
-    # Install Citrix WorkspaceApp LTSR
-    IF ($Citrix_WorkspaceApp_LTSR -eq 1) {
-        $Product = "Citrix WorkspaceApp LTSR"
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
-        $UninstallWSALTSR = "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe"
-        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
-        IF ($WSA -ne $Version) {
-            # Citrix WSA Uninstallation
-            Write-Verbose "Uninstalling Citrix Workspace App / Receiver" -Verbose
-            DS_WriteLog "I" "Uninstalling Citrix Workspace App / Receiver" $LogFile
-            try	{
-                Start-process $UninstallWSALTSR -ArgumentList '/silent /disableCEIP' –NoNewWindow -Wait
-            } catch {
-                DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Verbose "Uninstalling and Cleanup Citrix Workspace App / Receiver finished!" -Verbose
-
-            # Citrix WSA Installation
-            $Options = @(
-                "/forceinstall"
-                "/silent"
-                "/EnableCEIP=false"
-                "/FORCE_LAA=1"
-                "/AutoUpdateCheck=disabled"
-                "/EnableCEIP=false"
-                "/ALLOWADDSTORE=S"
-                "/ALLOWSAVEPWD=S"
-                "/includeSSON"
-                "/ENABLE_SSON=Yes"
-            )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\CitrixWorkspaceApp.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                if($inst -ne $null) {
-                    Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
-                Write-Verbose "Customize $Product" -Verbose
-                reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
-                reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
-                reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
-                Write-Verbose "Customizing $Product finished!" -Verbose
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
             DS_WriteLog "-" "" $LogFile
             Write-Verbose " ... ready!" -Verbose
@@ -2106,7 +2040,7 @@ if ($download -eq $False) {
             $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear finished!" -Verbose
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2117,14 +2051,16 @@ if ($download -eq $False) {
         #========================================================================================================================================
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $Firefox = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear" + ".msi"
         IF ($Firefox -ne $Version) {
             # Firefox
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" $LogFile
             try {
-                "$PSScriptRoot\$Product\Firefox_Setup_x64_enUS.msi" | Install-MSIFile
+                "$PSScriptRoot\$Product\$FirefoxInstaller" | Install-MSIFile
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
