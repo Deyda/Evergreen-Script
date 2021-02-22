@@ -1,8 +1,94 @@
-# Evergreen
+# Evergreen Script by Manuel Winkel / [Deyda.net](https://www.deyda.net) / [@deyda84](https://twitter.com/Deyda84)
+Download and Install several Software the lazy way with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
+
+To update or download a software package just switch from 0 to 1 in the section "Select software" (With PowerShell parameter -list) or select your Software out of the GUI.
+A new folder for every single package will be created, together with a version file and a log file. If a new version is available the script checks the version number and will update the package.
+
+I'm no powershell expert, so I'm sure there is much room for improvements!
+So let me hear your feedback, I will try to include everything as much as I can.
+
+## Purpose/Change:
+  2021-01-29        Initial Version
+  2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
+  2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
+  2021-02-01        Add Gui Mode as Standard
+  2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
+  2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
+  2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
+  2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
+  2021-02-14        Change Adobe Acrobat DC Downloader
+  2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
+  2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
+  2021-02-19        Implementation of new GUI / Choice of architecture option in 7-Zip / Choice of language option in Adobe Reader DC / Choice of architecture option in Citrix Hypervisor Tools / Choice of release option in Citrix Workspace App
+
+## Parameter
+### download
+
+Only download the selected software packages.
+
+### install
+
+Only install the selected software packages.
+
+### list
+
+Don't start the GUI to select the Software Packages and use the hardcoded list in the script (From line 549)
+
+    # Select software
+    # 0 = Not selected
+    # 1 = Selected
+    
+    $7ZIP = 0
+    $AdobeProDC = 0 # Only Update @ the moment
+    $AdobeReaderDC = 0
+    $BISF = 0
+    $Citrix_Hypervisor_Tools = 0
+    $Citrix_WorkspaceApp_CR = 0
+    $Citrix_WorkspaceApp_LTSR = 0
+    $Filezilla = 0
+    $Firefox = 0
+    $Foxit_Reader = 0  # No Silent Install
+    $FSLogix = 0
+    $GoogleChrome = 0
+    $Greenshot = 0
+    $KeePass = 0
+    $mRemoteNG = 0
+    $MS365Apps = 1 # 64Bit / Match OS Language / Semi Annual Channel
+    $MSEdge = 0
+    $MSOffice2019 = 0 # 64Bit / Match OS Language
+    $MSOneDrive = 0
+    $MSTeams = 0
+    $NotePadPlusPlus = 0
+    $OpenJDK = 0
+    $OracleJava8 = 0
+    $TreeSizeFree = 0
+    $VLCPlayer = 0
+    $VMWareTools = 0
+    $WinSCP = 0
+
+For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
+
+## Example
+
+& '.\Evergreen.ps1 -download
+
+Downlod the selected Software.
+
+.EXAMPLE
+
+& '.\Evergreen.ps1
+
+Download and install the selected Software.
+
+.EXAMPLE
+
+& '.\Evergreen.ps1 -list
+
+Download and install the selected Software out of the script.
+#>
+# Evergreen PowerShell Module
 Download, install and update the newest version of several software packages based on the powerful Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein.
 https://github.com/aaronparker/Evergreen
-
-I'm no powershell expert, so I'm sure there is much room for improvements! 
 
 ## How To
 The idea is to select a client or server that periodically checks for updates and if updates are available, downloads them. This can be done every day or once a week by launching the script "Evergreen.ps1 -list" via scheduled task. You decide which software do download by giving it a "0" or "1" in the script.
@@ -10,134 +96,3 @@ The idea is to select a client or server that periodically checks for updates an
 The "Evergreen.ps1" script must be launched on your clients. If you have a golden master like in Citrix MCS/PVS environments it's sufficient to launch the script only on this machine. This can be done manually or automatic, like you prefer.
 
 If it is run manually, do not use the -list parameter and you will be taken to the GUI to select the software and mode (Download or Install).
-
-## Version check
-The updater always checks for the latest version of the Evergreen module, so you don't have to do this. Sometimes the software version found with Evergreen differs from the installed version in the registry, that's stupid, but we can't influence that. Don't blame the Evergreen module!
-
-Let me show you an example:
-
-*MS Teams*
-
-Let's check the installed version:
-```
-(Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
-```
-The result is: **1.3.0.28779**
-
-Let's check the version with Evergreen:
-```
-(Get-MicrosoftTeams | Where-Object {$_.Architecture -eq "x64"}).Version
-```
-The result is: **1.3.00.28779**
-
-So there is one "0" more! We have to insert a "0" to the installed version to be able to compare the versions: 
-```
-IF ($Teams) {$Teams = $Teams.Insert(5,'0')}
-```
-
-# Evergreen-Admx
-
-After deploying several Windows Virtual Desktop environments I decided I no longer wanted to manually download the Admx files I needed, and I wanted a way to keep them up-to-date.
-
-This script solves both problems.
-*  Checks for newer versions of the Admx files that are present and processes the new version if found
-*  Optionally copies the new Admx files to the Policy Store or Definition folder, or a folder of your chosing
-
-The name I chose for this script is an ode to the Evergreen module (https://github.com/aaronparker/Evergreen) by Aaron Parker (@stealthpuppy).
-
-## How to use
-
-Quick start:
-*  Download the script to a location of your chosing (for example: C:\Scripts\EvergreenAdmx)
-*  Run or schedule the script
-
-You can also install the script from the PowerShell Gallery ([EvergreenAdmx][poshgallery-evergreenadmx]):
-```powershell
-Install-Script -Name EvergreenAdmx
-```
-
-I have scheduled the script to run daily:
-
-`
-Evergreen-Admx.ps1 -WindowsVersion "20H2" -PolicyStore "C:\Windows\SYSVOL\domain\Policies\PolicyDefinitions"
-`
-The above execution will keep the central Policy Store up-to-date on a daily basis.
-
-A sample .xml file that you can import in Task Scheduler is provided with this script.
-
-This script processes all the products by default. Simply comment out any products you don't need and the script will skip those.
-This will change in a future release.
-
-```
-SYNTAX
-    D:\Personal Data\amensc\Gits\EvergreenAdmx\Evergreen-Admx.ps1 [[-WindowsVersion] <String>] [[-WorkingDirectory] <String>] [[-PolicyStore] <String>] [[-Languages] <String[]>] [-UseProductFolders] [<CommonParameters>]
-
-DESCRIPTION
-    Script to download latest Admx files for several products.
-    Optionally copy the latest Admx files to a folder of your chosing, for example a Policy Store.
-
-PARAMETERS
-    -WindowsVersion <String>
-        The Windows 10 version to get the Admx files for.
-        If omitted the newest version supported by this script will be used.
-
-    -WorkingDirectory <String>
-        Optionally provide a Working Directory for the script.
-        The script will store Admx files in a subdirectory called "admx".
-        The script will store downloaded files in a subdirectory called "downloads".
-        If omitted the script will treat the script's folder as the working directory.
-        
-    -PolicyStore <String>
-        Optionally provide a Policy Store location to copy the Admx files to after processing.
-
-    -Languages <String[]>
-        Optionally provide an array of languages to process. Entries must be in 'xy-XY' format.
-        If omitted the script will process 'en-US'.
-        
-    -UseProductFolders [<SwitchParameter>]
-        When specified the extracted Admx files are copied to their respective product folders in a subfolder of 'Admx' in the WorkingDirectory.
-
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
-    
-EXAMPLES
-    PS C:\>.\Evergreen-Admx.ps1 -WindowsVersion "20H2" -PolicyStore "C:\Windows\SYSVOL\domain\Policies\PolicyDefinitions" -Languages @("en-US", "nl-NL") -UseProductFolders
-```
-
-## Admx files
-
-Also see [Change Log][change-log] for a list of supported products.
-
-Now supports
-*  Adobe Acrobat Reader DC
-*  Base Image Script Framework (BIS-F)
-*  Citrix Workspace App
-*  FSLogix
-*  Google Chrome
-*  Microsoft Desktop Optimization Pack
-*  Microsoft Edge (Chromium)
-*  Microsoft Office
-*  Microsoft OneDrive
-*  Microsoft Windows 10 (1903/1909/2004/20H2)
-*  Mozilla Firefox
-*  Zoom Desktop Client
-
-## Notes
-
-I have not tested this script on Windows Core.
-Some of the Admx files can only be obtained by installing the package that was downloaded. For instance, the Windows 10 Admx files are in an msi file, the OneDrive Admx files are in the installation folder after installing OneDrive.
-So this is what the script does for these packages: installing the package, copying the Admx files, uninstalling the package.
-
-[github-release-badge]: https://img.shields.io/github/release/msfreaks/EvergreenAdmx.svg?style=flat-square
-[github-release]: https://github.com/msfreaks/EvergreenAdmx/releases/latest
-[code-quality-badge]: https://app.codacy.com/project/badge/Grade/c0efab02b66442399bb16b0493cdfbef?style=flat-square
-[code-quality]: https://www.codacy.com/gh/msfreaks/EvergreenAdmx/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=msfreaks/EvergreenAdmx&amp;utm_campaign=Badge_Grade
-[license-badge]: https://img.shields.io/github/license/msfreaks/EvergreenAdmx.svg?style=flat-square
-[license]: https://github.com/msfreaks/EvergreenAdmx/blob/master/LICENSE
-[twitter-follow-badge]: https://img.shields.io/twitter/follow/menschab?style=flat-square
-[twitter-follow]: https://twitter.com/menschab?ref_src=twsrc%5Etfw
-[change-log]: https://github.com/msfreaks/EvergreenAdmx/blob/main/CHANGELOG.md
-[poshgallery-evergreenadmx]: https://www.powershellgallery.com/packages/EvergreenAdmx/
