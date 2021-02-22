@@ -12,27 +12,17 @@ I'm no powershell expert, so I'm sure there is much room for improvements!
 So let me hear your feedback, I will try to include everything as much as I can.
 
 ## Purpose/Change:
-  2021-01-29        Initial Version
-  
-  2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
-  
-  2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
-  
-  2021-02-01        Add Gui Mode as Standard
-  
-  2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
-  
-  2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
-  
-  2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
-  
-  2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
-  
-  2021-02-14        Change Adobe Acrobat DC Downloader
-  
-  2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
-  
-  2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
+    2021-01-29        Initial Version
+    2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
+    2021-01-31        Error solved: Installation Workspace App -> Wrong Variable / Error solved: Detection acute version 7-Zip -> Limitation of the results
+    2021-02-01        Add Gui Mode as Standard
+    2021-02-02        Add Install OpenJDK / Add Install VMWare Tools / Add Install Oracle Java 8 / Add Install Adobe Reader DC
+    2021-02-03        Addition of verbose comments. Chrome and Edge customization regarding disabling services and scheduled tasks.
+    2021-02-04        Correction OracleJava8 detection / Add Environment Variable $env:evergreen for script path
+    2021-02-12        Add Download Citrix Hypervisor Tools, Greenshot, Firefox, Foxit Reader & Filezilla / Correction Citrix Workspace Download & Install Folder / Adding Citrix Receiver Cleanup Utility
+    2021-02-14        Change Adobe Acrobat DC Downloader
+    2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
+    2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
 
 ## Parameter
 
