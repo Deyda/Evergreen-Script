@@ -23,7 +23,7 @@ the script checks the version number and will update the package.
   2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
   2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
   2021-02-19        Implementation of new GUI / Add choice of architecture option in 7-Zip / Add choice of language option in Adobe Reader DC / Add choice of architecture option in Citrix Hypervisor Tools / Add choice of release option in Citrix Workspace App (Merge LTSR and CR script part)
-  2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Firefox
+  2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Firefox / Add choice of language option in Foxit Reader / Add choice of architecture option in Google Chrome / Add choice of channel, architecture and language options in Microsoft 365 Apps / Add choice of architecture option in Microsoft Edge / Add choice of architecture and language options in Microsoft Office 2019 / Add choice of update ring option in Microsoft OneDrive
 
 .PARAMETER list
 
@@ -575,6 +575,56 @@ switch ($LanguageClear) {
     Swedish { $FFLanguageClear = 'sv-SE'}
 }
 
+$FoxitReaderLanguageClear = $LanguageClear
+switch ($LanguageClear) {
+    Japanese { $FoxitReaderLanguageClear = 'English'}
+}
+
+switch ($MS365AppsChannel) {
+    0 { $MS365AppsChannelClear = 'CurrentPreview'}
+    1 { $MS365AppsChannelClear = 'Current'}
+    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
+    3 { $MS365AppsChannelClear = 'SemiAnnualPreview'}
+    4 { $MS365AppsChannelClear = 'SemiAnnual'}
+}
+
+switch ($MS365AppsChannel) {
+    0 { $MS365AppsChannelClearDL = 'Monthly (Targeted)'}
+    1 { $MS365AppsChannelClearDL = 'Monthly'}
+    2 { $MS365AppsChannelClearDL = 'Monthly Enterprise'}
+    3 { $MS365AppsChannelClearDL = 'Semi-Annual Channel (Targeted)'}
+    4 { $MS365AppsChannelClearDL = 'Semi-Annual Channel'}
+}
+
+switch ($Architecture) {
+    0 { $MS365AppsArchitectureClear = '64'}
+    1 { $MS365AppsArchitectureClear = '32'}
+}
+
+switch ($Language) {
+    0 { $MS365AppsLanguageClear = 'da-DK'}
+    1 { $MS365AppsLanguageClear = 'nl-NL'}
+    2 { $MS365AppsLanguageClear = 'en-US'}
+    3 { $MS365AppsLanguageClear = 'fi-FI'}
+    4 { $MS365AppsLanguageClear = 'fr-FR'}
+    5 { $MS365AppsLanguageClear = 'de-DE'}
+    6 { $MS365AppsLanguageClear = 'it-IT'}
+    7 { $MS365AppsLanguageClear = 'ja-JP'}
+    8 { $MS365AppsLanguageClear = 'ko-KR'}
+    9 { $MS365AppsLanguageClear = 'nb-NO'}
+    10 { $MS365AppsLanguageClear = 'pl-PL'}
+    11 { $MS365AppsLanguageClear = 'pt-PT'}
+    12 { $MS365AppsLanguageClear = 'ru-RU'}
+    13 { $MS365AppsLanguageClear = 'es-ES'}
+    14 { $MS365AppsLanguageClear = 'sv-SE'}
+}
+
+switch ($MSOneDriveRing) {
+    0 { $MSOneDriveRingClear = 'Insider'}
+    1 { $MSOneDriveRingClear = 'Production'}
+    2 { $MSOneDriveRingClear = 'Enterprise'}
+}
+
 if ($install -eq $False) {
     # Install/Update Evergreen module
     Write-Output ""
@@ -866,14 +916,15 @@ if ($install -eq $False) {
     # Download Foxit Reader
     if ($Foxit_Reader -eq 1) {
         $Product = "Foxit Reader"
-        $PackageName = "FoxitReader-Setup-English"
-        $Foxit_ReaderD = Get-FoxitReader | Where-Object {$_.Language -eq "English"}
+        $PackageName = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear"
+        $Foxit_ReaderD = Get-FoxitReader | Where-Object {$_.Language -eq "$FoxitReaderLanguageClear"}
         $Version = $Foxit_ReaderD.Version
         $URL = $Foxit_ReaderD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $FoxitReaderLanguageClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -882,8 +933,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $FoxitReaderLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -971,10 +1022,15 @@ if ($install -eq $False) {
     # Download Google Chrome
     if ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
-        $ChromeURL = Get-GoogleChrome | Where-Object { $_.Architecture -eq "x64" } | Select-Object -ExpandProperty URI
-        $Version = (Get-GoogleChrome | Where-Object { $_.Architecture -eq "x64" }).Version
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $PackageName = "googlechromestandaloneenterprise_" + "$ArchitectureClear"
+        $ChromeD = Get-GoogleChrome | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $Version = $ChromeD.Version
+        $URL = $ChromeD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -983,9 +1039,9 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $ChromeURL -OutFile ("$PSScriptRoot\$Product\" + ($ChromeURL | Split-Path -Leaf))
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
             Write-Verbose "Download of the new version $Version finished" -Verbose
@@ -1063,21 +1119,21 @@ if ($install -eq $False) {
         }
     }
 
-    # Download MS 365 Apps
+    # Download Microsoft 365 Apps
     if ($MS365Apps -eq 1) {
-        $Product = "MS 365 Apps (Semi Annual Channel)"
-        $PackageName = "setup"
-        $MS365AppsD = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Semi-Annual Channel"}
+        $Product = "Microsoft 365 Apps"
+        $PackageName = "setup_" + "$MS365AppsChannelClear"
+        $MS365AppsD = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product setup file" -Verbose
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product $MS365AppsChannelClear setup file" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
-        if (!(Test-Path "$PSScriptRoot\$Product\remove.xml" -PathType leaf)) {
+        if (!(Test-Path -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
+        if (!(Test-Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\remove.xml" -PathType leaf)) {
             Write-Verbose "Create remove.xml" -Verbose
             [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
             [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
@@ -1099,23 +1155,25 @@ if ($install -eq $False) {
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
                 $Node1.SetAttribute("Name","PinIconsToTaskbar")
                 $Node1.SetAttribute("Value","FALSE")
-            $XML.Save("$PSScriptRoot\$Product\remove.xml")
+            $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\remove.xml")
             Write-Verbose "Create remove.xml finished!" -Verbose
         }
-        if (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
+        if (!(Test-Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml" -PathType leaf)) {
             Write-Verbose "Create install.xml" -Verbose
             [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
             [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
                 $XML.appendChild($Root) | out-null
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
-                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                $Node1.SetAttribute("OfficeClientEdition","64")
-                $Node1.SetAttribute("Channel","SemiAnnual")
+                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
+                $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
             [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                 $Node2.SetAttribute("ID","O365ProPlusRetail")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                 $Node3.SetAttribute("ID","MatchOS")
                 $Node3.SetAttribute("Fallback","en-us")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                 $Node3.SetAttribute("ID","Teams")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -1138,17 +1196,17 @@ if ($install -eq $False) {
                 $Node1.SetAttribute("Value","TRUE")
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
                 $Node1.SetAttribute("Enabled","FALSE")
-                $XML.Save("$PSScriptRoot\$Product\install.xml")
+                $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
             Write-Verbose "Create install.xml finished!" -Verbose
         }
         if (!($CurrentVersion -eq $Version)) {
             Write-Verbose "Update available" -Verbose
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
+            $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version setup file" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $MS365AppsChannelClear $Version setup file" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
             Write-Output ""
@@ -1158,26 +1216,31 @@ if ($install -eq $False) {
             Write-Output ""
         }
         # Download Apps 365 install files
-        if (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
-            Write-Verbose "Download $Product $Version install files" -Verbose
+        if (!(Test-Path -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Office\Data\$Version")) {
+            Write-Verbose "Download $Product $MS365AppsChannelClear $MS365AppsArchitectureClear $MS365AppsLanguageClear $Version install files" -Verbose
             $DApps365 = @(
                 "/download install.xml"
             )
-            set-location $PSScriptRoot\$Product
-            Start-Process ".\setup.exe" -ArgumentList $DApps365 -wait -NoNewWindow
+            set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
+            Start-Process ".\$Source" -ArgumentList $DApps365 -wait -NoNewWindow
             set-location $PSScriptRoot
             Write-Output ""
         }
     }
 
-    # Download MS Edge
+    # Download Microsoft Edge
     if ($MSEdge -eq 1) {
-        $Product = "MS Edge"
-        $EdgeURL = Get-MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "x64" }
-        $EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
-        $Version = (Get-MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "x64" }).Version
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue 
-        Write-Verbose "Download $Product" -Verbose
+        $Product = "Microsoft Edge"
+        $PackageName = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear"
+        $EdgeD = Get-MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "$ArchitectureClear" }
+        #$EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $Version = $EdgeD.Version
+        $URL = $EdgeD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue 
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -1186,9 +1249,9 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $EdgeURL.Uri -OutFile ("$PSScriptRoot\$Product\" + ($EdgeURL.URI | Split-Path -Leaf))
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
+            Invoke-WebRequest -Uri $URL.Uri -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
             Write-Verbose "Download of the new version $Version finished" -Verbose
@@ -1200,9 +1263,9 @@ if ($install -eq $False) {
         }
     }
 
-    # Download MS Office 2019
+    # Download Microsoft Office 2019
     if ($MSOffice2019 -eq 1) {
-        $Product = "MS Office 2019"
+        $Product = "Microsoft Office 2019"
         $PackageName = "setup"
         $MSOffice2019D = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
         $Version = $MSOffice2019D.Version
@@ -1246,13 +1309,15 @@ if ($install -eq $False) {
                 $XML.appendChild($Root) | out-null
             [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                 $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                $Node1.SetAttribute("OfficeClientEdition","64")
+                $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
                 $Node1.SetAttribute("Channel","PerpetualVL2019")
             [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                 $Node2.SetAttribute("ID","ProPlus2019Volume")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                 $Node3.SetAttribute("ID","MatchOS")
                 $Node3.SetAttribute("Fallback","en-us")
+            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                 $Node3.SetAttribute("ID","Teams")
             [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -1296,7 +1361,7 @@ if ($install -eq $False) {
         }
         # Download MS Office 2019 install files
         if (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
-            Write-Verbose "Download $Product $Version install files" -Verbose
+            Write-Verbose "Download $Product $MS365AppsArchitectureClear $MS365AppsLanguageClear $Version install files" -Verbose
             $DOffice2019 = @(
                 "/download install.xml"
             )
@@ -1307,17 +1372,18 @@ if ($install -eq $False) {
         }
     }
 
-    # Download MS OneDrive
+    # Download Microsoft OneDrive
     if ($MSOneDrive -eq 1) {
-        $Product = "MS OneDrive"
-        $PackageName = "OneDriveSetup"
-        $MSOneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "Production" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
+        $Product = "Microsoft OneDrive"
+        $PackageName = "OneDriveSetup-" + "$MSOneDriveRingClear"
+        $MSOneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
         $Version = $MSOneDriveD.Version
         $URL = $MSOneDriveD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $MSOneDriveRingClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -1326,8 +1392,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $MSOneDriveRingClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -2088,8 +2154,10 @@ if ($download -eq $False) {
         $Product = "Foxit Reader"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $FReader = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion
+        $FoxitReaderInstaller = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear" + ".exe"
         IF ($FReader -ne $Version) {
             # Foxit Reader
             $Options = @(
@@ -2098,13 +2166,13 @@ if ($download -eq $False) {
                 "/NORESTART"
                 "/NOCLOSEAPPLICATIONS"
             )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $FoxitReaderLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $FoxitReaderLanguageClear" $LogFile
             try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\FoxitReader-Setup-English.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$FoxitReaderInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                    Write-Verbose "Installation $Product $FoxitReaderLanguageClear finished!" -Verbose
                 }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2248,7 +2316,7 @@ if ($download -eq $False) {
             $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2259,14 +2327,16 @@ if ($download -eq $False) {
         #========================================================================================================================================
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+        $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
         IF ($Chrome -ne $Version) {
             # Google Chrome
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
-                "$PSScriptRoot\$Product\googlechromestandaloneenterprise64.msi" | Install-MSIFile
+                "$PSScriptRoot\$Product\$ChromeInstaller" | Install-MSIFile
                 # Update Dienst und Task deaktivieren
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service gupdate
@@ -2425,13 +2495,14 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MS Apps 365
+    # Install Microsoft Apps 365
     IF ($MS365Apps -eq 1) {
-        $Product = "MS 365 Apps (Semi Annual Channel)"
+        $Product = "Microsoft 365 Apps"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
         $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+        $MS365AppsInstaller = "setup_" + "$MS365AppsChannelClear" + ".exe"
         IF ($MS365AppsV -ne $Version) {
             # MS365Apps Uninstallation
             $Options = @(
@@ -2440,8 +2511,8 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Office 2019 or Microsoft 365 Apps" -Verbose
             DS_WriteLog "I" "Uninstalling Office 2019 or Microsoft 365 Apps" $LogFile
             try	{
-                set-location $PSScriptRoot\$Product
-                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
+                Start-Process -FilePath ".\$MS365AppsInstaller" -ArgumentList $Options -NoNewWindow -wait
                 set-location $PSScriptRoot
                 Write-Verbose "Uninstallation Office 2019 or Microsoft 365 Apps finished!" -Verbose
             } catch {
@@ -2453,13 +2524,13 @@ if ($download -eq $False) {
             $Options = @(
                 "/configure install.xml"
             )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $MS365AppsChannelClear $MS365AppsArchitectureClear $MS365AppsLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $MS365AppsChannelClear $MS365AppsArchitectureClear $MS365AppsLanguageClear" $LogFile
             try	{
-                set-location $PSScriptRoot\$Product
-                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
+                Start-Process -FilePath ".\$MS365AppsInstaller" -ArgumentList $Options -NoNewWindow -wait
                 set-location $PSScriptRoot
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $MS365AppsChannelClear $MS365AppsArchitectureClear $MS365AppsLanguageClear finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2473,9 +2544,9 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MS Edge
+    # Install Microsoft Edge
     IF ($MSEdge -eq 1) {
-        $Product = "MS Edge"
+        $Product = "Microsoft Edge"
 
         # FUNCTION MSI Installation
         #========================================================================================================================================
@@ -2508,7 +2579,7 @@ if ($download -eq $False) {
             $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2519,14 +2590,16 @@ if ($download -eq $False) {
         #========================================================================================================================================
         
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+        $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + ".msi"
         IF ($Edge -ne $Version) {
             # MS Edge
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
-                "$PSScriptRoot\$Product\MicrosoftEdgeEnterpriseX64.msi" | Install-MSIFile
+                "$PSScriptRoot\$Product\$EdgeInstaller" | Install-MSIFile
                 # Disable update tasks
                 Write-Verbose "Customize Scheduled Task" -Verbose
                 Start-Sleep -s 5
@@ -2561,9 +2634,9 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MS Office 2019
+    # Install Microsoft Office 2019
     IF ($MSOffice2019 -eq 1) {
-        $Product = "MS Office 2019"
+        $Product = "Microsoft Office 2019"
 
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
@@ -2589,13 +2662,13 @@ if ($download -eq $False) {
             $Options = @(
                 "/configure install.xml"
             )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $MS365AppsArchitectureClear $MS365AppsLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $MS365AppsArchitectureClear $MS365AppsLanguageClear" $LogFile
             try	{
                 set-location $PSScriptRoot\$Product
                 Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
                 set-location $PSScriptRoot
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $MS365AppsArchitectureClear $MS365AppsLanguageClear finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2609,17 +2682,18 @@ if ($download -eq $False) {
         }
     }
 
-    # Install MS OneDrive
+    # Install Microsoft OneDrive
     IF ($MSOneDrive -eq 1) {
-        $Product = "MS OneDrive"
+        $Product = "Microsoft OneDrive"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
         IF ($MSOneDriveV -ne $Version) {
             # Installation MSOneDrive
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $MSOneDriveRingClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $MSOneDriveRingClear" $LogFile
             $Options = @(
                 "/ALLUSERS"
                 "/SILENT"
@@ -2627,7 +2701,7 @@ if ($download -eq $False) {
             try	{
                 $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList $Options –NoNewWindow -PassThru
                 while (Get-Process -Name "OneDriveSetup" -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $MSOneDriveRingClear finished!" -Verbose
                 # onedrive starts automatically after setup. kill!
                 Stop-Process -Name "OneDrive" -Force
             } catch {
