@@ -1029,7 +1029,7 @@ if ($install -eq $False) {
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
         Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
@@ -1062,7 +1062,7 @@ if ($install -eq $False) {
         $URL = $KeePassD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"-EA SilentlyContinue 
         Write-Verbose "Download $Product" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
@@ -1251,7 +1251,7 @@ if ($install -eq $False) {
             Start-Transcript $LogPS
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
-            Invoke-WebRequest -Uri $URL.Uri -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
             Write-Verbose "Download of the new version $Version finished" -Verbose
@@ -2010,7 +2010,6 @@ if ($download -eq $False) {
                 "/EnableCEIP=false"
                 "/FORCE_LAA=1"
                 "/AutoUpdateCheck=disabled"
-                "/EnableCEIP=false"
                 "/ALLOWADDSTORE=S"
                 "/ALLOWSAVEPWD=S"
                 "/includeSSON"
