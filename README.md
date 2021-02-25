@@ -1,7 +1,7 @@
 # Evergreen Script by Manuel Winkel / [Deyda.net](https://www.deyda.net) / [@deyda84](https://twitter.com/Deyda84)
 Download and Install several Software the lazy way with the [Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein](https://github.com/aaronparker/Evergreen).
 
-![www.deyda.net](/img/logo_DEYDA_with_url.png)
+![www.deyda.net](/img/Logo_DEYDA_with_url.png)
 
 To update or download a software package just switch from 0 to 1 in the section "Select software" (With PowerShell parameter -list) or select your Software out of the GUI.
 
