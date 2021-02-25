@@ -5,6 +5,8 @@ Download and Install several Software the lazy way with the [Evergreen module fr
 
 To update or download a software package just switch from 0 to 1 in the section "Select software" (With PowerShell parameter -list) or select your Software out of the GUI.
 
+![Parameter -list](/img/script-list.png)
+
 A new folder for every single package will be created, together with a version file and a log file. 
 
 If a new version is available the script checks the version number and will update the package.
@@ -12,6 +14,8 @@ If a new version is available the script checks the version number and will upda
 I'm no powershell expert, so I'm sure there is much room for improvements!
 
 So let me hear your feedback, I will try to include everything as much as I can.
+
+![Script](/img/script.png)
 
 ## Purpose/Change:
     2021-01-29        Initial Version
@@ -64,8 +68,6 @@ Don't start the GUI to select the Software Packages and use the hardcoded list i
     $VMWareTools = 0
     $WinSCP = 0
 
-![Parameter -list](/img/script-list.png)
-
 For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
 
 ### -download
@@ -97,6 +99,8 @@ Download and install the selected Software out of the list.
 .\Evergreen.ps1
 
 Start the GUI to select the mode (Install and/or Download) and the Software.
+
+![GUI-Mode](/img/Gui.png)
 
 ## Notes
 
