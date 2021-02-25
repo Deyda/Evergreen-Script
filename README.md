@@ -1,5 +1,7 @@
 # Evergreen Script by Manuel Winkel / [Deyda.net](https://www.deyda.net) / [@deyda84](https://twitter.com/Deyda84)
-Download and Install several Software the lazy way with the [Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein](https://github.com/aaronparker/Evergreen). 
+Download and Install several Software the lazy way with the [Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein](https://github.com/aaronparker/Evergreen).
+
+![www.deyda.net](/img/logo_DEYDA_with_url.png)
 
 To update or download a software package just switch from 0 to 1 in the section "Select software" (With PowerShell parameter -list) or select your Software out of the GUI.
 
@@ -49,7 +51,7 @@ Don't start the GUI to select the Software Packages and use the hardcoded list i
     $Greenshot = 0
     $KeePass = 0
     $mRemoteNG = 0
-    $MS365Apps = 1 # 64Bit / Match OS Language / Semi Annual Channel
+    $MS365Apps = 0 # 64Bit / Match OS Language / Semi Annual Channel
     $MSEdge = 0
     $MSOffice2019 = 0 # 64Bit / Match OS Language
     $MSOneDrive = 0
