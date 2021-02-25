@@ -62,7 +62,7 @@ Don't start the GUI to select the Software Packages and use the hardcoded list i
     $VMWareTools = 0
     $WinSCP = 0
 
-![leaf by The Icon Z from the Noun Project](/img/EvergreenLeaf.png)
+![Parameter -list](/img/script-list.png)
 
 For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
 
