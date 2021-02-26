@@ -26,7 +26,7 @@ the script checks the version number and will update the package.
   2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Mozilla Firefox / Add choice of language option in Foxit Reader / Add choice of architecture option in Google Chrome / Add choice of channel, architecture and language options in Microsoft 365 Apps / Add choice of architecture option in Microsoft Edge / Add choice of architecture and language options in Microsoft Office 2019 / Add choice of update ring option in Microsoft OneDrive
   2021-02-23        Correction Microsoft Edge Download / Google Chrome Version File
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
-  2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools
+  2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox & Microsoft365
 
 .PARAMETER list
 
@@ -1019,39 +1019,6 @@ if ($install -eq $False) {
         }
     }
 
-    #// Mark: Download mRemoteNG
-    if ($mRemoteNG -eq 1) {
-        $Product = "mRemoteNG"
-        $PackageName = "mRemoteNG"
-        $mRemoteNGD = Get-mRemoteNG | Where-Object { $_.URI -like "*msi*" }
-        $Version = $mRemoteNGD.Version
-        $URL = $mRemoteNGD.uri
-        $InstallerType = "msi"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            Write-Verbose "Update available" -Verbose
-            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
     #// Mark: Download Microsoft 365 Apps
     if ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
@@ -1447,6 +1414,39 @@ if ($install -eq $False) {
         }
     }
 
+    #// Mark: Download mRemoteNG
+    if ($mRemoteNG -eq 1) {
+        $Product = "mRemoteNG"
+        $PackageName = "mRemoteNG"
+        $mRemoteNGD = Get-mRemoteNG | Where-Object { $_.URI -like "*msi*" }
+        $Version = $mRemoteNGD.Version
+        $URL = $mRemoteNGD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download Notepad ++
     if ($NotePadPlusPlus -eq 1) {
         $Product = "NotePadPlusPlus"
@@ -1774,6 +1774,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+        If ($SevenZip -eq $NULL) {
+            $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+        }
         $7ZipInstaller = "7-Zip_" + "$ArchitectureClear" + ".exe"
         if ($SevenZip -ne $Version) {
             # 7-Zip
@@ -2011,6 +2014,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+        If ($HypTools -eq $NULL) {
+            $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+        }
         If ($HypTools) {$HypTools = $HypTools.Insert(3,'.0')}
         $HypToolsInstaller = "managementagent" + "$ArchitectureClear" + ".msi"
         IF ($HypTools -ne $Version) {
@@ -2247,6 +2253,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+        If ($Chrome -eq $NULL) {
+            $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+        }
         $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
         IF ($Chrome -ne $Version) {
             # Google Chrome
@@ -2345,73 +2354,6 @@ if ($download -eq $False) {
         }
     }
 
-    #// Mark: Install mRemoteNG
-    IF ($mRemoteNG -eq 1) {
-        $Product = "mRemoteNG"
-
-        # FUNCTION MSI Installation
-        #========================================================================================================================================
-        function Install-MSIFile {
-            [CmdletBinding()]
-            Param(
-                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
-                [ValidateNotNullorEmpty()]
-                [string]$msiFile,
-    
-                [parameter()]
-                [ValidateNotNullorEmpty()]
-                [string]$targetDir
-            )
-            if (!(Test-Path $msiFile)) {
-                throw "Path to MSI file ($msiFile) is invalid. Please check name and path!"
-            }
-            $arguments = @(
-                "/i"
-                "`"$msiFile`""
-                "/qn"
-            )
-            if ($targetDir) {
-                if (!(Test-Path $targetDir)) {
-                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
-                }
-                $arguments += "INSTALLDIR=`"$targetDir`""
-            }
-            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-            if($inst -ne $null) {
-                Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
-            }
-            if ($process.ExitCode -eq 0) {
-            }
-            else {
-                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
-            }
-        }
-        #========================================================================================================================================
-
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $mRemoteNG = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion
-        IF ($mRemoteNG) {$mRemoteNG = $mRemoteNG -replace ".{6}$"}
-        IF ($mRemoteNG -ne $Version) {
-            # mRemoteNG
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try {
-                "$PSScriptRoot\$Product\mRemoteNG.msi" | Install-MSIFile
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
-        }
-    }
-
     #// Mark: Install Microsoft Apps 365
     IF ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
@@ -2419,6 +2361,9 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
         $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+        If ($MS365AppsV -eq $NULL) {
+            $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+        }
         $MS365AppsInstaller = "setup_" + "$MS365AppsChannelClear" + ".exe"
         IF ($MS365AppsV -ne $Version) {
             # MS365Apps Uninstallation
@@ -2510,6 +2455,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+        If ($Edge -eq $NULL) {
+            $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+        }
         $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + ".msi"
         IF ($Edge -ne $Version) {
             # MS Edge
@@ -2835,7 +2783,10 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Firefox = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        $Firefox = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        If ($Firefox -eq $NULL) {
+            $Firefox = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        }
         $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear" + ".msi"
         IF ($Firefox -ne $Version) {
             # Firefox
@@ -2843,6 +2794,73 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" $LogFile
             try {
                 "$PSScriptRoot\$Product\$FirefoxInstaller" | Install-MSIFile
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install mRemoteNG
+    IF ($mRemoteNG -eq 1) {
+        $Product = "mRemoteNG"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path!"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $mRemoteNG = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion
+        IF ($mRemoteNG) {$mRemoteNG = $mRemoteNG -replace ".{6}$"}
+        IF ($mRemoteNG -ne $Version) {
+            # mRemoteNG
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try {
+                "$PSScriptRoot\$Product\mRemoteNG.msi" | Install-MSIFile
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
