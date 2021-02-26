@@ -26,7 +26,7 @@ the script checks the version number and will update the package.
   2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Mozilla Firefox / Add choice of language option in Foxit Reader / Add choice of architecture option in Google Chrome / Add choice of channel, architecture and language options in Microsoft 365 Apps / Add choice of architecture option in Microsoft Edge / Add choice of architecture and language options in Microsoft Office 2019 / Add choice of update ring option in Microsoft OneDrive
   2021-02-23        Correction Microsoft Edge Download / Google Chrome Version File
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
-  2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox & Microsoft365
+  2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
 
 .PARAMETER list
 
@@ -99,7 +99,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 # Script Version
 # ========================================================================================================================================
 $eVersion = "0.9"
-Write-Verbose "Evergreen Download and Install Script by Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
+Write-Verbose "Evergreen - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
 if ($myWindowsPrincipal.IsInRole($adminRole)) {
@@ -344,7 +344,7 @@ $inputXML = @"
         else {$Script:Firefox = 0}
         if ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:FSLogix = 1}
         else {$Script:FSLogix = 0}
-        if ($WPFCheckbox_Foxit_Reader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
+        if ($WPFCheckbox_FoxitReader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
         else {$Script:Foxit_Reader = 0}
         if ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
         else {$Script:GoogleChrome = 0}
@@ -1366,7 +1366,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -1467,7 +1467,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -1501,7 +1501,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -1535,7 +1535,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -1637,7 +1637,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -1671,7 +1671,7 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
@@ -2882,6 +2882,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
+        If ($Notepad -eq $NULL) {
+            $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
+        }
         $NotepadPlusPlusInstaller = "NotePadPlusPlus_" + "$ArchitectureClear" + ".exe"
         IF ($Notepad -ne $Version) {
             # Installation Notepad++
@@ -2892,7 +2895,7 @@ if ($download -eq $False) {
                 $p = Get-Process NotePadPlusPlus_$ArchitectureClear
 		        if ($p) {
                     $p.WaitForExit()
-                    Write-Verbose "Installation $Product $ArchitectureClearfinished!" -Verbose
+                    Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
                 }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
@@ -2931,7 +2934,6 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
-                "/log $PSScriptRoot\$Product\verbose.log"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2956,6 +2958,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $OpenJDK = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+        If ($OpenJDK -eq $NULL) {
+            $OpenJDK = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+        }
         $OpenJDKInstaller = "OpenJDK" + "$ArchitectureClear" + ".msi"
         IF ($Version) {$Version = $Version -replace ".-"}
         IF ($OpenJDK -ne $Version) {
@@ -2981,16 +2986,17 @@ if ($download -eq $False) {
     #// Mark: Install OracleJava8
     if ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
-
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         IF ($Version) {$Version = $Version -replace "^.{2}"}
-        IF ($Version) {$Version = $Version -replace "-.*(0)"}
-        IF ($Version) {$Version = $Version -replace "._"}
         IF ($Version) {$Version = $Version -replace "\."}
-        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java Auto Updater*"}).DisplayVersion
-        IF ($OracleJava) {$OracleJava = $OracleJava -replace "^.{2}"}
+        IF ($Version) {$Version = $Version -replace "_"}
+        IF ($Version) {$Version = $Version -replace "-b"}
+        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
+        If ($OracleJava -eq $NULL) {
+            $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
+        }
         IF ($OracleJava) {$OracleJava = $OracleJava -replace "\."}
         $OracleJavaInstaller = "OracleJava8_" + "$ArchitectureClear" +".exe"
         if ($OracleJava -ne $Version) {
@@ -3134,6 +3140,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
+        If ($VLC -eq $NULL) {
+            $VLC = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
+        }
         IF ($VLC) {$VLC = $VLC -replace ".{2}$"}
         $VLCInstaller = "VLC-Player_" + "$ArchitectureClear" +".msi"
         IF ($VLC -ne $Version) {
@@ -3163,6 +3172,9 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
+        If ($VMWT -eq $NULL) {
+            $VMWT = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
+        }
         IF ($VMWT) {$VMWT = $VMWT -replace ".{9}$"}
         $VMWareToolsInstaller = "VMWareTools_" + "$ArchitectureClear" +".exe"
         IF ($VMWT -ne $Version) {
