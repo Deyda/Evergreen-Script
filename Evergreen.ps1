@@ -26,6 +26,7 @@ the script checks the version number and will update the package.
   2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Mozilla Firefox / Add choice of language option in Foxit Reader / Add choice of architecture option in Google Chrome / Add choice of channel, architecture and language options in Microsoft 365 Apps / Add choice of architecture option in Microsoft Edge / Add choice of architecture and language options in Microsoft Office 2019 / Add choice of update ring option in Microsoft OneDrive
   2021-02-23        Correction Microsoft Edge Download / Google Chrome Version File
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
+  2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools
 
 .PARAMETER list
 
@@ -246,7 +247,7 @@ $inputXML = @"
     } | out-null
  
     Function Get-FormVariables{
-    if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" –ForegroundColor Yellow;$global:ReadmeDisplay=$true}
+        #if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" –ForegroundColor Yellow;$global:ReadmeDisplay=$true}
         #write-host "Found the following interactable elements from our form" –ForegroundColor Cyan
         get-variable WPF*
     }
@@ -369,8 +370,8 @@ $inputXML = @"
         else {$Script:OpenJDK = 0}
         if ($WPFCheckbox_OracleJava8.ischecked -eq $true) {$Script:OracleJava8 = 1}
         else {$Script:OracleJava8 = 0}
-        if ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSizeFree = 1}
-        else {$Script:TreeSizeFree = 0}
+        if ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSize = 1}
+        else {$Script:TreeSize = 0}
         if ($WPFCheckbox_VLCPlayer.ischecked -eq $true) {$Script:VLCPlayer = 1}
         else {$Script:VLCPlayer = 0}
         if ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
@@ -500,14 +501,14 @@ if ($list -eq $True) {
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
-    $TreeSizeFree = 0
+    $TreeSize = 0
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
     
 }
 else {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSizeFree,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -1548,50 +1549,86 @@ if ($install -eq $False) {
         }
     }
 
-    #// Mark: Download Tree Size Free
-    if ($TreeSizeFree -eq 1) {
-        $Product = "TreeSizeFree"
-        $PackageName = "TreeSizeFree"
-        $TreeSizeFreeD = Get-JamTreeSizeFree
-        $Version = $TreeSizeFreeD.Version
-        $URL = $TreeSizeFreeD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            Write-Verbose "Update available" -Verbose
-            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
+    #// Mark: Download TreeSize
+    if ($TreeSize -eq 1) {
+        switch ($TreeSizeType) {
+            0 {
+                $Product = "TreeSize Free"
+                $PackageName = "TreeSize_Free"
+                $TreeSizeFreeD = Get-JamTreeSizeFree
+                $Version = $TreeSizeFreeD.Version
+                $URL = $TreeSizeFreeD.uri
+                $InstallerType = "exe"
+                $Source = "$PackageName" + "." + "$InstallerType"
+                $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+                Write-Verbose "Download $Product" -Verbose
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version: $CurrentVersion"
+                if (!($CurrentVersion -eq $Version)) {
+                    Write-Verbose "Update available" -Verbose
+                    if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Start-Transcript $LogPS
+                    Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                    Write-Verbose "Starting Download of $Product $Version" -Verbose
+                    Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    Write-Verbose "Stop logging" -Verbose
+                    Stop-Transcript
+                    Write-Verbose "Download of the new version $Version finished" -Verbose
+                    Write-Output ""
+                }
+                else {
+                    Write-Verbose "No new version available" -Verbose
+                    Write-Output ""
+                }
+            }
+            1 {
+                $Product = "TreeSize Professional"
+                $PackageName = "TreeSize_Professional"
+                $TreeSizeProfD = Get-JamTreeSizeProfessional
+                $Version = $TreeSizeProfD.Version
+                $URL = $TreeSizeProfD.uri
+                $InstallerType = "exe"
+                $Source = "$PackageName" + "." + "$InstallerType"
+                $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+                Write-Verbose "Download $Product" -Verbose
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version: $CurrentVersion"
+                if (!($CurrentVersion -eq $Version)) {
+                    Write-Verbose "Update available" -Verbose
+                    if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Start-Transcript $LogPS
+                    Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                    Write-Verbose "Starting Download of $Product $Version" -Verbose
+                    Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    Write-Verbose "Stop logging" -Verbose
+                    Stop-Transcript
+                    Write-Verbose "Download of the new version $Version finished" -Verbose
+                    Write-Output ""
+                }
+                else {
+                    Write-Verbose "No new version available" -Verbose
+                    Write-Output ""
+                }
+            }
         }
     }
 
     #// Mark: Download VLC Player
     if ($VLCPlayer -eq 1) {
         $Product = "VLC Player"
-        $PackageName = "VLC-Player"
-        $VLCD = Get-VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "x64" -and $_.Type -eq "MSI" }
+        $PackageName = "VLC-Player_" + "$ArchitectureClear"
+        $VLCD = Get-VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "MSI" }
         $Version = $VLCD.Version
         $URL = $VLCD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -1601,7 +1638,7 @@ if ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1617,14 +1654,15 @@ if ($install -eq $False) {
     #// Mark: Download VMWareTools
     if ($VMWareTools -eq 1) {
         $Product = "VMWare Tools"
-        $PackageName = "VMWareTools"
-        $VMWareToolsD = Get-VMwareTools | Where-Object { $_.Architecture -eq "x64" }
+        $PackageName = "VMWareTools_" + "$ArchitectureClear"
+        $VMWareToolsD = Get-VMwareTools | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $VMWareToolsD.Version
         $URL = $VMWareToolsD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -1634,7 +1672,7 @@ if ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -2964,35 +3002,69 @@ if ($download -eq $False) {
         }
     }
 
-    #// Mark: Install TreeSizeFree
-    IF ($TreeSizeFree -eq 1) {
-        $Product = "TreeSizeFree"
+    #// Mark: Install TreeSize
+    IF ($TreeSize -eq 1) {
+        switch ($TreeSizeType) {
+            0 {
+                $Product = "TreeSize Free"
 
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $Version = $Version.Insert(3,'.')
-        $TreeSize = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
-        IF ($TreeSize -ne $Version) {
-            # Installation Tree Size Free
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try	{
-                Start-Process "$PSScriptRoot\$Product\TreeSizeFree.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
-                $p = Get-Process TreeSizeFree
-		        if ($p) {
-                    $p.WaitForExit()
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                # Check, if a new version is available
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = $Version.Insert(3,'.')
+                $TreeSize = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
+                IF ($TreeSize -ne $Version) {
+                    # Installation Tree Size Free
+                    Write-Verbose "Installing $Product" -Verbose
+                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    try	{
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
+                        $p = Get-Process TreeSize_Free
+                        if ($p) {
+                            $p.WaitForExit()
+                            Write-Verbose "Installation $Product finished!" -Verbose
+                        }
+                    } catch {
+                        DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
                 }
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                # Stop, if no new version is available
+                Else {
+                    Write-Verbose "No Update available for $Product" -Verbose
+                    Write-Output ""
+                }
             }
-            DS_WriteLog "-" "" $LogFile
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
+            1 {
+                $Product = "TreeSize Professional"
+
+                # Check, if a new version is available
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = $Version.Insert(3,'.')
+                $TreeSize = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
+                IF ($TreeSize -ne $Version) {
+                    # Installation Tree Size Free
+                    Write-Verbose "Installing $Product" -Verbose
+                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    try	{
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
+                        $p = Get-Process TreeSize_Professional
+                        if ($p) {
+                            $p.WaitForExit()
+                            Write-Verbose "Installation $Product finished!" -Verbose
+                        }
+                    } catch {
+                        DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Verbose "No Update available for $Product" -Verbose
+                    Write-Output ""
+                }
+            }
         }
     }
 
@@ -3030,7 +3102,7 @@ if ($download -eq $False) {
             $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
-                Write-Verbose "Installation $Product finished!" -Verbose
+                Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -3041,15 +3113,17 @@ if ($download -eq $False) {
         #========================================================================================================================================
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
         IF ($VLC) {$VLC = $VLC -replace ".{2}$"}
+        $VLCInstaller = "VLC-Player_" + "$ArchitectureClear" +".msi"
         IF ($VLC -ne $Version) {
             # VLC Player
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
-                "$PSScriptRoot\$Product\VLC-Player.msi" | Install-MSIFile
+                "$PSScriptRoot\$Product\$VLCInstaller" | Install-MSIFile
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
             }
@@ -3068,9 +3142,11 @@ if ($download -eq $False) {
         $Product = "VMWare Tools"
 
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
         IF ($VMWT) {$VMWT = $VMWT -replace ".{9}$"}
+        $VMWareToolsInstaller = "VMWareTools_" + "$ArchitectureClear" +".exe"
         IF ($VMWT -ne $Version) {
             # VMWareTools Installation
             $Options = @(
@@ -3078,13 +3154,13 @@ if ($download -eq $False) {
                 "/v"
                 "/qn REBOOT=Y"
             )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\VMWareTools.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$VMWareToolsInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
+                    Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
                     Write-Output ""
                     Write-Verbose "Server needs to reboot, start script again after reboot" -Verbose
                     Write-Output ""
