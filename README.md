@@ -29,24 +29,86 @@ So let me hear your feedback, I will try to include everything as much as I can.
     2021-02-14        Change Adobe Acrobat DC Downloader
     2021-02-15        Change MS Teams Downloader / Correction GUI Select All / Add Download MS Apps 365 & Office 2019 Install Files / Add Uninstall and Install MS Apps 365 & Office 2019
     2021-02-18        Correction Code regarding location of scripts at MS365Apps and MSOffice2019. Removing Download Time Files.
+    2021-02-19        Implementation of new GUI / Add choice of architecture option in 7-Zip / Add choice of language option in Adobe Reader DC / Add choice of architecture option in Citrix Hypervisor Tools / Add choice of release option in Citrix Workspace App (Merge LTSR and CR script part)
+    2021-02-22        Add choice of architecture, language and channel (Latest and ESR) options in Mozilla Firefox / Add choice of language option in Foxit Reader / Add choice of architecture option in Google Chrome / Add choice of channel, architecture and language options in Microsoft 365 Apps / Add choice of architecture option in Microsoft Edge / Add choice of architecture and language options in Microsoft Office 2019 / Add choice of update ring option in Microsoft OneDrive
+    2021-02-23        Correction Microsoft Edge Download / Google Chrome Version File
+    2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
+    2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
+    2021-02-28        Implementation of LastSetting memory
 
 ## Parameter
 
 ### -list
 
-Don't start the GUI to select the Software Packages and use the hardcoded list in the script (From line 549)
+Don't start the GUI to select the Software Packages and use the hardcoded list in the script (From line 517)
+
+    # Select Language (If this is selectable at download)
+    # 0 = Danish
+    # 1 = Dutch
+    # 2 = English
+    # 3 = Finnish
+    # 4 = French
+    # 5 = German
+    # 6 = Italian
+    # 7 = Japanese
+    # 8 = Korean
+    # 9 = Norwegian
+    # 10 = Polish
+    # 11 = Portuguese
+    # 12 = Russian
+    # 13 = Spanish
+    # 14 = Swedish
+    $Language = 2
+
+    # Select Architecture (If this is selectable at download)
+    # 0 = x64
+    # 1 = x86
+    $Architecture = 0
+
+    # Software Release / Ring / Channel / Type ?!
+    # Citrix Workspace App
+    # 0 = Current Release
+    # 1 = Long Term Service Release
+    $CitrixWorkspaceAppRelease = 1
+
+    # Microsoft 365 Apps
+    # 0 = Current (Preview) Channel
+    # 1 = Current Channel
+    # 2 = Monthly Enterprise Channel
+    # 3 = Semi-Annual Enterprise (Preview) Channel
+    # 4 = Semi-Annual Enterprise Channel
+    $MS365AppsChannel = 4
+
+    # Microsoft OneDrive
+    # 0 = Insider Ring
+    # 1 = Production Ring
+    # 2 = Enterprise Ring
+    $MSOneDriveRing = 2
+
+    # Microsoft Teams
+    # 0 = Preview Ring
+    # 1 = General Ring
+    $MSTeamsRing = 1
+
+    # Mozilla Firefox
+    # 0 = Current
+    # 1 = ESR
+    $FirefoxChannel = 0
+
+    # TreeSize
+    # 0 = Free
+    # 1 = Professional
+    $TreeSizeType = 0
 
     # Select software
     # 0 = Not selected
     # 1 = Selected
-    
     $7ZIP = 0
     $AdobeProDC = 0 # Only Update @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
     $Citrix_Hypervisor_Tools = 0
-    $Citrix_WorkspaceApp_CR = 0
-    $Citrix_WorkspaceApp_LTSR = 0
+    $Citrix_WorkspaceApp = 0
     $Filezilla = 0
     $Firefox = 0
     $Foxit_Reader = 0  # No Silent Install
@@ -55,15 +117,15 @@ Don't start the GUI to select the Software Packages and use the hardcoded list i
     $Greenshot = 0
     $KeePass = 0
     $mRemoteNG = 0
-    $MS365Apps = 0 # 64Bit / Match OS Language / Semi Annual Channel
+    $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSEdge = 0
-    $MSOffice2019 = 0 # 64Bit / Match OS Language
+    $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
-    $TreeSizeFree = 0
+    $TreeSize = 0
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
@@ -108,12 +170,12 @@ Start the GUI to select the mode (Install and/or Download) and the Software.
 If Download is selected, the module is checked each time the script is run and reinstalled if a new version is available.
 
 ### 7-ZIP
-Line 605 defines which package is downloaded (You can change the architecture).
+Line 746 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
-For 7-ZIP this is the x64 exe file.
+For 7-ZIP this is an exe file.
 
 ### Adobe Pro DC
-Line 638 defines which package is downloaded (You can change the version).
+Line 780 defines which package is downloaded (You can change the version).   
 
 For Adobe Pro DC this is the update package (msp file).
 
@@ -122,130 +184,106 @@ Only update @ the moment, no installer!
 After update stop & disable Adobe service & scheduled task.
 
 ### Adobe Reader DC
-Line 671 defines which package is downloaded (You can change the language).
+Line 813 defines which package is downloaded (You can change the language in line 533 for non GUI start).
 
-For Adobe Reader DC this is the english exe file.
+        English
+        Danish
+        Dutch
+        French
+        Finnish
+        German
+        Italian
+        Japanese
+        Korean
+        Norwegian
+        Spanish
 
 After installation stop & disable Adobe service & scheduled task.
 
 ### BIS-F
-Line 703 defines which package is downloaded.
+Line 846 defines which package is downloaded.
 
 For BIS-F this is the msi file.
 
 After installation, customization of the scripts regarding Task Offload, RSS to enable and DEP to disable.
 
 ### Citrix Hypervisor Tools
-Line 736 defines which package is downloaded (You can change the architecture and the version).
+Line 879 defines which package is downloaded (You can change the architecture in line 538 for non GUI start and the version).
 
 For Citrix Hypervisor Tools this is the x64 msi file (LTSR Path).
 
 For Windows 7, Windows Server 2008 SP2, Windows Server 2008 R2 SP1 you can switch to the version 7.2.0.1555.
 
-### Citrix WorkspaceApp Current Release
-Line 770 defines which package is downloaded (You can change the release or use the Citrix_Workspace_LTSR switch).
-
-For Citrix Workspace App this is the exe file (CR Path).
+### Citrix WorkspaceApp
+Line 913 defines which package is downloaded (You can change the release on line 544 for non GUI start).
 
 Before the installation of the new receiver, the old one is uninstalled via Receiver CleanUp Tool.
 
-The installation is executed with the following parameters (from line 1986):
+The installation is executed with the following parameters (from line 2157):
         /forceinstall
         /silent
         /EnableCEIP=false
         /FORCE_LAA=1
         /AutoUpdateCheck=disabled
-        /EnableCEIP=false
         /ALLOWADDSTORE=S
         /ALLOWSAVEPWD=S
         /includeSSON
         /ENABLE_SSON=Yes
         
-After the installation various registry keys are still set (from line 2006).
-
-As always, after installing the new Workspace Agent, the system should be rebooted.
-
-### Citrix WorkspaceApp Long Term Service Release
-Line 812 defines which package is downloaded (You can change the release or use the Citrix_Workspace_CR switch).
-
-For Citrix Workspace App this is the exe file (LTSR Path).
-
-Before the installation of the new receiver, the old one is uninstalled via Receiver CleanUp Tool.
-
-The installation is executed with the following parameters (from line 2046):
-        /forceinstall
-        /silent
-        /EnableCEIP=false
-        /FORCE_LAA=1
-        /AutoUpdateCheck=disabled
-        /EnableCEIP=false
-        /ALLOWADDSTORE=S
-        /ALLOWSAVEPWD=S
-        /includeSSON
-        /ENABLE_SSON=Yes
-        
-After the installation various registry keys are still set (from line 2066).
+After the installation various registry keys are still set (from line 2177).
 
 As always, after installing the new Workspace Agent, the system should be rebooted.
 
 ### Filezilla
-Line 854 defines which package is downloaded.
+Line 954 defines which package is downloaded.
 
 For Filezilla this is the exe file.
 
 Filezilla is installed with the parameter /user=all for all users.
 
-### Firefox
-Line 887 defines which package is downloaded (You can change the architecture, language and the channel(to ESR)).
+### Foxit Reader
+Line 987 defines which package is downloaded (You can change the language in line 533 for non GUI start).
 
-For Firefox this is the english x64 msi file (Latest Firefox Version).
+        Danish
+        Dutch
+        English
+        Finnish
+        French
+        German
+        Italian
+        Korean
+        Norwegian
+        Polish
+        Portuguese
+        Russian
+        Spanish
+        Swedish
 
-Firefox is installed with the parameter that don't create icons or the maintenance service.
-
-### Foxit_Reader
-Line 920 defines which package is downloaded (You can change the language).
-
-For Foxit Reader this is the english exe file.
+For Foxit Reader this is an exe file.
 
 Unfortunately, a silent install is not possible at the moment.
 
-### FSLogix
-Line 953 defines which package is downloaded.
-
-For FSLogix this is the zip package.
-
-With FSLogix installation, the old installation, if present, is uninstalled first and a restart is requested. 
-
-Then the script must be started again, so that the new version is installed cleanly.
-
-Not only the FSLogix Agent is installed, but also the FSLogix AppRule Editor.
-
 ### GoogleChrome
-Line 1024 defines which package is downloaded (You can change the architecture).
+Line 1054 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
-For Google Chrome this is the x64 msi file.
+For Google Chrome this is the msi file.
 
 After installation stop & disable Chrome services & scheduled tasks.
 
 ### Greenshot
-Line 992 defines which package is downloaded.
+Line 1021 defines which package is downloaded.
 
-For Greenshot this is the exe file.
+For Greenshot this is an exe file.
 
 ### KeePass
-Line 1054 defines which package is downloaded.
+Line 1088 defines which package is downloaded.
 
 For KeePass this is the msi file.
 
-### mRemoteNG
-Line 1087 defines which package is downloaded.
-
-For mRemoteNG this is the msi file.
-
 ### Microsoft 365 Apps
-Line 1120 defines which package is downloaded (You can change the channel).
+Line 1120 defines which package is downloaded (You can change the channel in line 552 for non GUI start).
 
-For Microsoft 365 Apps this is the exe setup file for the Semi-Annual Channel.
+For Microsoft 365 Apps this is the exe setup file.
 
 During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
 
@@ -281,24 +319,35 @@ By default, the following is defined in install.xml (64Bit / Match OS Language /
     </Configuration>
 
 ### Microsoft Edge
-Line 1226 defines which package is downloaded (You can change the architecture).
+Line 1230 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
-For Microsoft Edge this is the x64 msi file.
+For Microsoft Edge this is the msi file.
 
 Microsoft Edge is installed with the parameter that don't create icons.
 
 After installation disable Microsoft Edge scheduled tasks and set Citrix API Hooks in the registry.
 
+### Microsoft FSLogix
+Line 1265 defines which package is downloaded.
+
+For FSLogix this is the zip package.
+
+With FSLogix installation, the old installation, if present, is uninstalled first and a restart is requested. 
+
+Then the script must be started again, so that the new version is installed cleanly.
+
+Not only the FSLogix Agent is installed, but also the FSLogix AppRule Editor.
+
 ### Microsoft Office 2019
-Line 1257 defines which package is downloaded (You can change the channel).
+Line 1305 defines which package is downloaded.
 
 For Microsoft Office 2019 this is the exe setup file for Office 2019 Enterprise.
 
 During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
 
-remove.xml (from line 1269)
+remove.xml (from line 1316)
 
-install.xml (from line 1294)
+install.xml (from line 1341)
 
 Afterwards the install.xml is used to download the required install files.
 
@@ -328,48 +377,76 @@ By default, the following is defined in install.xml (64Bit / Match OS Language):
     </Configuration>
     
 ### Microsoft OneDrive
-Line 1364 defines which package is downloaded (You can change the update ring).
+Line 1414 defines which package is downloaded (You can change the update ring in line 558 for non GUI start).
 
 For Microsoft OneDrive this is the Production Ring exe file.
 
 Microsoft OneDrive is installed with the Machine Based Install parameter.
 
 ### Microsoft Teams
-Line 1397 defines which package is downloaded (You can change the architecture and update ring).
-
+Line 1448 defines which package is downloaded (You can change the architecture in line 538 and update ring in line 563 for non GUI start).
+ 
 For Microsoft Teams this is the x64 msi file (General Ring).
 
 Microsoft Teams is installed with the Machine Based Install parameters.
 
-After installation disable Microsoft Teams autostart registry key can be enabled (from line 2820).
+After installation disable Microsoft Teams autostart registry key can be enabled (from line 2816).
+
+### Mozilla Firefox
+Line 1482 defines which package is downloaded (You can change the architecture in line 538, language in line 533 and the channel in line 568 for non GUI start).
+
+       Danish
+       Dutch
+       English
+       Finnish
+       French
+       German
+       Italian
+       Japanese
+       Korean
+       Norwegian
+       Polish
+       Portuguese
+       Russian
+       Spanish
+       Swedish
+
+For Firefox this is the english x64 msi file (Latest Firefox Version).
+
+Firefox is installed with the parameter that don't create icons or the maintenance service.
+
+### mRemoteNG
+Line 1516 defines which package is downloaded.
+
+For mRemoteNG this is the msi file.
 
 ### NotePad++
-Line 1430 defines which package is downloaded (You can change the architecture).
+Line 1549 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
 For Notepad++ this is the x64 exe file.
 
 ### OpenJDK
-Line 1463 defines which package is downloaded (You can change the architecture).
+Line 1583 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
 For OpenJDK this is the x64 msi file.
 
 ### Oracle Java 8
-Line 1496 defines which package is downloaded (You can change the architecture).
+Line 1617 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
 For Oracle Java 8 this is the x64 msi file.
 
-### TreeSize Free
-Line 1529 defines which package is downloaded.
+### TreeSize
+Line 1653 and 1684 defines which package is downloaded (You can change the version in line 573 for non GUI start).
 
-For TreeSize Free this is the exe file.
+For TreeSize this is the exe file.
 
 ### VLC Player
-Line 1562 defines which package is downloaded (You can change the architecture).
+Line 1719 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
 For VLC Player this is the x64 msi file.
 
 ### VMWare Tools
-Line 1595 defines which package is downloaded (You can change the architecture).
+Line 1753 defines which package is downloaded (You can change the architecture in line 538 for non GUI start).
 
 For VMWare Tools this is the x64 exe file.
 
@@ -378,6 +455,6 @@ With VMWare Tools installation, the old installation, if present, is uninstalled
 Then the script must be started again, so that the new version is installed cleanly.
     
 ### WinSCP
-Line 1628 defines which package is downloaded.
+Line 1787 defines which package is downloaded.
 
 For WinSCP this is the exe file.
