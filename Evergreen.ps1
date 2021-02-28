@@ -27,6 +27,7 @@ the script checks the version number and will update the package.
   2021-02-23        Correction Microsoft Edge Download / Google Chrome Version File
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
   2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
+  2021-02-28        Implementation of LastSetting memory
 
 .PARAMETER list
 
@@ -258,6 +259,102 @@ $inputXML = @"
     $Script:install = $true
     $Script:download = $true
 
+    If (Test-Path "$PSScriptRoot\LastSetting.txt" -PathType leaf) {
+        $LastSetting = Get-Content "$PSScriptRoot\LastSetting.txt"
+        $WPFBox_Language.SelectedIndex = $LastSetting[0] -as [int]
+        $WPFBox_Architecture.SelectedIndex = $LastSetting[1] -as [int]
+        $WPFBox_CitrixWorkspaceApp.SelectedIndex = $LastSetting[2] -as [int]
+        $WPFBox_MS365Apps.SelectedIndex = $LastSetting[3] -as [int]
+        $WPFBox_MSOneDrive.SelectedIndex = $LastSetting[4] -as [int]
+        $WPFBox_MSTeams.SelectedIndex = $LastSetting[5] -as [int]
+        $WPFBox_Firefox.SelectedIndex = $LastSetting[6] -as [int]
+        $WPFBox_TreeSize.SelectedIndex = $LastSetting[7] -as [int]
+        switch ($LastSetting[8]) {
+            1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
+        }
+        switch ($LastSetting[9]) {
+            1 { $WPFCheckbox_AdobeProDC.IsChecked = "True"}
+        }
+        switch ($LastSetting[10]) {
+            1 { $WPFCheckbox_AdobeReaderDC.IsChecked = "True"}
+        }
+        switch ($LastSetting[11]) {
+            1 { $WPFCheckbox_BISF.IsChecked = "True"}
+        }
+        switch ($LastSetting[12]) {
+            1 { $WPFCheckbox_CitrixHypervisorTools.IsChecked = "True"}
+        }
+        switch ($LastSetting[13]) {
+            1 { $WPFCheckbox_CitrixWorkspaceApp.IsChecked = "True"}
+        }
+        switch ($LastSetting[14]) {
+            1 { $WPFCheckbox_Filezilla.IsChecked = "True"}
+        }
+        switch ($LastSetting[15]) {
+            1 { $WPFCheckbox_Firefox.IsChecked = "True"}
+        }
+        switch ($LastSetting[16]) {
+            1 { $WPFCheckbox_FoxitReader.IsChecked = "True"}
+        }
+        switch ($LastSetting[17]) {
+            1 { $WPFCheckbox_MSFSLogix.IsChecked = "True"}
+        }
+        switch ($LastSetting[18]) {
+            1 { $WPFCheckbox_GoogleChrome.IsChecked = "True"}
+        }
+        switch ($LastSetting[19]) {
+            1 { $WPFCheckbox_Greenshot.IsChecked = "True"}
+        }
+        switch ($LastSetting[20]) {
+            1 { $WPFCheckbox_KeePass.IsChecked = "True"}
+        }
+        switch ($LastSetting[21]) {
+            1 { $WPFCheckbox_mRemoteNG.IsChecked = "True"}
+        }
+        switch ($LastSetting[22]) {
+            1 { $WPFCheckbox_MS365Apps.IsChecked = "True"}
+        }
+        switch ($LastSetting[23]) {
+            1 { $WPFCheckbox_MSEdge.IsChecked = "True"}
+        }
+        switch ($LastSetting[24]) {
+            1 { $WPFCheckbox_MSOffice2019.IsChecked = "True"}
+        }
+        switch ($LastSetting[25]) {
+            1 { $WPFCheckbox_MSOneDrive.IsChecked = "True"}
+        }
+        switch ($LastSetting[26]) {
+            1 { $WPFCheckbox_MSTeams.IsChecked = "True"}
+        }
+        switch ($LastSetting[27]) {
+            1 { $WPFCheckbox_NotePadPlusPlus.IsChecked = "True"}
+        }
+        switch ($LastSetting[28]) {
+            1 { $WPFCheckbox_OpenJDK.IsChecked = "True"}
+        }
+        switch ($LastSetting[29]) {
+            1 { $WPFCheckbox_OracleJava8.IsChecked = "True"}
+        }
+        switch ($LastSetting[30]) {
+            1 { $WPFCheckbox_TreeSize.IsChecked = "True"}
+        }
+        switch ($LastSetting[31]) {
+            1 { $WPFCheckbox_VLCPlayer.IsChecked = "True"}
+        }
+        switch ($LastSetting[32]) {
+            1 { $WPFCheckbox_VMWareTools.IsChecked = "True"}
+        }
+        switch ($LastSetting[33]) {
+            1 { $WPFCheckbox_WinSCP.IsChecked = "True"}
+        }
+        switch ($LastSetting[34]) {
+            True { $WPFCheckbox_Download.IsChecked = "True"}
+        }
+        switch ($LastSetting[35]) {
+            True { $WPFCheckbox_Install.IsChecked = "True"}
+        }
+    }
+    
     #// MARK: Event Handler
     # Checkbox SelectAll
     $WPFCheckbox_SelectAll.Add_Checked({
@@ -336,8 +433,6 @@ $inputXML = @"
         else {$Script:Citrix_Hypervisor_Tools = 0}
         if ($WPFCheckbox_CitrixWorkspaceApp.IsChecked -eq $true) {$Script:Citrix_WorkspaceApp = 1}
         else {$Script:Citrix_WorkspaceApp = 0}
-        if ($Citrix_WorkspaceApp_LTSRBox.checked -eq $true) {$Script:Citrix_WorkspaceApp_LTSR = 1}
-        else {$Script:Citrix_WorkspaceApp_LTSR = 0}
         if ($WPFCheckbox_Filezilla.IsChecked -eq $true) {$Script:Filezilla = 1}
         else {$Script:Filezilla = 0}
         if ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
@@ -386,6 +481,7 @@ $inputXML = @"
         $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
         $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
         $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
     })
@@ -511,7 +607,6 @@ else {
     Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType -ErrorAction SilentlyContinue
     gui_mode
 }
-
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
