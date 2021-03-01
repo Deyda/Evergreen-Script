@@ -40,7 +40,9 @@ So let me hear your feedback, I will try to include everything as much as I can.
 
 ### -list
 
-Don't start the GUI to select the Software Packages and use the hardcoded list in the script (From line 517)
+Don't start the GUI to select the Software Packages and use the hardcoded list in the script (From line 517). 
+
+If neither parameter -Download or -Install is also used, both processes will be executed.
 
     # Select Language (If this is selectable at download)
     # 0 = Danish
