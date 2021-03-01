@@ -162,7 +162,7 @@ Download and install the selected Software out of the list.
 
 Start the GUI to select the mode (Install and/or Download) and the Software.
 
-![GUI-Mode](/img/Gui.png)
+![GUI-Mode](/img/GUI.png)
 
 ## Notes
 
