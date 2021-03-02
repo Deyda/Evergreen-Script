@@ -28,6 +28,7 @@ the script checks the version number and will update the package.
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
   2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
   2021-02-28        Implementation of LastSetting memory
+  2022-03-02        Add Microsoft Teams Citrix Api Hook
 
 .PARAMETER list
 
@@ -45,7 +46,7 @@ Only install the software packages in list Mode (-list).
 
 .\Evergreen.ps1 -list -download
 
-Downlod the selected Software out of the list.
+Download the selected Software out of the list.
 
 .EXAMPLE
 
@@ -100,7 +101,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 # Script Version
 # ========================================================================================================================================
 $eVersion = "0.9"
-Write-Verbose "Evergreen - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
+Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 Write-Output ""
 
 if ($myWindowsPrincipal.IsInRole($adminRole)) {
@@ -128,7 +129,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen - Update your Software, the lazy way" Height="470" Width="840">
+        Title="Evergreen Script - Update your Software, the lazy way" Height="470" Width="840">
     <Grid x:Name="Evergreen_GUI">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
@@ -2640,7 +2641,6 @@ if ($download -eq $False) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product Rule Editor finished!" -Verbose
                 }
-                reg add "HKLM\SOFTWARE\FSLogix\Profiles" /v GroupPolicyState /t REG_DWORD /d 0 /f | Out-Null
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2811,6 +2811,7 @@ if ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\$TeamsInstaller" | Install-MSIFile
                 Start-Sleep 5
+                reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
                 # Write-Verbose "Customize $Product Autorun" -Verbose
                 # Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
