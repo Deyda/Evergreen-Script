@@ -28,7 +28,7 @@ the script checks the version number and will update the package.
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
   2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
   2021-02-28        Implementation of LastSetting memory
-  2022-03-02        Add Microsoft Teams Citrix Api Hook
+  2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
 
 .PARAMETER list
 
@@ -244,13 +244,13 @@ $inputXML = @"
 
     # Load XAML Objects In PowerShell  
     $xaml.SelectNodes("//*[@Name]") | %{"trying item $($_.Name)";
-        try {Set-Variable –Name "WPF$($_.Name)" –Value $Form.FindName($_.Name) –ErrorAction Stop}
+        try {Set-Variable -Name "WPF$($_.Name)" -Value $Form.FindName($_.Name) -ErrorAction Stop}
         catch{throw}
     } | out-null
  
     Function Get-FormVariables{
-        #if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" –ForegroundColor Yellow;$global:ReadmeDisplay=$true}
-        #write-host "Found the following interactable elements from our form" –ForegroundColor Cyan
+        #if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" -ForegroundColor Yellow;$global:ReadmeDisplay=$true}
+        #write-host "Found the following interactable elements from our form" -ForegroundColor Cyan
         get-variable WPF*
     }
 
@@ -1879,7 +1879,7 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\$7ZipInstaller" –ArgumentList /S
+                Start-Process "$PSScriptRoot\$Product\$7ZipInstaller" -ArgumentList /S
                 $p = Get-Process 7-Zip_$ArchitectureClear
                 if ($p) {
                     $p.WaitForExit()
@@ -1954,7 +1954,7 @@ if ($download -eq $False) {
                 "/rs"
             )
             try	{
-                Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" –ArgumentList $Options
+                Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" -ArgumentList $Options
                 $p = Get-Process Adobe_Reader_DC_$AdobeLanguageClear
                 if ($p) {
                     $p.WaitForExit()
@@ -2147,7 +2147,7 @@ if ($download -eq $False) {
             Write-Verbose "Uninstalling Citrix Workspace App / Receiver" -Verbose
             DS_WriteLog "I" "Uninstalling Citrix Workspace App / Receiver" $LogFile
             try	{
-                Start-process $UninstallWSACR -ArgumentList '/silent /disableCEIP' –NoNewWindow -Wait
+                Start-process $UninstallWSACR -ArgumentList '/silent /disableCEIP' -NoNewWindow -Wait
             } catch {
                 DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (error: $($Error[0]))" $LogFile
             }
@@ -2614,8 +2614,8 @@ if ($download -eq $False) {
                 Write-Verbose "Uninstalling $Product" -Verbose
                 DS_WriteLog "I" "Uninstalling $Product" $LogFile
                 try	{
-                    Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' –NoNewWindow -Wait
-                    Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' –NoNewWindow -Wait
+                    Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                    Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
                 } catch {
                     DS_WriteLog "E" "Error Uninstalling $Product (error: $($Error[0]))" $LogFile
                 }
@@ -2631,12 +2631,12 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product" -Verbose
             DS_WriteLog "I" "Installing $Product" $LogFile
             try	{
-                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow
+                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet'  -NoNewWindow
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product Setup finished!" -Verbose
                 }
-                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet'  –NoNewWindow
+                $inst = Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet'  -NoNewWindow
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product Rule Editor finished!" -Verbose
@@ -2720,7 +2720,7 @@ if ($download -eq $False) {
                 "/SILENT"
             )
             try	{
-                $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" –ArgumentList $Options –NoNewWindow -PassThru
+                $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList $Options -NoNewWindow -PassThru
                 while (Get-Process -Name "OneDriveSetup" -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 Write-Verbose "Installation $Product $MSOneDriveRingClear finished!" -Verbose
                 # OneDrive starts automatically after setup. kill!
@@ -2987,7 +2987,7 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try	{
-                Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" –ArgumentList /S –NoNewWindow
+                Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" -ArgumentList /S -NoNewWindow
                 $p = Get-Process NotePadPlusPlus_$ArchitectureClear
 		        if ($p) {
                     $p.WaitForExit()
@@ -3103,7 +3103,7 @@ if ($download -eq $False) {
                 "/s"
             )
             try	{
-                Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" –ArgumentList $Options –NoNewWindow
+                Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
                 $p = Get-Process OracleJava8_$ArchitectureClear
                 if ($p) {
                     $p.WaitForExit()
@@ -3137,7 +3137,7 @@ if ($download -eq $False) {
                     Write-Verbose "Installing $Product" -Verbose
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     try	{
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow -Wait
                         $p = Get-Process TreeSize_Free
                         if ($p) {
                             $p.WaitForExit()
@@ -3167,7 +3167,7 @@ if ($download -eq $False) {
                     Write-Verbose "Installing $Product" -Verbose
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     try	{
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" –ArgumentList /VerySilent –NoNewWindow -Wait
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow -Wait
                         $p = Get-Process TreeSize_Professional
                         if ($p) {
                             $p.WaitForExit()
