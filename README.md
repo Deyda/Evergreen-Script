@@ -35,7 +35,6 @@ So let me hear your feedback, I will try to include everything as much as I can.
     2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
     2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
     2021-02-28        Implementation of LastSetting memory
-
 ## Parameter
 
 ### -list
@@ -131,7 +130,6 @@ If neither parameter -Download or -Install is also used, both processes will be 
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
-
 For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
 
 ### -download
@@ -147,7 +145,7 @@ Only install the selected software packages in list Mode (-list).
 
 .\Evergreen.ps1 -list -download
 
-Downlod the selected Software out of the list.
+Download the selected Software out of the list.
 
 
 .\Evergreen.ps1 -list -install
@@ -162,7 +160,7 @@ Download and install the selected Software out of the list.
 
 .\Evergreen.ps1
 
-Start the GUI to select the mode (Install and/or Download) and the Software.
+Starts the GUI to select the mode (Install and/or Download) and the software (Release, Update Ring, Language, etc.).
 
 ![GUI-Mode](/img/GUI.png)
 
@@ -183,7 +181,7 @@ For Adobe Pro DC this is the update package (msp file).
 
 Only update @ the moment, no installer!
 
-After update stop & disable Adobe service & scheduled task.
+After the update, the Adobe service and scheduled task will be stopped and disabled.
 
 ### Adobe Reader DC
 Line 813 defines which package is downloaded (You can change the language in line 533 for non GUI start).
@@ -199,22 +197,21 @@ Line 813 defines which package is downloaded (You can change the language in lin
         Korean
         Norwegian
         Spanish
-
-After installation stop & disable Adobe service & scheduled task.
+After the installation, the Adobe service and scheduled task will be stopped and disabled.
 
 ### BIS-F
 Line 846 defines which package is downloaded.
 
 For BIS-F this is the msi file.
 
-After installation, customization of the scripts regarding Task Offload, RSS to enable and DEP to disable.
+After the installation, the scripts will be adjusted regarding task offload, RSS activation and DEP deactivation.
 
 ### Citrix Hypervisor Tools
-Line 879 defines which package is downloaded (You can change the architecture in line 538 for non GUI start and the version).
+Line 879 defines which package is downloaded (You can change the architecture in line 538 and the version in line 879 for non-GUI startup).
 
 For Citrix Hypervisor Tools this is the x64 msi file (LTSR Path).
 
-For Windows 7, Windows Server 2008 SP2, Windows Server 2008 R2 SP1 you can switch to the version 7.2.0.1555.
+For Windows 7, Windows Server 2008 SP2 and Windows Server 2008 R2 SP1, you can change to version 7.2.0.1555 in line 879.
 
 ### Citrix WorkspaceApp
 Line 913 defines which package is downloaded (You can change the release on line 544 for non GUI start).
@@ -231,10 +228,9 @@ The installation is executed with the following parameters (from line 2157):
         /ALLOWSAVEPWD=S
         /includeSSON
         /ENABLE_SSON=Yes
-        
-After the installation various registry keys are still set (from line 2177).
+After the installation, various registry keys are set (from line 2177).
 
-As always, after installing the new Workspace Agent, the system should be rebooted.
+As always, after installing the new WorkspaceApp, the system should be rebooted.
 
 ### Filezilla
 Line 954 defines which package is downloaded.
@@ -260,7 +256,6 @@ Line 987 defines which package is downloaded (You can change the language in lin
         Russian
         Spanish
         Swedish
-
 For Foxit Reader this is an exe file.
 
 Unfortunately, a silent install is not possible at the moment.
@@ -270,7 +265,7 @@ Line 1054 defines which package is downloaded (You can change the architecture i
 
 For Google Chrome this is the msi file.
 
-After installation stop & disable Chrome services & scheduled tasks.
+After the installation the Chrome services and scheduled tasks will be stopped and disabled.
 
 ### Greenshot
 Line 1021 defines which package is downloaded.
@@ -299,7 +294,7 @@ Before installing the new Microsoft 365 Apps version, the previous installation 
 
 After that the reinstall of the software starts (install.xml).
 
-An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages, App Extension or Inclusion (Visio & Project)).
+An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages, App Exclusion or Inclusion (Visio & Project)).
 
 By default, the following is defined in install.xml (64Bit / Match OS Language / Semi Annual Channel):
 
@@ -325,9 +320,9 @@ Line 1230 defines which package is downloaded (You can change the architecture i
 
 For Microsoft Edge this is the msi file.
 
-Microsoft Edge is installed with the parameter that don't create icons.
+Microsoft Edge is installed with the parameter that don't create icons (Desktop and Quickstart).
 
-After installation disable Microsoft Edge scheduled tasks and set Citrix API Hooks in the registry.
+After the installation, the scheduled tasks of Microsoft Edge are disabled and the Citrix API Hooks are set in the registry.
 
 ### Microsoft FSLogix
 Line 1265 defines which package is downloaded.
@@ -392,7 +387,7 @@ For Microsoft Teams this is the x64 msi file (General Ring).
 
 Microsoft Teams is installed with the Machine Based Install parameters.
 
-After installation disable Microsoft Teams autostart registry key can be enabled (from line 2816).
+The registry key "Disable Microsoft Teams Autostart" can be enabled in the script (from line 2816).
 
 ### Mozilla Firefox
 Line 1482 defines which package is downloaded (You can change the architecture in line 538, language in line 533 and the channel in line 568 for non GUI start).
@@ -415,8 +410,7 @@ Line 1482 defines which package is downloaded (You can change the architecture i
 
 For Firefox this is the english x64 msi file (Latest Firefox Version).
 
-Firefox is installed with the parameter that don't create icons or the maintenance service.
-
+Firefox is installed with the parameter that disables the creation of the icons and the the maintenance service.
 ### mRemoteNG
 Line 1516 defines which package is downloaded.
 
