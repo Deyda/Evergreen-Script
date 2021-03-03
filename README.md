@@ -455,4 +455,9 @@ Line 1787 defines which package is downloaded.
 
 For WinSCP this is the exe file.
 
+## Shortcut
+In GitHub I have placed a sample lnk file under [shortcut](https://github.com/Deyda/Evergreen/tree/main/shortcut), as well as the Evergreen Script logo as an icon file.
+
+Change the path after the -file parameter to the location of your Evergreen Script folder.
+
 ![https://www.deyda.net](/img/Logo_DEYDA_with_url.png)
