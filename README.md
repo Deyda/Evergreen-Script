@@ -35,6 +35,8 @@ So let me hear your feedback, I will try to include everything as much as I can.
     2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
     2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
     2021-02-28        Implementation of LastSetting memory
+    2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
+    2022-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
 ## Parameter
 
 ### -list
@@ -184,7 +186,7 @@ Only update @ the moment, no installer!
 After the update, the Adobe service and scheduled task will be stopped and disabled.
 
 ### Adobe Reader DC
-Line 813 defines which package is downloaded (You can change the language in line 533 for non GUI start).
+Line 813 defines which package is downloaded (You can change the architecture in line 538 and the language in line 533 for non GUI start).
 
         English
         Danish
@@ -197,6 +199,8 @@ Line 813 defines which package is downloaded (You can change the language in lin
         Korean
         Norwegian
         Spanish
+The architecture can only be changed to x64 for the English package at the moment.
+
 After the installation, the Adobe service and scheduled task will be stopped and disabled.
 
 ### BIS-F
