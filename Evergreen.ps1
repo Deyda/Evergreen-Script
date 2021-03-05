@@ -29,6 +29,7 @@ the script checks the version number and will update the package.
   2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
   2021-02-28        Implementation of LastSetting memory
   2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
+  2022-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
 
 .PARAMETER list
 
@@ -644,6 +645,11 @@ switch ($LanguageClear) {
     Swedish { $AdobeLanguageClear = 'English'}
 }
 
+$AdobeArchitectureClear = 'x86'
+switch ($LanguageClear) {
+    English { $AdobeArchitectureClear = $ArchitectureClear}
+}
+
 switch ($CitrixWorkspaceAppRelease) {
     0 { $CitrixWorkspaceAppReleaseClear = 'Current Release'}
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
@@ -811,14 +817,14 @@ if ($install -eq $False) {
     if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
         $PackageName = "Adobe_Reader_DC_"
-        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Type -eq "Installer" -and $_.Language -eq "$AdobeLanguageClear"}
+        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Architecture -eq "$AdobeArchitectureClear" -and $_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
         $InstallerType = "exe"
-        $Source = "$PackageName" + "$AdobeLanguageClear" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeLanguageClear" + ".txt"
+        $Source = "$PackageName" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Verbose "Download $Product $AdobeLanguageClear" -Verbose
+        Write-Verbose "Download $Product $AdobeArchitectureClear $AdobeLanguageClear" -Verbose
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         if (!($CurrentVersion -eq $Version)) {
@@ -828,7 +834,7 @@ if ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
             Start-Transcript $LogPS
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $AdobeLanguageClear $Version" -Verbose
+            Write-Verbose "Starting Download of $Product $AdobeArchitectureClear $AdobeLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1941,24 +1947,24 @@ if ($download -eq $False) {
         $Product = "Adobe Reader DC"
 
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeLanguageClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
-        $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeLanguageClear" + ".exe"
+        $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         if ($Adobe -ne $Version) {
             # Adobe Reader DC
-            Write-Verbose "Installing $Product $AdobeLanguageClear" -Verbose
-            DS_WriteLog "I" "Installing $Product $AdobeLanguageClear" $LogFile
+            Write-Verbose "Installing $Product $AdobeArchitectureClear $AdobeLanguageClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $AdobeArchitectureClear $AdobeLanguageClear" $LogFile
             $Options = @(
                 "/sAll"
                 "/rs"
             )
             try	{
                 Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" -ArgumentList $Options
-                $p = Get-Process Adobe_Reader_DC_$AdobeLanguageClear
+                $p = Get-Process Adobe_Reader_DC_$AdobeArchitectureClear$AdobeLanguageClear
                 if ($p) {
                     $p.WaitForExit()
-                    Write-Verbose "Installation $Product $AdobeLanguageClear finished!" -Verbose
+                    Write-Verbose "Installation $Product $AdobeArchitectureClear $AdobeLanguageClear finished!" -Verbose
                 }
                 # Update Dienst und Task deaktivieren
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
