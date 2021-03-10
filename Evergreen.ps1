@@ -30,6 +30,7 @@ the script checks the version number and will update the package.
   2021-02-28        Implementation of LastSetting memory
   2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
   2022-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
+  2022-03-10        Fix Citrix Workspace App File / Adding advanced logging for Microsoft Teams installation
 
 .PARAMETER list
 
@@ -916,7 +917,7 @@ if ($install -eq $False) {
     #// Mark: Download Citrix WorkspaceApp
     if ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
-        $PackageName = "CitrixWorkspaceApp_" + "$CitrixWorkspaceAppReleaseClear"
+        $PackageName = "CitrixWorkspaceApp"
         $WSACD = Get-CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and "*$CitrixWorkspaceAppReleaseClear*" -and $_.Platform -eq "Windows" -and $_.Title -like "*$CitrixWorkspaceAppReleaseClear*" }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
@@ -1850,11 +1851,13 @@ if ($download -eq $False) {
     # Global variables
     #$StartDir = $PSScriptRoot # the directory path of the script currently being executed
     $LogDir = "$PSScriptRoot\_Install Logs"
-    $LogFileName = ("$ENV:COMPUTERNAME.log")
+    $LogFileName = ("$ENV:COMPUTERNAME - $Date.log")
     $LogFile = Join-path $LogDir $LogFileName
+    $LogTemp = "$env:windir\Logs\Evergreen"
 
-    # Create the log directory if it does not exist
+    # Create the log directories if they don't exist
     if (!(Test-Path $LogDir)) { New-Item -Path $LogDir -ItemType directory | Out-Null }
+    if (!(Test-Path $LogTemp)) { New-Item -Path $LogTemp -ItemType directory | Out-Null }
 
     # Create new log file (overwrite existing one)
     New-Item $LogFile -ItemType "file" -force | Out-Null
@@ -2771,6 +2774,7 @@ if ($download -eq $False) {
                 "ALLUSERS=1"
                 "OPTIONS='noAutoStart=true'"
                 "/qn"
+                "/L*V $TeamsLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2782,6 +2786,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear $MSTeamsRingClear Ring finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear $MSTeamsRingClear Ring finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2796,6 +2801,7 @@ if ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
         $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
+        $TeamsLog = "$LogTemp\MSTeams.log"
         IF ($Teams) {$Teams = $Teams.Insert(5,'0')}
         IF ($Teams -ne $Version) {
             #Uninstalling MS Teams
@@ -2804,9 +2810,12 @@ if ($download -eq $False) {
             try {
                 $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
                 $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
-                Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn"
+                Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
                 Start-Sleep 20
+                Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $TeamsLog
                 Write-Verbose "Uninstalling $Product finished!" -Verbose
+                DS_WriteLog "I" "Uninstalling $Product finished!" $LogFile
             } catch {
                 DS_WriteLog "E" "Ein Fehler ist aufgetreten beim Deinstallieren von $Product (error: $($Error[0]))" $LogFile       
             }
@@ -2817,6 +2826,8 @@ if ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\$TeamsInstaller" | Install-MSIFile
                 Start-Sleep 5
+                Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $TeamsLog
                 reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
                 # Prevents MS Teams from starting at logon, better do this with WEM or similar
                 # Write-Verbose "Customize $Product Autorun" -Verbose
