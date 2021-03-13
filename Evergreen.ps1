@@ -181,7 +181,7 @@ $inputXML = @"
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15.5,221,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15.5,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1" ToolTip="No sileent installation"/>
+        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15.5,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1" ToolTip="No silent installation"/>
         <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15.5,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15.5,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="16.5,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
@@ -1962,6 +1962,7 @@ if ($download -eq $False) {
             $Options = @(
                 "/sAll"
                 "/rs"
+                "/msi EULA_ACCEPT=YES ENABLE_OPTIMIZATION=YES DISABLEDESKTOPSHORTCUT=1 UPDATE_MODE=0 DISABLE_ARM_SERVICE_INSTALL=1"
             )
             try	{
                 Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" -ArgumentList $Options
@@ -2264,6 +2265,10 @@ if ($download -eq $False) {
                 "/ALLUSERS"
                 "/NORESTART"
                 "/NOCLOSEAPPLICATIONS"
+                "AUTO_UPDATE=0"
+                "LAUNCHCHECKDEFAULT=0"
+                "DESKTOP_SHORTCUT=0"
+                "/qn"
             )
             Write-Verbose "Installing $Product $FoxitReaderLanguageClear" -Verbose
             DS_WriteLog "I" "Installing $Product $FoxitReaderLanguageClear" $LogFile
@@ -3158,7 +3163,7 @@ if ($download -eq $False) {
             Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             $Options = @(
-                "/s"
+                "/s INSTALL_SILENT=Enable AUTO_UPDATE=Disable REBOOT=Disable SPONSORS=Disable REMOVEOUTOFDATEJRES=1 WEB_ANALYTICS=Disable"
             )
             try	{
                 Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
