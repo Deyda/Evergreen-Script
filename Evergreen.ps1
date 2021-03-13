@@ -31,6 +31,7 @@ the script checks the version number and will update the package.
   2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
   2022-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
   2022-03-10        Fix Citrix Workspace App File / Adding advanced logging for Microsoft Teams installation
+  2022-03-13        Adding advanced logging for BIS-F, Citrix Hypervisor Tools, Google Chrome, KeePass, Microsoft Edge, Mozilla Firefox, mRemoteNG, Open JDK and VLC Player installation / Adobe Reader Registry Filter Customization
 
 .PARAMETER list
 
@@ -1952,7 +1953,7 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
+        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*" | Sort-Object -Property DisplayVersion | Select-Object -Last 1 }).DisplayVersion
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         if ($Adobe -ne $Version) {
             # Adobe Reader DC
@@ -2013,6 +2014,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $BISFLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2024,6 +2026,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product finished!" -Verbose
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2036,6 +2039,7 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $BISF = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $BISFLog = "$LogTemp\BISF.log"
         IF ($BISF) {$BISF = $BISF -replace ".{6}$"}
         IF ($BISF -ne $Version) {
             # Base Image Script Framework
@@ -2043,13 +2047,15 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\setup-BIS-F.msi" | Install-MSIFile
+                Get-Content $BISFLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $BISFLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
-            write-Output ""
+            Write-Output ""
             # Customize scripts, it's best practise to enable Task Offload and RSS and to disable DEP
-            write-Verbose "Customize scripts $Product" -Verbose
+            Write-Verbose "Customize scripts $Product" -Verbose
             DS_WriteLog "I" "Customize scripts $Product" $LogFile
             $BISFDir = "C:\Program Files (x86)\Base Image Script Framework (BIS-F)\Framework\SubCall"
             try {
@@ -2095,6 +2101,7 @@ if ($download -eq $False) {
                 "`"$msiFile`""
                 "/quiet"
                 "/norestart"
+                "/L*V $CitrixHypLog"
                 )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2106,6 +2113,7 @@ if ($download -eq $False) {
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2119,6 +2127,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+        $CitrixHypLog = "$LogTemp\CitrixHypervisor.log"
         If ($HypTools -eq $NULL) {
             $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
         }
@@ -2127,9 +2136,11 @@ if ($download -eq $False) {
         IF ($HypTools -ne $Version) {
             # Citrix Hypervisor Tools
             Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
                 "$PSScriptRoot\Citrix\$Product\$HypToolsInstaller" | Install-MSIFile
+                Get-Content $CitrixHypLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $CitrixHypLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2334,6 +2345,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $ChromeLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2345,6 +2357,7 @@ if ($download -eq $False) {
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2358,6 +2371,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+        $ChromeLog = "$LogTemp\GoogleChrome.log"
         If ($Chrome -eq $NULL) {
             $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
         }
@@ -2368,6 +2382,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
                 "$PSScriptRoot\$Product\$ChromeInstaller" | Install-MSIFile
+                Get-Content $ChromeLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $ChromeLog
                 # Update Dienst und Task deaktivieren
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service gupdate
@@ -2416,6 +2432,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $KeePassLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2427,6 +2444,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2439,6 +2457,7 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $KeePass = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion
+        $KeePassLog = "$LogTemp\KeePass.log"
         IF ($KeePass) {$KeePass = $KeePass -replace ".{2}$"}
         IF ($KeePass -ne $Version) {
             # KeePass
@@ -2446,6 +2465,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\KeePass.msi" | Install-MSIFile
+                Get-Content $KeePassLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $KeePassLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2536,6 +2557,7 @@ if ($download -eq $False) {
                 "`"$msiFile`""
                 "/qn"
                 "DONOTCREATEDESKTOPSHORTCUT=TRUE"
+                "/L*V $EdgeLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2547,6 +2569,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2560,6 +2583,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+        $EdgeLog = "$LogTemp\MSEdge.log"
         If ($Edge -eq $NULL) {
             $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
         }
@@ -2570,6 +2594,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
                 "$PSScriptRoot\$Product\$EdgeInstaller" | Install-MSIFile
+                Get-Content $EdgeLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $EdgeLog
                 # Disable update tasks
                 Write-Verbose "Customize Scheduled Task" -Verbose
                 Start-Sleep -s 5
@@ -2817,7 +2843,7 @@ if ($download -eq $False) {
                 Write-Verbose "Uninstalling $Product finished!" -Verbose
                 DS_WriteLog "I" "Uninstalling $Product finished!" $LogFile
             } catch {
-                DS_WriteLog "E" "Ein Fehler ist aufgetreten beim Deinstallieren von $Product (error: $($Error[0]))" $LogFile       
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
             }
             DS_WriteLog "-" "" $LogFile
             #MS Teams Installation
@@ -2873,6 +2899,7 @@ if ($download -eq $False) {
                 "DESKTOP_SHORTCUT=false"
                 "TASKBAR_SHORTCUT=false"
                 "INSTALL_MAINTENANCE_SERVICE=false"
+                "/L*V $FirefoxLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2884,6 +2911,7 @@ if ($download -eq $False) {
             if ($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2897,6 +2925,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Firefox = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        $FirefoxLog = "$LogTemp\Firefox.log"
         If ($Firefox -eq $NULL) {
             $Firefox = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
         }
@@ -2907,6 +2936,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" $LogFile
             try {
                 "$PSScriptRoot\$Product\$FirefoxInstaller" | Install-MSIFile
+                Get-Content $FirefoxLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $FirefoxLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2944,6 +2975,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $mRemoteLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -2955,6 +2987,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -2967,6 +3000,7 @@ if ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $mRemoteNG = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion
+        $mRemoteLog = "$LogTemp\mRemote.log"
         IF ($mRemoteNG) {$mRemoteNG = $mRemoteNG -replace ".{6}$"}
         IF ($mRemoteNG -ne $Version) {
             # mRemoteNG
@@ -2974,6 +3008,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             try {
                 "$PSScriptRoot\$Product\mRemoteNG.msi" | Install-MSIFile
+                Get-Content $mRemoteLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $mRemoteLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -3047,6 +3083,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $openJDKLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -3058,6 +3095,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -3071,6 +3109,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $OpenJDK = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+        $openJDKLog = "$LogTemp\OpenJDK.log"
         If ($OpenJDK -eq $NULL) {
             $OpenJDK = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
         }
@@ -3083,6 +3122,8 @@ if ($download -eq $False) {
             try {
                 "$PSScriptRoot\$Product\$OpenJDKInstaller" | Install-MSIFile
                 Start-Sleep 25
+                Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $openJDKLog
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -3229,6 +3270,7 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "/L*V $VLCLog"
             )
             if ($targetDir) {
                 if (!(Test-Path $targetDir)) {
@@ -3240,6 +3282,7 @@ if ($download -eq $False) {
             if($inst -ne $null) {
                 Wait-Process -InputObject $inst
                 Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear finished!" $LogFile
             }
             if ($process.ExitCode -eq 0) {
             }
@@ -3253,6 +3296,7 @@ if ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
+        $VLCLog = "$LogTemp\VLC.log"
         If ($VLC -eq $NULL) {
             $VLC = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
         }
@@ -3264,6 +3308,8 @@ if ($download -eq $False) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             try {
                 "$PSScriptRoot\$Product\$VLCInstaller" | Install-MSIFile
+                Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $VLCLog
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
             }
