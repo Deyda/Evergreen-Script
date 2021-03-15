@@ -33,6 +33,7 @@ the script checks the version number and will update the package.
   2021-03-10        Fix Citrix Workspace App File / Adding advanced logging for Microsoft Teams installation
   2021-03-13        Adding advanced logging for BIS-F, Citrix Hypervisor Tools, Google Chrome, KeePass, Microsoft Edge, Mozilla Firefox, mRemoteNG, Open JDK and VLC Player installation / Adobe Reader Registry Filter Customization / New install parameter Foxit Reader
   2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
+  2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
 
 .PARAMETER list
 
@@ -2563,7 +2564,9 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "REBOOT=ReallySuppress"
                 "DONOTCREATEDESKTOPSHORTCUT=TRUE"
+                "DONOTCREATETASKBARSHORTCUT=true"
                 "/L*V $EdgeLog"
             )
             if ($targetDir) {
@@ -2603,12 +2606,27 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\$EdgeInstaller" | Install-MSIFile
                 Get-Content $EdgeLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $EdgeLog
-                # Disable update tasks
-                Write-Verbose "Customize Scheduled Task" -Verbose
+                #Disable Microsoft Edge auto update
+                Write-Verbose "Disable Edge Update" -Verbose
+                If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
+                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate
+                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD
+                }
+                else {
+                    $EdgeUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate" | Select-Object -Expandproperty "UpdateDefault"
+                    If ($EdgeUpdateState -ne "0") {New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD}
+                }
+                #Configure Microsoft Edge update service to manual startup
+                Set-Service -Name edgeupdate -StartupType Disabled
+                Set-Service -Name edgeupdatem -StartupType Disabled
+                # Execute the Microsoft Edge browser replacement task to make sure that the legacy Microsoft Edge browser is tucked away
+                # This is only needed on Windows 10 versions where Microsoft Edge is not included in the OS.
+                #Start-Process -FilePath "${env:ProgramFiles(x86)}\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe" -Wait -ArgumentList "/browserreplacement"
+                Write-Verbose "Disable Edge Update finished !" -Verbose
+                #Disable update tasks
+                Write-Verbose "Disable Scheduled Task" -Verbose
                 Start-Sleep -s 5
-                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineCore | Out-Null
-                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateTaskMachineUA | Out-Null
-                Disable-ScheduledTask -TaskName MicrosoftEdgeUpdateBrowserReplacementTask | Out-Null
+                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* | Disable-ScheduledTask | Out-Null
                 Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -2640,7 +2658,7 @@ if ($download -eq $False) {
     #// Mark: Install Microsoft FSLogix
     IF ($FSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
-
+        $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt"
         $FSLogix = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion
@@ -2686,6 +2704,53 @@ if ($download -eq $False) {
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
+            # Application post deployment tasks (Thx to Kasper https://github.com/kaspersmjohansen)
+            Write-Verbose "Applying $Product post setup customizations" -Verbose
+            Write-Verbose "Post setup customizations for $OS" -Verbose
+            If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops") {
+                Write-Verbose "Deactivate FSLogix RoamSearch" -Verbose
+                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD
+            }
+            If ($OS -Like "*Windows 10*" -and $OS -ne "Microsoft Windows 10 Enterprise for Virtual Desktops") {
+                Write-Verbose "Activate FSLogix RoamSearch" -Verbose
+                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD
+            }
+            # Implement user based group policy processing fix
+            Write-Verbose "Deactivate FSLogix GroupPolicy" -Verbose
+            If (!(Test-Path -Path HKLM:SOFTWARE\FSLogix\Profiles)) {
+                New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles
+                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD
+            }
+            else {
+                $FSLGroupState = Get-ItemProperty -path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -Expandproperty "GroupPolicyState"
+                If ($FSLGroupState -eq "1") {New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD}
+            }
+            If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2")) {
+                Write-Verbose "Implement scheduled task to restart Windows Search service on Event ID 2" -Verbose
+                # Implement scheduled task to restart Windows Search service on Event ID 2
+                # Define CIM object variables
+                # This is needed for accessing the non-default trigger settings when creating a schedule task using Powershell
+                $Class = cimclass MSFT_TaskEventTrigger root/Microsoft/Windows/TaskScheduler
+                $Trigger = $class | New-CimInstance -ClientOnly
+                $Trigger.Enabled = $true
+                $Trigger.Subscription = "<QueryList><Query Id=`"0`" Path=`"Application`"><Select Path=`"Application`">*[System[Provider[@Name='Microsoft-Windows-Search-ProfileNotify'] and EventID=2]]</Select></Query></QueryList>"
+                # Define additional variables containing scheduled task action and scheduled task principal
+                $A = New-ScheduledTaskAction –Execute powershell.exe -Argument "Restart-Service Wsearch"
+                $P = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
+                $S = New-ScheduledTaskSettingsSet
+                # Cook it all up and create the scheduled task
+                $RegSchTaskParameters = @{
+                    TaskName    = "Restart Windows Search Service on Event ID 2"
+                    Description = "Restarts the Windows Search service on event ID 2 - Workaround described here - https://virtualwarlock.net/how-to-install-the-fslogix-apps-agent/#Windows_Search_Roaming_workaround_1"
+                    TaskPath    = "\"
+                    Action      = $A
+                    Principal   = $P
+                    Settings    = $S
+                    Trigger     = $Trigger
+                }
+                Register-ScheduledTask @RegSchTaskParameters
+            }
+            Write-Verbose "Applying $Product post setup customizations finished !" -Verbose
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
@@ -2803,6 +2868,7 @@ if ($download -eq $False) {
             $arguments = @(
                 "/i"
                 "`"$msiFile`""
+                "REBOOT=ReallySuppress"
                 "ALLUSER=1"
                 "ALLUSERS=1"
                 "OPTIONS='noAutoStart=true'"
@@ -2854,6 +2920,11 @@ if ($download -eq $False) {
             }
             DS_WriteLog "-" "" $LogFile
             #MS Teams Installation
+            #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
+            If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
+                If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix"}
+                New-Item -Path "HKLM:Software\Citrix\PortICA"
+            }
             Write-Verbose "Installing $Product $ArchitectureClear $MSTeamsRingClear Ring" -Verbose
             DS_WriteLog "I" "Installing $Product $ArchitectureClear $MSTeamsRingClear Ring" $LogFile
             try {
@@ -2862,10 +2933,12 @@ if ($download -eq $False) {
                 Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $TeamsLog
                 reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
-                # Prevents MS Teams from starting at logon, better do this with WEM or similar
-                # Write-Verbose "Customize $Product Autorun" -Verbose
-                # Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
-                # Write-Verbose "Customize $Product Autorun finished!" -Verbose
+                <# Prevents MS Teams from starting at logon, better do this with WEM or similar
+                Write-Verbose "Customize $Product Autorun" -Verbose
+                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                Write-Verbose "Customize $Product Autorun finished!" -Verbose#>
+                #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
+                Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
