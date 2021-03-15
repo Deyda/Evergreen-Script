@@ -28,10 +28,11 @@ the script checks the version number and will update the package.
   2021-02-25        Set Mark Jump markers for better editing / Add choice of architecture and update ring options in Microsoft Teams / Add choice of architecture option in Notepad++ / Add choice of architecture option in openJDK / Add choice of architecture option in Oracle Java 8
   2021-02-26        Add choice of version type option in TreeSize / Add choice of version type option in VLC-Player / Add choice of version type option in VMWare Tools / Fix installed version detection for x86 / x64 for Microsoft Edge, Google Chrome, 7-Zip, Citrix Hypervisor Tools, Mozilla Firefox, Microsoft365, Microsoft Teams, Microsoft Edge, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tols/ Correction Foxit Reader gui variable / Correction version.txt for Microsoft Teams, Notepad++, openJDK, Oracle Java 8, VLC Player and VMWare Tools
   2021-02-28        Implementation of LastSetting memory
-  2022-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
-  2022-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
-  2022-03-10        Fix Citrix Workspace App File / Adding advanced logging for Microsoft Teams installation
-  2022-03-13        Adding advanced logging for BIS-F, Citrix Hypervisor Tools, Google Chrome, KeePass, Microsoft Edge, Mozilla Firefox, mRemoteNG, Open JDK and VLC Player installation / Adobe Reader Registry Filter Customization
+  2021-03-02        Add Microsoft Teams Citrix Api Hook / Correction En dash Error
+  2021-03-05        Adjustment regarding merge #122 (Get-AdobeAcrobatReader)
+  2021-03-10        Fix Citrix Workspace App File / Adding advanced logging for Microsoft Teams installation
+  2021-03-13        Adding advanced logging for BIS-F, Citrix Hypervisor Tools, Google Chrome, KeePass, Microsoft Edge, Mozilla Firefox, mRemoteNG, Open JDK and VLC Player installation / Adobe Reader Registry Filter Customization / New install parameter Foxit Reader
+  2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
 
 .PARAMETER list
 
@@ -105,6 +106,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 # ========================================================================================================================================
 $eVersion = "0.9"
 Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
+$host.ui.RawUI.WindowTitle = “Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion”
 Write-Output ""
 
 if ($myWindowsPrincipal.IsInRole($adminRole)) {
@@ -139,7 +141,7 @@ $inputXML = @"
             <ColumnDefinition Width="234*"/>
             <ColumnDefinition Width="586*"/>
         </Grid.ColumnDefinitions>
-        <Image x:Name="Image_Logo" Height="100" Margin="467,0,19,0" VerticalAlignment="Top" Width="100" Source="https://www.deyda.net/wp-content/uploads/2020/03/Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+        <Image x:Name="Image_Logo" Height="100" Margin="467,0,19,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
         <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15.5,10,0,0" VerticalAlignment="Top" Grid.Column="1"/>
