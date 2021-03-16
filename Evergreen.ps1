@@ -108,7 +108,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 # ========================================================================================================================================
 $eVersion = "0.9"
 Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
-$host.ui.RawUI.WindowTitle = “Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion”
+$host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 Write-Output ""
 
 if ($myWindowsPrincipal.IsInRole($adminRole)) {
@@ -2818,7 +2818,7 @@ if ($download -eq $False) {
                 $Trigger.Enabled = $true
                 $Trigger.Subscription = "<QueryList><Query Id=`"0`" Path=`"Application`"><Select Path=`"Application`">*[System[Provider[@Name='Microsoft-Windows-Search-ProfileNotify'] and EventID=2]]</Select></Query></QueryList>"
                 # Define additional variables containing scheduled task action and scheduled task principal
-                $A = New-ScheduledTaskAction –Execute powershell.exe -Argument "Restart-Service Wsearch"
+                $A = New-ScheduledTaskAction -Execute powershell.exe -Argument "Restart-Service Wsearch"
                 $P = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
                 $S = New-ScheduledTaskSettingsSet
                 # Cook it all up and create the scheduled task
