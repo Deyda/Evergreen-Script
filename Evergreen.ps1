@@ -595,6 +595,7 @@ if ($list -eq $True) {
     $FSLogix = 0
     $GoogleChrome = 0
     $Greenshot = 0
+    $IrfanView = 0
     $KeePass = 0
     $mRemoteNG = 0
     $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
@@ -612,7 +613,7 @@ if ($list -eq $True) {
     
 }
 else {
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -1082,6 +1083,84 @@ if ($install -eq $False) {
             Start-Transcript $LogPS
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download IrfanView
+    if ($IrfanView -eq 1) {
+        Function Get-IrfanView {
+            <#
+                .NOTES
+                    Author: Trond Eirik Haavarstein
+                    Twitter: @xenappblog
+            #>
+            [OutputType([System.Management.Automation.PSObject])]
+            [CmdletBinding()]
+            Param()
+                $url = "https://www.irfanview.com/"
+            try {
+                $web = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+            }
+            catch {
+                Throw "Failed to connect to URL: $url with error $_."
+                Break
+            }
+            finally {
+                $m = $web.ToString() -split "[`r`n]" | Select-String "Version" | Select-Object -First 1
+                $m = $m -replace "<((?!@).)*?>"
+                $m = $m.Replace(' ','')
+                $Version = $m -replace "Version"
+                $File = $Version -replace "\.",""
+                $x32 = "http://download.betanews.com/download/967963863-1/iview$($File)_setup.exe"
+                $x64 = "http://download.betanews.com/download/967963863-1/iview$($File)_x64_setup.exe"
+        
+        
+                $PSObjectx32 = [PSCustomObject] @{
+                Version      = $Version
+                Architecture = "x86"
+                Language     = "english"
+                URI          = $x32
+                }
+        
+                $PSObjectx64 = [PSCustomObject] @{
+                Version      = $Version
+                Architecture = "x64"
+                Language     = "english"
+                URI          = $x64
+                }
+                Write-Output -InputObject $PSObjectx32
+                Write-Output -InputObject $PSObjectx64
+            }
+        }
+        $Product = "IrfanView"
+        $PackageName = "IrfanView" + "$ArchitectureClear"
+        $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+        $Version = $IrfanViewD.Version
+        $URL = $IrfanViewD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path $VersionPath -EA SilentlyContinue 
+        Write-Verbose "Download $Product $ArchitectureClear" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1966,7 +2045,7 @@ if ($download -eq $False) {
             $Options = @(
                 "/sAll"
                 "/rs"
-                "/msi EULA_ACCEPT=YES ENABLE_OPTIMIZATION=YES DISABLEDESKTOPSHORTCUT=1 UPDATE_MODE=0 DISABLE_ARM_SERVICE_INSTALL=1"
+                "/msi EULA_ACCEPT=YES ENABLE_OPTIMIZATION=YES DISABLEDESKTOPSHORTCUT=1 UPDATE_MODE=0 DISABLE_ARM_SERVICE_INSTALL=1 DISABLE_CACHE=1 DISABLE_PDFMAKER=YES ALLUSERS=1"
             )
             try	{
                 Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" -ArgumentList $Options
