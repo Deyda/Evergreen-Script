@@ -34,7 +34,7 @@ the script checks the version number and will update the package.
   2021-03-13        Adding advanced logging for BIS-F, Citrix Hypervisor Tools, Google Chrome, KeePass, Microsoft Edge, Mozilla Firefox, mRemoteNG, Open JDK and VLC Player installation / Adobe Reader Registry Filter Customization / New install parameter Foxit Reader
   2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
-  2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader
+  2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
 
 .PARAMETER list
 
@@ -98,6 +98,48 @@ Param (
     
 )
 
+Function Get-MicrosoftTeamsDev() {
+    <#
+    .NOTES
+    Author: Jonathan Pitre
+    Twitter: @PitreJonathan
+    #>
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param()
+    $appURLVersion = "https://whatpulse.org/app/microsoft-teams#versions"
+    try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    finally {
+        $regexAppVersion = "\<td\>\d.\d.\d{2}.\d+<\/td\>\n.+windows"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split()[0].Trim("</td>")
+        $appx64URL = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersion/Teams_windows_x64.msi"
+        $appx86URL = "https://statics.teams.cdn.office.net/production-windows-x86/$appVersion/Teams_windows_x86.msi"
+
+        $PSObjectx86 = [PSCustomObject] @{
+            Version      = $appVersion
+            Ring         = "Developer"
+            Architecture = "x86"
+            URI          = $appx86URL
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Ring         = "Developer"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+        Write-Output -InputObject $PSObjectx86
+        Write-Output -InputObject $PSObjectx64
+    }
+}
+
 # Do you run the script as admin?
 # ========================================================================================================================================
 $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -146,11 +188,11 @@ $inputXML = @"
         <Image x:Name="Image_Logo" Height="100" Margin="467,0,19,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
         <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15.5,10,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15.5,41,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="102.5,41,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="73,10,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="86,37,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="125,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="141,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="Danish"/>
             <ListBoxItem Content="Dutch"/>
             <ListBoxItem Content="English"/>
@@ -167,30 +209,30 @@ $inputXML = @"
             <ListBoxItem Content="Spanish"/>
             <ListBoxItem Content="Swedish"/>
         </ComboBox>
-        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="241,10,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="275,37,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="280,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="314,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="x64"/>
             <ListBoxItem Content="x86"/>
         </ComboBox>
-        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="58,59,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15.5,70,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15.5,101,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15.5,121,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
-        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15.5,141,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15.5,161,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15.5,181,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15.5,201,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="173,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="94,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,51,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,82,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,102,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
+        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,122,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,142,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,162,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,182,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="173,179,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Current Release"/>
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15.5,221,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15.5,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15.5,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15.5,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="16.5,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="16.5,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="243,101,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,202,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,222,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,242,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,262,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="15,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,362,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="243,121,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="243,141,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="243,161,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
@@ -200,7 +242,8 @@ $inputXML = @"
             <ListBoxItem Content="Enterprise Ring"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="243,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="407,176,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2" ToolTip="Machine Based Install">
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="407,176,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+            <ListBoxItem Content="Developer Ring"/>
             <ListBoxItem Content="Preview Ring"/>
             <ListBoxItem Content="General Ring"/>
         </ComboBox>
@@ -220,16 +263,17 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="243,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="243,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="243,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="9,386,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="127,380,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021" HorizontalAlignment="Left" Margin="309,404,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="17,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="173,337,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="173,338,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current (Preview)"/>
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="Monthly Enterprise"/>
             <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
             <ListBoxItem Content="Semi-Annual Enterprise"/>
         </ComboBox>
+        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,282,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
     </Grid>
 </Window>
 "@
@@ -256,8 +300,6 @@ $inputXML = @"
     } | out-null
  
     Function Get-FormVariables{
-        #if ($global:ReadmeDisplay -ne $true){Write-host "If you need to reference this display again, run Get-FormVariables" -ForegroundColor Yellow;$global:ReadmeDisplay=$true}
-        #write-host "Found the following interactable elements from our form" -ForegroundColor Cyan
         get-variable WPF*
     }
 
@@ -361,6 +403,9 @@ $inputXML = @"
         switch ($LastSetting[35]) {
             True { $WPFCheckbox_Install.IsChecked = "True"}
         }
+        switch ($LastSetting[36]) {
+            1 { $WPFCheckbox_IrfanView.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -375,13 +420,14 @@ $inputXML = @"
         $WPFCheckbox_Filezilla.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_SelectAll.IsChecked
-        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Greenshot.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_IrfanView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_mRemoteNG.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -404,13 +450,14 @@ $inputXML = @"
         $WPFCheckbox_Filezilla.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_SelectAll.IsChecked
-        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Greenshot.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_IrfanView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_mRemoteNG.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -453,6 +500,8 @@ $inputXML = @"
         else {$Script:GoogleChrome = 0}
         if ($WPFCheckbox_Greenshot.ischecked -eq $true) {$Script:Greenshot = 1}
         else {$Script:Greenshot = 0}
+        if ($WPFCheckbox_IrfanView.ischecked -eq $true) {$Script:IrfanView = 1}
+        else {$Script:IrfanView = 0}
         if ($WPFCheckbox_KeePass.ischecked -eq $true) {$Script:KeePass = 1}
         else {$Script:KeePass = 0}
         if ($WPFCheckbox_mRemoteNG.ischecked -eq $true) {$Script:mRemoteNG = 1}
@@ -489,7 +538,7 @@ $inputXML = @"
         $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
         $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
         $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
     })
@@ -566,9 +615,10 @@ if ($list -eq $True) {
     $MSOneDriveRing = 2
 
     # Microsoft Teams
-    # 0 = Preview Ring
-    # 1 = General Ring
-    $MSTeamsRing = 1
+    # 0 = Developer Ring
+    # 1 = Preview Ring
+    # 2 = General Ring
+    $MSTeamsRing = 2
 
     # Mozilla Firefox
     # 0 = Current
@@ -736,8 +786,9 @@ switch ($MSOneDriveRing) {
 }
 
 switch ($MSTeamsRing) {
-    0 { $MSTeamsRingClear = 'Preview'}
-    1 { $MSTeamsRingClear = 'General'}
+    0 { $MSTeamsRingClear = 'Developer'}
+    1 { $MSTeamsRingClear = 'Preview'}
+    2 { $MSTeamsRingClear = 'General'}
 }
 
 if ($install -eq $False) {
@@ -1159,8 +1210,8 @@ if ($install -eq $False) {
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Set-Content -Path $VersionPath -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
             Stop-Transcript
@@ -1537,7 +1588,12 @@ if ($install -eq $False) {
     if ($MSTeams -eq 1) {
         $Product = "Microsoft Teams"
         $PackageName = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
-        $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+        If ($MSTeamsRingClear -eq 'Developer') {
+            $TeamsD = Get-MicrosoftTeamsDev | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+        }
+        else {
+            $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+        }
         $Version = $TeamsD.Version
         $URL = $TeamsD.uri
         $InstallerType = "msi"
@@ -2499,6 +2555,49 @@ if ($download -eq $False) {
         }
     }
 
+    #// Mark: Install IrfanView
+    IF ($IrfanView -eq 1) {
+        $Product = "IrfanView"
+
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
+        If ($IrfanViewV -eq $NULL) {
+            $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
+        }
+        $IrfanViewInstaller = "IrfanView" + "$ArchitectureClear" +".exe"
+        IF ($IrfanViewV -ne $Version) {
+            # IrfanView Installation
+            $Options = @(
+                "/assoc=1"
+                "/group=1"
+                "/ini=%APPDATA%\IrfanView"
+                "/silent"
+                "/allusers=1"
+            )
+            Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$IrfanViewInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product $ArchitectureClear finished!" -Verbose
+                    Write-Output ""
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install KeePass
     IF ($KeePass -eq 1) {
         $Product = "KeePass"
@@ -2700,7 +2799,9 @@ if ($download -eq $False) {
                     If ($EdgeUpdateState -ne "0") {New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD}
                 }
                 #Configure Microsoft Edge update service to manual startup
+                Stop-Service edgeupdate
                 Set-Service -Name edgeupdate -StartupType Disabled
+                Stop-Service edgeupdatem
                 Set-Service -Name edgeupdatem -StartupType Disabled
                 # Execute the Microsoft Edge browser replacement task to make sure that the legacy Microsoft Edge browser is tucked away
                 # This is only needed on Windows 10 versions where Microsoft Edge is not included in the OS.
@@ -2929,9 +3030,8 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Microsoft Teams
-    IF ($MSTeams -eq 1) {
+    If ($MSTeams -eq 1) {
         $Product = "Microsoft Teams"
-
         # FUNCTION MSI Installation
         #========================================================================================================================================
         function Install-MSIFile {
@@ -2940,7 +3040,7 @@ if ($download -eq $False) {
                 [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
                 [ValidateNotNullorEmpty()]
                 [string]$msiFile,
-    
+
                 [parameter()]
                 [ValidateNotNullorEmpty()]
                 [string]$targetDir
@@ -2987,19 +3087,21 @@ if ($download -eq $False) {
         IF ($Teams) {$Teams = $Teams.Insert(5,'0')}
         IF ($Teams -ne $Version) {
             #Uninstalling MS Teams
-            Write-Verbose "Uninstalling $Product" -Verbose
-            DS_WriteLog "I" "Uninstalling $Product" $LogFile
-            try {
-                $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
-                $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
-                Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
-                Start-Sleep 20
-                Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $TeamsLog
-                Write-Verbose "Uninstalling $Product finished!" -Verbose
-                DS_WriteLog "I" "Uninstalling $Product finished!" $LogFile
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+            If ($Teams -eq $null) {
+                Write-Verbose "Uninstalling $Product" -Verbose
+                DS_WriteLog "I" "Uninstalling $Product" $LogFile
+                try {
+                    $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                    $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
+                    Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
+                    Start-Sleep 20
+                    Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $TeamsLog
+                    Write-Verbose "Uninstalling $Product finished!" -Verbose
+                    DS_WriteLog "I" "Uninstalling $Product finished!" $LogFile
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                }
             }
             DS_WriteLog "-" "" $LogFile
             #MS Teams Installation
@@ -3016,12 +3118,18 @@ if ($download -eq $False) {
                 Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $TeamsLog
                 reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
-                <# Prevents MS Teams from starting at logon, better do this with WEM or similar
-                Write-Verbose "Customize $Product Autorun" -Verbose
+                #Prevents MS Teams from starting at logon, better do this with WEM or similar
+                <#Write-Verbose "Customize $Product Autorun" -Verbose
                 Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
                 Write-Verbose "Customize $Product Autorun finished!" -Verbose#>
                 #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
                 Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
+                # Register Teams add-in for Outlook - https://microsoftteams.uservoice.com/forums/555103-public/suggestions/38846044-fix-the-teams-meeting-addin-for-outlook
+                $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
+                $appX64DLL = $appDLLs[0]
+                $appX86DLL = $appDLLs[1]
+                Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s /n /i:user `"$appX64DLL`"" -ContinueOnError $True
+                Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s /n /i:user `"$appX86DLL`"" -ContinueOnError $True
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -3062,6 +3170,7 @@ if ($download -eq $False) {
                 "DESKTOP_SHORTCUT=false"
                 "TASKBAR_SHORTCUT=false"
                 "INSTALL_MAINTENANCE_SERVICE=false"
+                "PREVENT_REBOOT_REQUIRED=true"
                 "/L*V $FirefoxLog"
             )
             if ($targetDir) {
@@ -3246,6 +3355,8 @@ if ($download -eq $False) {
                 "/i"
                 "`"$msiFile`""
                 "/qn"
+                "INSTALLLEVEL=3"
+                "UPDATE_NOTIFIER=0"
                 "/L*V $openJDKLog"
             )
             if ($targetDir) {
