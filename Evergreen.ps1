@@ -2264,7 +2264,9 @@ if ($download -eq $False) {
         IF ($FReader -ne $Version) {
             # Foxit Reader
             $Options = @(
+                "/FORCEINSTALL"
                 "/VERYSILENT"
+                "/PASSIVE"
                 "/ALLUSERS"
                 "/NORESTART"
                 "/NOCLOSEAPPLICATIONS"
@@ -2279,6 +2281,7 @@ if ($download -eq $False) {
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$FoxitReaderInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
+                    Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force
                     Write-Verbose "Installation $Product $FoxitReaderLanguageClear finished!" -Verbose
                 }
             } catch {
@@ -3309,7 +3312,7 @@ if ($download -eq $False) {
                         $p = Get-Process TreeSize_Professional
                         if ($p) {
                             $p.WaitForExit()
-                            Write-Verbose "Installation $Product finished!" -Verbose
+                            Write-Verbose "Installation $Product finished!" -Verbos
                         }
                     } catch {
                         DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
@@ -3390,6 +3393,7 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\$VLCInstaller" | Install-MSIFile
                 Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $VLCLog
+                Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
             }
