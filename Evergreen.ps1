@@ -35,6 +35,7 @@ the script checks the version number and will update the package.
   2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
+  2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / change Install Logging function
 
 .PARAMETER list
 
@@ -98,6 +99,10 @@ Param (
     
 )
 
+#Add Functions here
+
+# FUNCTION Microsoft Teams Download Developer Version
+#========================================================================================================================================
 Function Get-MicrosoftTeamsDev() {
     <#
     .NOTES
@@ -140,6 +145,29 @@ Function Get-MicrosoftTeamsDev() {
     }
 }
 
+# FUNCTION Logging
+#========================================================================================================================================
+Function DS_WriteLog {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory=$true, Position = 0)][ValidateSet("I","S","W","E","-",IgnoreCase = $True)][String]$InformationType,
+        [Parameter(Mandatory=$true, Position = 1)][AllowEmptyString()][String]$Text,
+        [Parameter(Mandatory=$true, Position = 2)][AllowEmptyString()][String]$LogFile
+    )
+    begin {
+    }
+    process {
+        $DateTime = (Get-Date -format dd-MM-yyyy) + " " + (Get-Date -format HH:mm:ss)
+        if ( $Text -eq "" ) {
+            Add-Content $LogFile -value ("") # Write an empty line
+        } Else {
+            Add-Content $LogFile -value ($DateTime + " " + $InformationType.ToUpper() + " - " + $Text)
+        }
+    }
+    end {
+    }
+}
+
 # Do you run the script as admin?
 # ========================================================================================================================================
 $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -169,7 +197,7 @@ else {
 
 function gui_mode{
 
-#// MARK: XAML Code
+#// MARK: XAML Code (AddScript)
 $inputXML = @"
 <Window x:Class="GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -309,6 +337,7 @@ $inputXML = @"
     $Script:install = $true
     $Script:download = $true
 
+    # Read LastSettings.txt to get the settings of the last session. (AddScript)
     If (Test-Path "$PSScriptRoot\LastSetting.txt" -PathType leaf) {
         $LastSetting = Get-Content "$PSScriptRoot\LastSetting.txt"
         $WPFBox_Language.SelectedIndex = $LastSetting[0] -as [int]
@@ -409,7 +438,7 @@ $inputXML = @"
     }
     
     #// MARK: Event Handler
-    # Checkbox SelectAll
+    # Checkbox SelectAll (AddScript)
     $WPFCheckbox_SelectAll.Add_Checked({
         $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_AdobeProDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -439,7 +468,7 @@ $inputXML = @"
         $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
-
+    # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
         $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_AdobeProDC.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -470,7 +499,7 @@ $inputXML = @"
         $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
-    # Button Start                                                                    
+    # Button Start (AddScript)
     $WPFButton_Start.Add_Click({
         if ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
         else {$Script:install = $true}
@@ -538,6 +567,7 @@ $inputXML = @"
         $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
         $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
         $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        # Write LastSettings.txt to get the settings of the last session. (AddScript)
         $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
@@ -565,11 +595,12 @@ $inputXML = @"
 Write-Verbose "Setting Variables" -Verbose
 Write-Output ""
 
-#// MARK: Define and Reset Variables
+#// MARK: Define and reset variables
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $Script:install = $install
 $Script:download = $download
 
+# Define the variables for the unattended install or download (Parameter -list) (AddScript)
 if ($list -eq $True) {
     # Select Language (If this is selectable at download)
     # 0 = Danish
@@ -663,6 +694,7 @@ if ($list -eq $True) {
     
 }
 else {
+    # Cleanup of the used vaiables (AddScript)
     Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView -ErrorAction SilentlyContinue
     gui_mode
 }
@@ -670,7 +702,7 @@ else {
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
 
-#// MARK: Variable definition (Architecture,Language etc)
+#// MARK: Variable definition (Architecture,Language etc) (AddScript)
 switch ($Architecture) {
     0 { $ArchitectureClear = 'x64'}
     1 { $ArchitectureClear = 'x86'}
@@ -804,6 +836,7 @@ if ($install -eq $False) {
     Write-Output "Starting downloads..."
     Write-Output ""
 
+    # Download script part (AddScript)
     #// Mark: Download 7-ZIP
     if ($7ZIP -eq 1) {
         $Product = "7-Zip"
@@ -1963,30 +1996,6 @@ if ($install -eq $False) {
 
 if ($download -eq $False) {
 
-    # FUNCTION Logging
-    #========================================================================================================================================
-    Function DS_WriteLog {
-        
-        [CmdletBinding()]
-        Param (
-            [Parameter(Mandatory=$true, Position = 0)][ValidateSet("I","S","W","E","-",IgnoreCase = $True)][String]$InformationType,
-            [Parameter(Mandatory=$true, Position = 1)][AllowEmptyString()][String]$Text,
-            [Parameter(Mandatory=$true, Position = 2)][AllowEmptyString()][String]$LogFile
-        )
-        begin {
-        }
-        process {
-            $DateTime = (Get-Date -format dd-MM-yyyy) + " " + (Get-Date -format HH:mm:ss)
-            if ( $Text -eq "" ) {
-                Add-Content $LogFile -value ("") # Write an empty line
-            } Else {
-                Add-Content $LogFile -value ($DateTime + " " + $InformationType.ToUpper() + " - " + $Text)
-            }
-        }
-        end {
-        }
-    }
-
     # Logging
     # Global variables
     #$StartDir = $PSScriptRoot # the directory path of the script currently being executed
@@ -2003,13 +2012,8 @@ if ($download -eq $False) {
     New-Item $LogFile -ItemType "file" -force | Out-Null
     DS_WriteLog "I" "START SCRIPT - " $LogFile
     DS_WriteLog "-" "" $LogFile
-    #========================================================================================================================================
-    
-    # define Error handling
-    # note: do not change these values
-    $global:ErrorActionPreference = "Stop"
-    if ($verbose){ $global:VerbosePreference = "Continue" }
 
+    # Install script part (AddScript)
 
     #// Mark: Install 7-ZIP
     if ($7ZIP -eq 1) {
