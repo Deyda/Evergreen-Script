@@ -35,7 +35,7 @@ the script checks the version number and will update the package.
   2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
-  2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / change Install Logging function
+  2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
 
 .PARAMETER list
 
@@ -875,7 +875,7 @@ if ($install -eq $False) {
     if ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
         $PackageName = "Adobe_Pro_DC_Update"
-        $AdobeProD = Get-AdobeAcrobat | Where-Object { $_.Type -eq "Updater" -and $_.Track -eq "DC" }
+        $AdobeProD = Get-AdobeAcrobat | Where-Object { $_.Type -eq "Updater" -and $_.URI -like "*AcrobatDC*" }
         $Version = $AdobeProD.Version
         $URL = $AdobeProD.uri
         $InstallerType = "msp"
