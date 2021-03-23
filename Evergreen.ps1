@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          0.9
+  Version:          1.0
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -177,7 +177,7 @@ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "0.9"
+$eVersion = "1.0"
 Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 Write-Output ""
