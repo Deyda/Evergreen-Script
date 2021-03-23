@@ -7,6 +7,11 @@ To update or download a software package just switch from 0 to 1 in the section 
 
 ![Parameter -list](/img/script-list.png)
 
+Don't forget to set the Software Version, Update Ring, Architecture and so on.
+
+![Parameter -list1](/img/script-list1.png)
+![Parameter -list2](/img/script-list2.png)
+
 A new folder for every single package will be created, together with a version file and a log file. 
 
 If a new version is available the script checks the version number and will update the package.
