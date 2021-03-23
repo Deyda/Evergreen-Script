@@ -36,6 +36,7 @@ the script checks the version number and will update the package.
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
   2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
+  2021-03-23        Added the possibility to delete Microsoft Teams AutoStart in the GUI
 
 .PARAMETER list
 
@@ -206,7 +207,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way" Height="470" Width="840">
+        Title="Evergreen Script - Update your Software, the lazy way" Height="467" Width="855">
     <Grid x:Name="Evergreen_GUI">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
@@ -261,36 +262,36 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="15,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,362,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="243,121,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="243,141,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="243,161,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="407,154,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="153,121,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="153,141,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="153,161,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="317,154,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
             <ListBoxItem Content="Insider Ring"/>
             <ListBoxItem Content="Production Ring"/>
             <ListBoxItem Content="Enterprise Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="243,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="407,176,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="317,176,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
             <ListBoxItem Content="Developer Ring"/>
             <ListBoxItem Content="Preview Ring"/>
             <ListBoxItem Content="General Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="243,201,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="407,198,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="153,201,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="317,198,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="ESR"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="243,221,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="243,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="243,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="243,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="407,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="153,221,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="153,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="317,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Free"/>
             <ListBoxItem Content="Professional"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="243,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="243,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="243,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="127,380,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
         <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021" HorizontalAlignment="Left" Margin="309,404,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
@@ -302,6 +303,7 @@ $inputXML = @"
             <ListBoxItem Content="Semi-Annual Enterprise"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,282,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="435,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
     </Grid>
 </Window>
 "@
@@ -435,6 +437,9 @@ $inputXML = @"
         switch ($LastSetting[36]) {
             1 { $WPFCheckbox_IrfanView.IsChecked = "True"}
         }
+        switch ($LastSetting[37]) {
+            1 { $WPFCheckbox_MSTeams_No_AutoStart.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -558,7 +563,9 @@ $inputXML = @"
         if ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
         else {$Script:VMWareTools = 0}
         if ($WPFCheckbox_WinSCP.ischecked -eq $true) {$Script:WinSCP = 1}
-        else {$Script:WinSCP = 0}
+        else {$Script:WinSCP = 0}        
+        if ($WPFCheckbox_MSTeams_No_AutoStart.ischecked -eq $true) {$Script:MSTeamsNoAutoStart = 1}
+        else {$Script:MSTeamsNoAutoStart = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
@@ -568,7 +575,7 @@ $inputXML = @"
         $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
         $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
     })
@@ -651,6 +658,11 @@ if ($list -eq $True) {
     # 2 = General Ring
     $MSTeamsRing = 2
 
+    # Microsoft Teams AutoStart
+    # 0 = AutoStart Microsoft Teams
+    # 1 = No AutoStart (Delete HKLM Registry Entry)
+    $MSTeamsNoAutoStart = 0
+
     # Mozilla Firefox
     # 0 = Current
     # 1 = ESR
@@ -695,7 +707,7 @@ if ($list -eq $True) {
 }
 else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -3091,7 +3103,7 @@ if ($download -eq $False) {
         IF ($Teams) {$Teams = $Teams.Insert(5,'0')}
         IF ($Teams -ne $Version) {
             #Uninstalling MS Teams
-            If ($Teams -eq $null) {
+            If ($Teams -ne $null) {
                 Write-Verbose "Uninstalling $Product" -Verbose
                 DS_WriteLog "I" "Uninstalling $Product" $LogFile
                 try {
@@ -3122,12 +3134,16 @@ if ($download -eq $False) {
                 Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $TeamsLog
                 reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
-                #Prevents MS Teams from starting at logon, better do this with WEM or similar
-                <#Write-Verbose "Customize $Product Autorun" -Verbose
-                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
-                Write-Verbose "Customize $Product Autorun finished!" -Verbose#>
                 #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
-                Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
+                if (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") {
+                    Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
+                    #Prevents MS Teams from starting at logon, better do this with WEM or similar
+                    If ($MSTeamsNoAutoStart -eq 1) {
+                        Write-Verbose "Customize $Product Autorun" -Verbose
+                        Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                        Write-Verbose "Customize $Product Autorun finished!" -Verbose
+                    }
+                }
                 # Register Teams add-in for Outlook - https://microsoftteams.uservoice.com/forums/555103-public/suggestions/38846044-fix-the-teams-meeting-addin-for-outlook
                 $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
                 $appX64DLL = $appDLLs[0]
