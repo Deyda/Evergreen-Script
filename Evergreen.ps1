@@ -4,7 +4,7 @@
 Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
 .DESCRIPTION
 To update or download a software package just switch from 0 to 1 in the section "Select software" (With parameter -list) or select your Software out of the GUI.
-A new folder for every single package will be created, together with a version file, a download date file and a log file. If a new version is available
+A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
   Version:          1.0
@@ -36,7 +36,7 @@ the script checks the version number and will update the package.
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
   2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
-  2021-03-23        Added the possibility to delete Microsoft Teams AutoStart in the GUI
+  2021-03-23        Added the possibility to delete Microsoft Teams AutoStart in the GUI / Change Microsoft Edge service to manual
 
 .PARAMETER list
 
@@ -2816,9 +2816,9 @@ if ($download -eq $False) {
                 }
                 #Configure Microsoft Edge update service to manual startup
                 Stop-Service edgeupdate
-                Set-Service -Name edgeupdate -StartupType Disabled
+                Set-Service -Name edgeupdate -StartupType Manual
                 Stop-Service edgeupdatem
-                Set-Service -Name edgeupdatem -StartupType Disabled
+                Set-Service -Name edgeupdatem -StartupType Manual
                 # Execute the Microsoft Edge browser replacement task to make sure that the legacy Microsoft Edge browser is tucked away
                 # This is only needed on Windows 10 versions where Microsoft Edge is not included in the OS.
                 #Start-Process -FilePath "${env:ProgramFiles(x86)}\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe" -Wait -ArgumentList "/browserreplacement"
