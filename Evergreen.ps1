@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.0
+  Version:          1.1
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -37,7 +37,11 @@ the script checks the version number and will update the package.
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
   2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
   2021-03-23        Added the possibility to delete Microsoft Teams AutoStart in the GUI / Change Microsoft Edge service to manual
-
+  2021-03-24        Add Download Microsoft PowerShell, Microsoft .Net, RemoteDesktopManager, deviceTRUST and Zoom
+  2021-03-25        Add Download Slack and ShareX / Add new Software to GUI
+  2021-03-26        Add Pending Reboot Check / Add Install RemoteDesktopManager / Icon Delete Public Desktop for KeePass, mRemoteNG, WinSCP and VLC Player
+  2021-03-29        Correction Microsoft FSLogix registry entries / Correction Microsoft OneDrive Installer / Add Install Microsoft .Net Framework, ShareX, Slack and Microsoft PowerShell / Correction Zoom and deviceTRUST Download
+  2021-03-30        Add Install Zoom + Zoom Plugin for Citrix Receiver and deviceTRUST (Client, Host and Console)
 .PARAMETER list
 
 Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
@@ -146,6 +150,22 @@ Function Get-MicrosoftTeamsDev() {
     }
 }
 
+# FUNCTION Test Registry Value
+#========================================================================================================================================
+function Test-RegistryValue {
+    param (
+        [parameter(Mandatory=$true)][ValidateNotNullOrEmpty()]$Path,
+        [parameter(Mandatory=$true)] [ValidateNotNullOrEmpty()]$Value
+    )
+    try {
+        Get-ItemProperty -Path $Path | Select-Object -ExpandProperty $Value -ErrorAction Stop | Out-Null
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
 # FUNCTION Logging
 #========================================================================================================================================
 Function DS_WriteLog {
@@ -175,9 +195,50 @@ $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
 $myWindowsPrincipal=new-object System.Security.Principal.WindowsPrincipal($myWindowsID)
 $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
 
+# IS there a pending reboot?
+# ========================================================================================================================================
+[bool]$PendingReboot = $false
+#Check for Keys
+If ((Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\PostRebootReporting") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-Path -Path "HKLM:\SOFTWARE\Microsoft\ServerManager\CurrentRebootAttempts") -eq $true) {
+    $PendingReboot = $true
+}
+#Check for Values
+If ((Test-RegistryValue -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing" -Value "RebootInProgress") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-RegistryValue -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing" -Value "PackagesPending") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Value "PendingFileRenameOperations") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Value "PendingFileRenameOperations2") -eq $true) {
+    $PendingReboot = $true
+}
+<#If ((Test-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce" -Value "DVDRebootSignal") -eq $true) {
+    $PendingReboot = $true
+}#>
+If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon" -Value "JoinDomain") -eq $true) {
+    $PendingReboot = $true
+}
+If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon" -Value "AvoidSpnSet") -eq $true) {
+    $PendingReboot = $true
+}
 # Script Version
 # ========================================================================================================================================
-$eVersion = "1.0"
+$eVersion = "1.1"
 Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 Write-Output ""
@@ -190,6 +251,22 @@ if ($myWindowsPrincipal.IsInRole($adminRole)) {
 else {
     # Script doesn't run as admin, stop!
     Write-Verbose "Error! Script is NOT running with Admin rights!" -Verbose
+    BREAK
+}
+
+if ($PendingReboot -eq $false) {
+    # OK, no pending reboot
+    Write-Verbose "OK, no pending reboot" -Verbose
+    Write-Output ""
+}
+else {
+    # Oh Oh pending reboot, stop the script and reboot!
+    Write-Verbose "Error! Pending reboot! Reboot System!" -Verbose
+    $wshell = New-Object -ComObject Wscript.Shell
+    $AnswerPending = $wshell.Popup("Do you want to restart?",0,"Alert",32+4)
+    If ($AnswerPending -eq "6") {
+        Restart-Computer -Force
+    }
     BREAK
 }
 
@@ -207,21 +284,21 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way" Height="467" Width="855">
-    <Grid x:Name="Evergreen_GUI">
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="518" Width="855">
+    <Grid x:Name="Evergreen_GUI" Margin="0,0,0,0" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
             <ColumnDefinition Width="234*"/>
             <ColumnDefinition Width="586*"/>
         </Grid.ColumnDefinitions>
-        <Image x:Name="Image_Logo" Height="100" Margin="467,0,19,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,375,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Image x:Name="Image_Logo" Height="100" Margin="472,0,24,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,421,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,421,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="125,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="141,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="131,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="147,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="Danish"/>
             <ListBoxItem Content="Dutch"/>
             <ListBoxItem Content="English"/>
@@ -238,12 +315,12 @@ $inputXML = @"
             <ListBoxItem Content="Spanish"/>
             <ListBoxItem Content="Swedish"/>
         </ComboBox>
-        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="280,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="314,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="286,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="320,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="x64"/>
             <ListBoxItem Content="x86"/>
         </ComboBox>
-        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="94,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="100,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
         <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,51,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,82,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,102,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
@@ -251,59 +328,93 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,142,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,162,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,182,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="173,179,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="179,177,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Current Release"/>
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,202,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,222,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,242,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,262,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="15,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,362,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="153,121,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="153,141,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="153,161,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="317,154,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,222,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,242,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,262,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,282,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="15,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,402,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,422,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="153,82,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="153,102,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="320,96,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
             <ListBoxItem Content="Insider Ring"/>
             <ListBoxItem Content="Production Ring"/>
             <ListBoxItem Content="Enterprise Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="317,176,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,142,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="320,138,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
             <ListBoxItem Content="Developer Ring"/>
             <ListBoxItem Content="Preview Ring"/>
             <ListBoxItem Content="General Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="153,201,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="317,198,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="153,162,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="320,159,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="ESR"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="153,221,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="153,241,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,261,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,281,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="317,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="153,182,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="153,202,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,222,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="320,299,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Free"/>
             <ListBoxItem Content="Professional"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,301,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,321,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,341,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="127,380,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021" HorizontalAlignment="Left" Margin="309,404,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="173,338,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,362,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="127,425,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
+        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="286,453,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,382,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="179,379,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current (Preview)"/>
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="Monthly Enterprise"/>
             <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
             <ListBoxItem Content="Semi-Annual Enterprise"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,282,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="435,181,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="438,142,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+        <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,202,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,362,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="153,122,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="153,242,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="153,262,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="153,282,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,382,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="179,358,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="LTS (Long Term Support)"/>
+        </ComboBox>
+        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="320,117,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+            <ListBoxItem Content="Stable"/>
+            <ListBoxItem Content="LTS (Long Term Support)"/>
+        </ComboBox>
+        <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="320,238,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Free"/>
+            <ListBoxItem Content="Enterprise"/>
+        </ComboBox>
+        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="320,379,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="VDI Client"/>
+            <ListBoxItem Content="VDI Client + Citrix Plugin"/>
+        </ComboBox>
+        <ComboBox x:Name="Box_Slack" HorizontalAlignment="Left" Margin="320,278,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Per Machine"/>
+            <ListBoxItem Content="Per User"/>
+        </ComboBox>
+        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="179,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+            <ListBoxItem Content="Client"/>
+            <ListBoxItem Content="Host"/>
+            <ListBoxItem Content="Console"/>
+            <ListBoxItem Content="Client + Host"/>
+            <ListBoxItem Content="Host + Console"/>
+        </ComboBox>
     </Grid>
 </Window>
 "@
@@ -350,6 +461,12 @@ $inputXML = @"
         $WPFBox_MSTeams.SelectedIndex = $LastSetting[5] -as [int]
         $WPFBox_Firefox.SelectedIndex = $LastSetting[6] -as [int]
         $WPFBox_TreeSize.SelectedIndex = $LastSetting[7] -as [int]
+        $WPFBox_MSDotNetFramework.SelectedIndex = $LastSetting[40] -as [int]
+        $WPFBox_MSPowerShell.SelectedIndex = $LastSetting[42] -as [int]
+        $WPFBox_RemoteDesktopManager.SelectedIndex = $LastSetting[44] -as [int]
+        $WPFBox_Slack.SelectedIndex = $LastSetting[46] -as [int]
+        $WPFBox_Zoom.SelectedIndex = $LastSetting[49] -as [int]
+        $WPFBox_deviceTRUST.SelectedIndex = $LastSetting[50] -as [int]
         switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -440,6 +557,27 @@ $inputXML = @"
         switch ($LastSetting[37]) {
             1 { $WPFCheckbox_MSTeams_No_AutoStart.IsChecked = "True"}
         }
+        switch ($LastSetting[38]) {
+            1 { $WPFCheckbox_deviceTRUST.IsChecked = "True"}
+        }
+        switch ($LastSetting[39]) {
+            1 { $WPFCheckbox_MSDotNetFramework.IsChecked = "True"}
+        }
+        switch ($LastSetting[41]) {
+            1 { $WPFCheckbox_MSPowerShell.IsChecked = "True"}
+        }
+        switch ($LastSetting[43]) {
+            1 { $WPFCheckbox_RemoteDesktopManager.IsChecked = "True"}
+        }
+        switch ($LastSetting[45]) {
+            1 { $WPFCheckbox_Slack.IsChecked = "True"}
+        }
+        switch ($LastSetting[47]) {
+            1 { $WPFCheckbox_ShareX.IsChecked = "True"}
+        }
+        switch ($LastSetting[48]) {
+            1 { $WPFCheckbox_Zoom.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -472,6 +610,13 @@ $inputXML = @"
         $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_deviceTRUST.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSDotNetFramework.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSPowerShell.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_RemoteDesktopManager.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_ShareX.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -502,6 +647,13 @@ $inputXML = @"
         $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinSCP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_deviceTRUST.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSDotNetFramework.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSPowerShell.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_RemoteDesktopManager.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_ShareX.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -566,6 +718,20 @@ $inputXML = @"
         else {$Script:WinSCP = 0}        
         if ($WPFCheckbox_MSTeams_No_AutoStart.ischecked -eq $true) {$Script:MSTeamsNoAutoStart = 1}
         else {$Script:MSTeamsNoAutoStart = 0}
+        if ($WPFCheckbox_deviceTRUST.ischecked -eq $true) {$Script:deviceTRUST = 1}
+        else {$Script:deviceTRUST = 0}
+        if ($WPFCheckbox_MSDotNetFramework.ischecked -eq $true) {$Script:MSDotNetFramework = 1}
+        else {$Script:MSDotNetFramework = 0}
+        if ($WPFCheckbox_MSPowerShell.ischecked -eq $true) {$Script:MSPowerShell = 1}
+        else {$Script:MSPowerShell = 0}
+        if ($WPFCheckbox_RemoteDesktopManager.ischecked -eq $true) {$Script:RemoteDesktopManager = 1}
+        else {$Script:RemoteDesktopManager = 0}
+        if ($WPFCheckbox_Slack.ischecked -eq $true) {$Script:Slack = 1}
+        else {$Script:Slack = 0}
+        if ($WPFCheckbox_ShareX.ischecked -eq $true) {$Script:ShareX = 1}
+        else {$Script:ShareX = 0}
+        if ($WPFCheckbox_Zoom.ischecked -eq $true) {$Script:Zoom = 1}
+        else {$Script:Zoom = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
@@ -574,8 +740,14 @@ $inputXML = @"
         $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
         $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
         $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        $Script:MSDotNetFrameworkChannel = $WPFBox_MSDotNetFramework.SelectedIndex
+        $Script:MSPowerShellRelease = $WPFBox_MSPowerShell.SelectedIndex
+        $Script:RemoteDesktopManagerType = $WPFBox_RemoteDesktopManager.SelectedIndex
+        $Script:SlackPlatform = $WPFBox_Slack.SelectedIndex
+        $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
+        $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Verbose "GUI MODE" -Verbose
         $Form.Close()
     })
@@ -638,6 +810,19 @@ if ($list -eq $True) {
     # 1 = Long Term Service Release
     $CitrixWorkspaceAppRelease = 1
 
+    # deviceTRUST
+    # 0 = Client
+    # 1 = Host
+    # 2 = Console
+    # 3 = Client + Host
+    # 4 = Host + Console
+    $deviceTRUSTPackage = 1
+
+    # Microsoft .Net Framework
+    # 0 = Current Channel
+    # 1 = LTS (Long Term Support) Channel
+    $MSDotNetFrameworkChannel = 1
+
     # Microsoft 365 Apps
     # 0 = Current (Preview) Channel
     # 1 = Current Channel
@@ -651,6 +836,11 @@ if ($list -eq $True) {
     # 1 = Production Ring
     # 2 = Enterprise Ring
     $MSOneDriveRing = 2
+
+    # Microsoft PowerShell
+    # 0 = Stable Release
+    # 1 = LTS (Long Term Support) Release
+    $MSPowerShellRelease = 1
 
     # Microsoft Teams
     # 0 = Developer Ring
@@ -668,12 +858,27 @@ if ($list -eq $True) {
     # 1 = ESR
     $FirefoxChannel = 0
 
+    # Remote Desktop Manager
+    # 0 = Free
+    # 1 = Enterprise
+    $RemoteDesktopManagerType = 0
+
+    # Slack
+    # 0 = Per Machine
+    # 1 = Per User
+    $SlackPlatform = 0
+
     # TreeSize
     # 0 = Free
     # 1 = Professional
     $TreeSizeType = 0
 
-    # Select software
+    # Zoom
+    # 0 = VDI Installer
+    # 1 = VDI Installer + Citrix Plugin
+    $ZoomCitrixClient = 1
+
+    # Select Software
     # 0 = Not selected
     # 1 = Selected
     $7ZIP = 0
@@ -682,6 +887,7 @@ if ($list -eq $True) {
     $BISF = 0
     $Citrix_Hypervisor_Tools = 0
     $Citrix_WorkspaceApp = 0
+    $deviceTRUST = 0
     $Filezilla = 0
     $Firefox = 0
     $Foxit_Reader = 0
@@ -691,23 +897,28 @@ if ($list -eq $True) {
     $IrfanView = 0
     $KeePass = 0
     $mRemoteNG = 0
+    $MSDotNetFramework = 0
     $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSEdge = 0
     $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
+    $MSPowerShell = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
+    $RemoteDesktopManager = 0
+    $Slack = 0
+    $ShareX = 0
     $TreeSize = 0
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
-    
+    $Zoom = 0
 }
 else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -756,32 +967,24 @@ switch ($CitrixWorkspaceAppRelease) {
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
 }
 
-switch ($FirefoxChannel) {
-    0 { $FirefoxChannelClear = 'LATEST'}
-    1 { $FirefoxChannelClear = 'ESR'}
-}
-
-switch ($LanguageClear) {
-    English { $FFLanguageClear = 'en-US'}
-    Danish { $FFLanguageClear = 'en-US'}
-    Russian { $FFLanguageClear = 'ru'}
-    Dutch { $FFLanguageClear = 'nl'}
-    Finnish { $FFLanguageClear = 'en-US'}
-    French { $FFLanguageClear = 'fr'}
-    German { $FFLanguageClear = 'de'}
-    Italian { $FFLanguageClear = 'it'}
-    Japanese { $FFLanguageClear = 'ja'}
-    Korean { $FFLanguageClear = 'en-US'}
-    Norwegian { $FFLanguageClear = 'en-US'}
-    Polish { $FFLanguageClear = 'en-US'}
-    Portuguese { $FFLanguageClear = 'pt-PT'}
-    Spanish { $FFLanguageClear = 'es-ES'}
-    Swedish { $FFLanguageClear = 'sv-SE'}
+switch ($deviceTRUSTPackage) {
+    0 { $deviceTRUSTClient = $True}
+    1 { $deviceTRUSTHost = $True}
+    2 { $deviceTRUSTConsole = $True}
+    3 { $deviceTRUSTClient = $True
+        $deviceTRUSTHost = $True}
+    4 { $deviceTRUSTConsole = $True
+        $deviceTRUSTHost = $True}
 }
 
 $FoxitReaderLanguageClear = $LanguageClear
 switch ($LanguageClear) {
     Japanese { $FoxitReaderLanguageClear = 'English'}
+}
+
+switch ($MSDotNetFrameworkChannel) {
+    0 { $MSDotNetFrameworkChannelClear = 'Current'}
+    1 { $MSDotNetFrameworkChannelClear = 'LTS'}
 }
 
 switch ($MS365AppsChannel) {
@@ -829,10 +1032,48 @@ switch ($MSOneDriveRing) {
     2 { $MSOneDriveRingClear = 'Enterprise'}
 }
 
+switch ($MSPowerShellRelease) {
+    0 { $MSPowerShellReleaseClear = 'Stable'}
+    1 { $MSPowerShellReleaseClear = 'LTS'}
+}
+
 switch ($MSTeamsRing) {
     0 { $MSTeamsRingClear = 'Developer'}
     1 { $MSTeamsRingClear = 'Preview'}
     2 { $MSTeamsRingClear = 'General'}
+}
+
+switch ($FirefoxChannel) {
+    0 { $FirefoxChannelClear = 'LATEST'}
+    1 { $FirefoxChannelClear = 'ESR'}
+}
+
+switch ($LanguageClear) {
+    English { $FFLanguageClear = 'en-US'}
+    Danish { $FFLanguageClear = 'en-US'}
+    Russian { $FFLanguageClear = 'ru'}
+    Dutch { $FFLanguageClear = 'nl'}
+    Finnish { $FFLanguageClear = 'en-US'}
+    French { $FFLanguageClear = 'fr'}
+    German { $FFLanguageClear = 'de'}
+    Italian { $FFLanguageClear = 'it'}
+    Japanese { $FFLanguageClear = 'ja'}
+    Korean { $FFLanguageClear = 'en-US'}
+    Norwegian { $FFLanguageClear = 'en-US'}
+    Polish { $FFLanguageClear = 'en-US'}
+    Portuguese { $FFLanguageClear = 'pt-PT'}
+    Spanish { $FFLanguageClear = 'es-ES'}
+    Swedish { $FFLanguageClear = 'sv-SE'}
+}
+
+switch ($SlackPlatform) {
+    0 { $SlackPlatformClear = 'PerMachine'}
+    1 { $SlackPlatformClear = 'PerUser'}
+}
+
+switch ($SlackPlatform) {
+    0 { $SlackArchitectureClear = $ArchitectureClear}
+    1 { $SlackArchitectureClear = 'x64'}
 }
 
 if ($install -eq $False) {
@@ -868,12 +1109,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -901,12 +1142,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -935,12 +1176,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $AdobeArchitectureClear $AdobeLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Output ""
         }
         else {
@@ -967,12 +1208,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Exclude *.ps1, *.lnk -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1001,12 +1242,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1042,12 +1283,70 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download deviceTRUST
+    If ($deviceTRUST -eq 1) {
+        $Product = "deviceTRUST"
+        $PackageName = "deviceTRUST"
+        $URLVersion = "https://docs.devicetrust.com/docs/download/"
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
+        $regexAppVersion = "<td>\d\d.\d.\d\d\d+</td>"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $Version = $webVersion.Trim("</td>").Trim("</td>")
+        $URL = "https://storage.devicetrust.com/download/deviceTRUST-$Version.zip"
+        $InstallerType = "zip"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            expand-archive -path "$PSScriptRoot\$Product\deviceTRUST.zip" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item -Path "$PSScriptRoot\$Product\deviceTRUST.zip" -Force
+            expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
+            copy-item -Path "$PSScriptRoot\$Product\ADMX\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\dtreporting-$Version.0.zip" -Force
+            if (Test-Path -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe") {Remove-Item -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe" -Force}
+            switch ($Architecture) {
+                0 {
+                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where Name -like *"x86"* | Remove-Item
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x64-release-$Version.0.msi" -NewName "dtconsole-x64-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x64-release-$Version.0.msi" -NewName "dthost-x64-release.msi"
+                }
+                1 {
+                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where Name -like *"x64"* | Remove-Item
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x86-release-$Version.0.msi" -NewName "dtconsole-x86-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x86-release-$Version.0.msi" -NewName "dthost-x86-release.msi"
+                }
+            }
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1075,12 +1374,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1109,45 +1408,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $FoxitReaderLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
-            Write-Verbose "Download of the new version $Version finished" -Verbose
-            Write-Output ""
-        }
-        else {
-            Write-Verbose "No new version available" -Verbose
-            Write-Output ""
-        }
-    }
-
-    #// Mark: Download Greenshot
-    if ($Greenshot -eq 1) {
-        $Product = "Greenshot"
-        $PackageName = "Greenshot-INSTALLER-x86"
-        $GreenshotD = Get-Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
-        $Version = $GreenshotD.Version
-        $URL = $GreenshotD.uri
-        $InstallerType = "exe"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Verbose "Download $Product" -Verbose
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        if (!($CurrentVersion -eq $Version)) {
-            Write-Verbose "Update available" -Verbose
-            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product $Version" -Verbose
-            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1176,12 +1442,45 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Greenshot
+    if ($Greenshot -eq 1) {
+        $Product = "Greenshot"
+        $PackageName = "Greenshot-INSTALLER-x86"
+        $GreenshotD = Get-Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
+        $Version = $GreenshotD.Version
+        $URL = $GreenshotD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1254,12 +1553,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path $VersionPath -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1287,12 +1586,46 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft .Net Framework
+    if ($MSDotNetFramework -eq 1) {
+        $Product = "Microsoft Dot Net Framework"
+        $PackageName = "NetFramework-runtime_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear"
+        $MSDotNetFrameworkD = Get-Microsoft.NET | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear"}
+        $Version = $MSDotNetFrameworkD.Version
+        $URL = $MSDotNetFrameworkD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1386,12 +1719,12 @@ if ($install -eq $False) {
             Write-Verbose "Update available" -Verbose
             $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $MS365AppsChannelClear $Version setup file" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Output ""
         }
         else {
@@ -1431,12 +1764,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1464,18 +1797,24 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product\Install")) { New-Item -Path "$PSScriptRoot\$Product\Install" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\Install\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\Install\*" -Recurse
-            Start-Transcript $LogPS
-            New-Item -Path "$PSScriptRoot\$Product\Install" -Name "Download date $Date" | Out-Null
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Install\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\Install\" + ($Source))
             expand-archive -path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -destinationpath "$PSScriptRoot\$Product\Install"
             Remove-Item -Path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -Force
-            Move-Item -Path "$PSScriptRoot\$Product\Install\x64\Release\*" -Destination "$PSScriptRoot\$Product\Install"
+            switch ($Architecture) {
+                0 {
+                    Move-Item -Path "$PSScriptRoot\$Product\Install\Win32\Release\*" -Destination "$PSScriptRoot\$Product\Install"
+                }
+                1 {
+                    Move-Item -Path "$PSScriptRoot\$Product\Install\x64\Release\*" -Destination "$PSScriptRoot\$Product\Install"
+                }
+            }
             Remove-Item -Path "$PSScriptRoot\$Product\Install\Win32" -Force -Recurse
             Remove-Item -Path "$PSScriptRoot\$Product\Install\x64" -Force -Recurse
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1484,7 +1823,6 @@ if ($install -eq $False) {
             Write-Output ""
         }
     }
-
 
     #// Mark: Download Microsoft Office 2019
     if ($MSOffice2019 -eq 1) {
@@ -1570,12 +1908,12 @@ if ($install -eq $False) {
             Write-Verbose "Update available" -Verbose
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Output ""
         }
         else {
@@ -1614,12 +1952,46 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $MSOneDriveRingClear Ring $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft PowerShell
+    If ($MSPowerShell -eq 1) {
+        $Product = "Microsoft PowerShell"
+        $PackageName = "PowerShell" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear"
+        $MSPowershellD = Get-MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
+        $Version = $MSPowershellD.Version
+        $URL = $MSPowershellD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
+        $CurrentVersion = Get-Content -Path $VersionPath -EA SilentlyContinue
+        Write-Verbose "Download $Product $ArchitectureClear $MSPowerShellReleaseClear Release" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $ArchitectureClear $MSPowerShellReleaseClear Release $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1653,12 +2025,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1687,12 +2059,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1720,12 +2092,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Verbose "Starting Download of $Product $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1754,12 +2126,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1788,12 +2160,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1822,12 +2194,153 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download RemoteDesktopManager
+    if ($RemoteDesktopManager -eq 1) {
+        switch ($RemoteDesktopManagerType) {
+            0 {
+                $Product = "RemoteDesktopManager Free"
+                $PackageName = "Setup.RemoteDesktopManagerFree"
+                $URLVersion = "https://remotedesktopmanager.com/de/release-notes/free"
+                $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
+                $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
+                $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+                $Version = $webVersion.Trim("</td>").Trim("</td>")
+                $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManagerFree.$Version.msi"
+                $InstallerType = "msi"
+                $Source = "$PackageName" + "." + "$InstallerType"
+                $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+                Write-Verbose "Download $Product" -Verbose
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version: $CurrentVersion"
+                If (!($CurrentVersion -eq $Version)) {
+                    Write-Verbose "Update available" -Verbose
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Start-Transcript $LogPS | Out-Null
+                    Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                    Write-Verbose "Starting Download of $Product $Version" -Verbose
+                    Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    Write-Verbose "Stop logging" -Verbose
+                    Stop-Transcript | Out-Null
+                    Write-Verbose "Download of the new version $Version finished" -Verbose
+                    Write-Output ""
+                }
+                else {
+                    Write-Verbose "No new version available" -Verbose
+                    Write-Output ""
+                }
+            }
+            1 {
+                $Product = "RemoteDesktopManager Enterprise"
+                $PackageName = "Setup.RemoteDesktopManagerEnterprise"
+                $URLVersion = "https://remotedesktopmanager.com/de/release-notes"
+                $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
+                $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
+                $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+                $Version = $webVersion.Trim("</td>").Trim("</td>")
+                $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManager.$Version.msi"
+                $InstallerType = "msi"
+                $Source = "$PackageName" + "." + "$InstallerType"
+                $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+                Write-Verbose "Download $Product" -Verbose
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version: $CurrentVersion"
+                If (!($CurrentVersion -eq $Version)) {
+                    Write-Verbose "Update available" -Verbose
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Start-Transcript $LogPS | Out-Null
+                    Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                    Write-Verbose "Starting Download of $Product $Version" -Verbose
+                    Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    Write-Verbose "Stop logging" -Verbose
+                    Stop-Transcript | Out-Null
+                    Write-Verbose "Download of the new version $Version finished" -Verbose
+                    Write-Output ""
+                }
+                else {
+                    Write-Verbose "No new version available" -Verbose
+                    Write-Output ""
+                }
+            }
+        }
+    }
+
+    #// Mark: Download ShareX
+    if ($ShareX -eq 1) {
+        $Product = "ShareX"
+        $PackageName = "ShareX-setup"
+        $ShareXD = Get-ShareX | Where-Object {$_.Type -like "exe"}
+        $Version = $ShareXD.Version
+        $URL = $ShareXD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
+            Write-Verbose "Download of the new version $Version finished" -Verbose
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Slack
+    if ($Slack -eq 1) {
+        $Product = "Slack"
+        $PackageName = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear"
+        $SlackD = Get-Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
+        $Version = $SlackD.Version
+        $URL = $SlackD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SlackArchitectureClear" + "_$SlackPlatformClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Verbose "Download $Product $SlackArchitectureClear $SlackPlatformClear" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        if (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Verbose "Starting Download of $Product $SlackArchitectureClear $SlackPlatformClear $Version" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1857,12 +2370,12 @@ if ($install -eq $False) {
                     if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-                    Start-Transcript $LogPS
+                    Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Verbose "Starting Download of $Product $Version" -Verbose
                     Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging" -Verbose
-                    Stop-Transcript
+                    Stop-Transcript | Out-Null
                     Write-Verbose "Download of the new version $Version finished" -Verbose
                     Write-Output ""
                 }
@@ -1888,12 +2401,12 @@ if ($install -eq $False) {
                     if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-                    Start-Transcript $LogPS
+                    Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Verbose "Starting Download of $Product $Version" -Verbose
                     Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging" -Verbose
-                    Stop-Transcript
+                    Stop-Transcript | Out-Null
                     Write-Verbose "Download of the new version $Version finished" -Verbose
                     Write-Output ""
                 }
@@ -1924,12 +2437,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1958,12 +2471,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Verbose "Starting Download of $Product $ArchitectureClear $Version" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Verbose "Download of the new version $Version finished" -Verbose
             Write-Output ""
         }
@@ -1991,12 +2504,12 @@ if ($install -eq $False) {
             if (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS
+            Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Verbose "Starting Download of $Product.txt" -Verbose
+            Write-Verbose "Starting Download of $Product" -Verbose
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging" -Verbose
-            Stop-Transcript
+            Stop-Transcript | Out-Null
             Write-Output ""
         }
         else {
@@ -2006,11 +2519,74 @@ if ($install -eq $False) {
     }
 }
 
+    #// Mark: Download Zoom VDI Installer
+    If ($Zoom -eq 1) {
+        $Product = "Zoom VDI"
+        $PackageName = "ZoomInstallerVDI"
+        $ZoomVDI = Get-Zoom | Where-Object {$_.Platform -eq "VDI"}
+        $URLVersion = "https://support.zoom.us/hc/en-us/articles/360041602711"
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
+        $regexAppVersion = "(\d\.\d\.\d)"
+        $Version = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Sort-Object -Descending | Select-Object -First 1
+        $URL = $ZoomVDI.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Verbose "Download $Product" -Verbose
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Verbose "Update available" -Verbose
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Verbose "Starting Download of $Product" -Verbose
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging" -Verbose
+            Stop-Transcript | Out-Null
+            Write-Output ""
+        }
+        else {
+            Write-Verbose "No new version available" -Verbose
+            Write-Output ""
+        }
+        If ($ZoomCitrixClient -eq 1) {
+            $Product2 = "Zoom Citrix Client"
+            $PackageName2 = "ZoomCitrixHDXMediaPlugin"
+            $ZoomCitrix = Get-Zoom | Where-Object {$_.Platform -eq "Citrix"}
+            $URL = $ZoomCitrix.uri
+            $Source2 = "$PackageName2" + "." + "$InstallerType"
+            $CurrentVersion2 = Get-Content -Path "$PSScriptRoot\$Product2\Version.txt" -EA SilentlyContinue
+            Write-Verbose "Download $Product2" -Verbose
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $CurrentVersion2"
+            If (!($CurrentVersion2 -eq $Version)) {
+                Write-Verbose "Update available" -Verbose
+                If (!(Test-Path -Path "$PSScriptRoot\$Product2")) {New-Item -Path "$PSScriptRoot\$Product2" -ItemType Directory | Out-Null}
+                $LogPS = "$PSScriptRoot\$Product2\" + "$Product2 $Version.log"
+                Remove-Item "$PSScriptRoot\$Product2\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$PSScriptRoot\$Product2\Version.txt" -Value "$Version"
+                Write-Verbose "Starting Download of $Product2" -Verbose
+                Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product2\" + ($Source2))
+                Write-Verbose "Stop logging" -Verbose
+                Stop-Transcript | Out-Null
+                Write-Output ""
+            }
+            else {
+                Write-Verbose "No new version available" -Verbose
+                Write-Output ""
+            }
+        }
+    }
+
 if ($download -eq $False) {
 
     # Logging
     # Global variables
-    #$StartDir = $PSScriptRoot # the directory path of the script currently being executed
+    # $StartDir = $PSScriptRoot # the directory path of the script currently being executed
     $LogDir = "$PSScriptRoot\_Install Logs"
     $LogFileName = ("$ENV:COMPUTERNAME - $Date.log")
     $LogFile = Join-path $LogDir $LogFileName
@@ -2081,7 +2657,7 @@ if ($download -eq $False) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product finished!" -Verbose
                 }
-                # Update Dienst und Task deaktivieren
+                # Disable update service and scheduled task
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
@@ -2126,11 +2702,11 @@ if ($download -eq $False) {
                     $p.WaitForExit()
                     Write-Verbose "Installation $Product $AdobeArchitectureClear $AdobeLanguageClear finished!" -Verbose
                 }
-                # Update Dienst und Task deaktivieren
+                # Disable update service and scheduled task
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
-                Stop-Service AdobeARMservice
+                <#Stop-Service AdobeARMservice
                 Set-Service AdobeARMservice -StartupType Disabled
-                Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
+                Write-Verbose "Stop and Disable Service $Product finished!" -Verbose#>
                 Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
                 Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
             } catch {
@@ -2233,7 +2809,7 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Citrix Hypervisor Tools
-    IF ($Citrix_Hypervisor_Tools -eq 1) {
+    if ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
 
         # FUNCTION MSI Installation
@@ -2311,7 +2887,7 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Citrix WorkspaceApp
-    IF ($Citrix_WorkspaceApp -eq 1) {
+    if ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
 
         # Check, if a new version is available
@@ -2367,6 +2943,147 @@ if ($download -eq $False) {
         Else {
             Write-Verbose "No Update available for $Product" -Verbose
             Write-Output ""
+        }
+    }
+
+    #// Mark: Install deviceTRUST
+    if ($deviceTRUST -eq 1) {
+        $Product = "deviceTRUST"
+
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+    
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/passive"
+                "/quiet"
+                "/norestart"
+                "/L*V $deviceTRUSTLog"
+                )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if ($inst -ne $null) {
+                Wait-Process -InputObject $inst
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + "_$ArchitectureClear"+ ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
+        If ($deviceTRUSTClientV -eq $NULL) {
+            $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
+        }
+        If ($deviceTRUSTClientV.length -ne "8") {$deviceTRUSTClientV = $deviceTRUSTClientV -replace ".{2}$"}
+        $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
+        If ($deviceTRUSTHostV -eq $NULL) {
+            $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
+        }
+        If ($deviceTRUSTHostV.length -ne "8") {$deviceTRUSTHostV = $deviceTRUSTHostV -replace ".{2}$"}
+        $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
+        If ($deviceTRUSTConsoleV -eq $NULL) {
+            $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
+        }
+        If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
+        $deviceTRUSTLog = "$LogTemp\deviceTRUST.log"
+        $deviceTRUSTClientInstaller = "dtclient-release" + ".exe"
+        $deviceTRUSTHostInstaller = "dthost-" + "$ArchitectureClear" + "-release" + ".msi"
+        $deviceTRUSTConsoleInstaller = "dtconsole-" + "$ArchitectureClear" + "-release" + ".msi"
+        If ($deviceTRUSTClient -eq $True) {
+            If ($deviceTRUSTClientV -ne $Version) {
+                # deviceTRUST Client
+                try {
+                    Write-Verbose "Installing $Product Client" -Verbose
+                    DS_WriteLog "I" "Installing $Product Client" $LogFile
+                    $Options = @(
+                        "/INSTALL"
+                        "/QUIET"
+                    )
+                    Start-Process -FilePath "$PSScriptRoot\$Product\$deviceTRUSTClientInstaller" -ArgumentList $Options -PassThru -Wait -ErrorAction Stop | Out-Null
+                    Write-Verbose "Installation $Product Client finished!" -Verbose
+                    DS_WriteLog "I" "Installation $Product Client finished!" $LogFile
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product Client (error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Verbose "No Update available for $Product Client" -Verbose
+                Write-Output ""
+            }
+        }
+        If ($deviceTRUSTHost -eq $True) {
+            If ($deviceTRUSTHostV -ne $Version) {
+                # deviceTRUST Host
+                try {
+                    Write-Verbose "Installing $Product Host" -Verbose
+                    DS_WriteLog "I" "Installing $Product Host" $LogFile
+                    "$PSScriptRoot\$Product\$deviceTRUSTHostInstaller" | Install-MSIFile
+                    Get-Content $deviceTRUSTLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $deviceTRUSTLog
+                    Write-Verbose "Installation $Product Host finished!" -Verbose
+                    DS_WriteLog "I" "Installation $Product Host finished!" $LogFile
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product Host (error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Verbose "No Update available for $Product Host" -Verbose
+                Write-Output ""
+            }
+        }
+        If ($deviceTRUSTConsole -eq $True) {
+            If ($deviceTRUSTConsoleV -ne $Version) {
+                # deviceTRUST Console
+                try {
+                    Write-Verbose "Installing $Product Console" -Verbose
+                    DS_WriteLog "I" "Installing $Product Console" $LogFile
+                    "$PSScriptRoot\$Product\$deviceTRUSTConsoleInstaller" | Install-MSIFile
+                    Get-Content $deviceTRUSTLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $deviceTRUSTLog
+                    Write-Verbose "Installation $Product Console finished!" -Verbose
+                    DS_WriteLog "I" "Installation $Product Console finished!" $LogFile
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product Console (error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Verbose "No Update available for $Product Console" -Verbose
+                Write-Output ""
+            }
         }
     }
 
@@ -2449,43 +3166,8 @@ if ($download -eq $False) {
         }
     }
 
-    #// Mark: Install Greenshot
-    IF ($Greenshot -eq 1) {
-        $Product = "Greenshot"
-
-        # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $Greenshot = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion
-        IF ($Greenshot -ne $Version) {
-            # Greenshot
-            $Options = @(
-                "/VERYSILENT"
-                "/NORESTART"
-                "/SUPPRESSMSGBOXES"
-            )
-            Write-Verbose "Installing $Product" -Verbose
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            try	{
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Greenshot-INSTALLER-x86.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                if($inst -ne $null) {
-                    Wait-Process -InputObject $inst
-                    Write-Verbose "Installation $Product finished!" -Verbose
-                }
-            } catch {
-                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Verbose "No Update available for $Product" -Verbose
-            Write-Output ""
-        }
-    }
-
     #// Mark: Install Google Chrome
-    IF ($GoogleChrome -eq 1) {
+    if ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
 
         # FUNCTION MSI Installation
@@ -2547,6 +3229,7 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\$ChromeInstaller" | Install-MSIFile
                 Get-Content $ChromeLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $ChromeLog
+                if (Test-Path -Path "$env:PUBLIC\Desktop\Google Chrome.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Google Chrome.lnk" -Force}
                 # Update Dienst und Task deaktivieren
                 Write-Verbose "Customize Service and Scheduled Task" -Verbose
                 Stop-Service gupdate
@@ -2556,8 +3239,43 @@ if ($download -eq $False) {
                 Write-Verbose "Stop and Disable Service $Product finished!" -Verbose
                 Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" | Out-Null
                 Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA" | Out-Null
-                Disable-ScheduledTask -TaskName "GPUpdate on Startup" | Out-Null
+                #Disable-ScheduledTask -TaskName "GPUpdate on Startup" | Out-Null
                 Write-Verbose "Disable Scheduled Task $Product finished!" -Verbose
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Greenshot
+    IF ($Greenshot -eq 1) {
+        $Product = "Greenshot"
+
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Greenshot = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion
+        IF ($Greenshot -ne $Version) {
+            # Greenshot
+            $Options = @(
+                "/VERYSILENT"
+                "/NORESTART"
+                "/SUPPRESSMSGBOXES"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Greenshot-INSTALLER-x86.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2673,6 +3391,7 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\KeePass.msi" | Install-MSIFile
                 Get-Content $KeePassLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $KeePassLog
+                if (Test-Path -Path "$env:PUBLIC\Desktop\KeePass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\KeePass.lnk" -Force}
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -2686,10 +3405,49 @@ if ($download -eq $False) {
         }
     }
 
+        #// Mark: Install Microsoft .Net Framework
+        IF ($MSDotNetFramework -eq 1) {
+            $Product = "Microsoft Dot Net Framework"
+    
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
+            If ($MSDotNetFrameworkV -eq $NULL) {
+                $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
+            }
+            $MSDotNetFrameworkInstaller = "NetFramework-runtime_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".exe"
+            IF ($MSDotNetFrameworkV -ne $Version) {
+                # Microsoft .Net Framework Installation
+                $Options = @(
+                    "/q"
+                    "/norestart"
+                )
+                Write-Verbose "Installing $Product $ArchitectureClear $MSDotNetFrameworkChannelClear" -Verbose
+                DS_WriteLog "I" "Installing $Product $ArchitectureClear $MSDotNetFrameworkChannelClear" $LogFile
+                try	{
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSDotNetFrameworkInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                    if($inst -ne $null) {
+                        Wait-Process -InputObject $inst
+                        Write-Verbose "Installation $Product $ArchitectureClear $MSDotNetFrameworkChannelClear finished!" -Verbose
+                        Write-Output ""
+                    }
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Verbose "No Update available for $Product" -Verbose
+                Write-Output ""
+            }
+        }
+
     #// Mark: Install Microsoft Apps 365
     IF ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
-
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
         $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
@@ -2739,7 +3497,7 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Microsoft Edge
-    IF ($MSEdge -eq 1) {
+    if ($MSEdge -eq 1) {
         $Product = "Microsoft Edge"
 
         # FUNCTION MSI Installation
@@ -2807,12 +3565,12 @@ if ($download -eq $False) {
                 #Disable Microsoft Edge auto update
                 Write-Verbose "Disable Edge Update" -Verbose
                 If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
-                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate
-                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD
+                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate | Out-Null
+                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD | Out-Null
                 }
                 else {
                     $EdgeUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate" | Select-Object -Expandproperty "UpdateDefault"
-                    If ($EdgeUpdateState -ne "0") {New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD}
+                    If ($EdgeUpdateState -ne "0") {New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD | Out-Null}
                 }
                 #Configure Microsoft Edge update service to manual startup
                 Stop-Service edgeupdate
@@ -2856,7 +3614,7 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Microsoft FSLogix
-    IF ($FSLogix -eq 1) {
+    if ($FSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
         $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
@@ -2908,22 +3666,36 @@ if ($download -eq $False) {
             Write-Verbose "Applying $Product post setup customizations" -Verbose
             Write-Verbose "Post setup customizations for $OS" -Verbose
             If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops") {
-                Write-Verbose "Deactivate FSLogix RoamSearch" -Verbose
-                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD
+                If ((Test-RegistryValue -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
+                    Write-Verbose "Deactivate FSLogix RoamSearch" -Verbose
+                    New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD | Out-Null
+                }
+                If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "0") {
+                    Write-Verbose "Deactivate FSLogix RoamSearch" -Verbose
+                    Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD
+                }
             }
             If ($OS -Like "*Windows 10*" -and $OS -ne "Microsoft Windows 10 Enterprise for Virtual Desktops") {
-                Write-Verbose "Activate FSLogix RoamSearch" -Verbose
-                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD
+                If ((Test-RegistryValue -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
+                    Write-Verbose "Activate FSLogix RoamSearch" -Verbose
+                    New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD | Out-Null
+                }
+                If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "1") {
+                    Write-Verbose "Deactivate FSLogix RoamSearch" -Verbose
+                    Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD
+                }
             }
             # Implement user based group policy processing fix
-            Write-Verbose "Deactivate FSLogix GroupPolicy" -Verbose
             If (!(Test-Path -Path HKLM:SOFTWARE\FSLogix\Profiles)) {
-                New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles
-                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD
+                New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles | Out-Null
             }
-            else {
-                $FSLGroupState = Get-ItemProperty -path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -Expandproperty "GroupPolicyState"
-                If ($FSLGroupState -eq "1") {New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD}
+            If ((Test-RegistryValue -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Value "GroupPolicyState") -ne $true) {
+                Write-Verbose "Deactivate FSLogix GroupPolicy" -Verbose
+                New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD | Out-Null
+            }
+            If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -ExpandProperty "GroupPolicyState") -ne "0") {
+                Write-Verbose "Deactivate FSLogix GroupPolicy" -Verbose
+                Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD
             }
             If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2")) {
                 Write-Verbose "Implement scheduled task to restart Windows Search service on Event ID 2" -Verbose
@@ -2963,13 +3735,13 @@ if ($download -eq $False) {
 
 
     #// Mark: Install Microsoft Office 2019
-    IF ($MSOffice2019 -eq 1) {
+    if ($MSOffice2019 -eq 1) {
         $Product = "Microsoft Office 2019"
 
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
         $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion
-        IF ($MSOffice2019V -ne $Version) {
+        if ($MSOffice2019V -ne $Version) {
             # MS Office 2019 Uninstallation
             $Options = @(
                 "/configure remove.xml"
@@ -3011,14 +3783,16 @@ if ($download -eq $False) {
     }
 
     #// Mark: Install Microsoft OneDrive
-    IF ($MSOneDrive -eq 1) {
+    if ($MSOneDrive -eq 1) {
         $Product = "Microsoft OneDrive"
 
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
-        IF ($MSOneDriveV -ne $Version) {
+        $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + ".exe"
+        $OneDriveProcess = "OneDriveSetup-" + "$MSOneDriveRingClear"
+        if ($MSOneDriveV -ne $Version) {
             # Installation MSOneDrive
             Write-Verbose "Installing $Product $MSOneDriveRingClear" -Verbose
             DS_WriteLog "I" "Installing $Product $MSOneDriveRingClear" $LogFile
@@ -3027,8 +3801,8 @@ if ($download -eq $False) {
                 "/SILENT"
             )
             try	{
-                $null = Start-Process "$PSScriptRoot\$Product\OneDriveSetup.exe" -ArgumentList $Options -NoNewWindow -PassThru
-                while (Get-Process -Name "OneDriveSetup" -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                while (Get-Process -Name $OneDriveProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 Write-Verbose "Installation $Product $MSOneDriveRingClear finished!" -Verbose
                 # OneDrive starts automatically after setup. kill!
                 Stop-Process -Name "OneDrive" -Force
@@ -3045,8 +3819,87 @@ if ($download -eq $False) {
         }
     }
 
+    #// Mark: Install Microsoft PowerShell
+    IF ($MSPowerShell -eq 1) {
+        $Product = "Microsoft PowerShell"
+    
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "/norestart"
+                "/L*V $MSPowerShellLog"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product $ArchitectureClear $MSPowerShellReleaseClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear $MSPowerShellReleaseClear finished!" $LogFile
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
+        If ($MSPowerShellV -eq $NULL) {
+            $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
+        }
+        IF ($MSPowerShellV) {$MSPowerShellV = $MSPowerShellV -replace ".{2}$"}
+        $MSPowerShellLog = "$LogTemp\MSPowerShell.log"
+        $MSPowerShellInstaller = "PowerShell" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".msi"
+        If ($MSPowerShellV -ne $Version) {
+            # Microsoft PowerShell
+            Write-Verbose "Installing $Product $ArchitectureClear $MSPowerShellReleaseClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear $MSPowerShellReleaseClear" $LogFile
+            try {
+                "$PSScriptRoot\$Product\$MSPowerShellInstaller" | Install-MSIFile
+                Start-Sleep 25
+                Get-Content $MSPowerShellLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $MSPowerShellLog
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Microsoft Teams
-    If ($MSTeams -eq 1) {
+    if ($MSTeams -eq 1) {
         $Product = "Microsoft Teams"
         # FUNCTION MSI Installation
         #========================================================================================================================================
@@ -3123,8 +3976,8 @@ if ($download -eq $False) {
             #MS Teams Installation
             #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
             If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
-                If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix"}
-                New-Item -Path "HKLM:Software\Citrix\PortICA"
+                If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
+                New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
             }
             Write-Verbose "Installing $Product $ArchitectureClear $MSTeamsRingClear Ring" -Verbose
             DS_WriteLog "I" "Installing $Product $ArchitectureClear $MSTeamsRingClear Ring" $LogFile
@@ -3307,6 +4160,7 @@ if ($download -eq $False) {
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
+            if (Test-Path -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk" -Force}
         }
         # Stop, if no new version is available
         Else {
@@ -3408,8 +4262,8 @@ if ($download -eq $False) {
             $OpenJDK = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
         }
         $OpenJDKInstaller = "OpenJDK" + "$ArchitectureClear" + ".msi"
-        IF ($Version) {$Version = $Version -replace ".-"}
-        IF ($OpenJDK -ne $Version) {
+        If ($Version) {$Version = $Version -replace ".-"}
+        If ($OpenJDK -ne $Version) {
             # OpenJDK
             Write-Verbose "Installing $Product $ArchitectureClear" -Verbose
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
@@ -3474,12 +4328,226 @@ if ($download -eq $False) {
         }
     }
 
+    #// Mark: Install RemoteDesktopManager
+    if ($RemoteDesktopManager -eq 1) {
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+            [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                    [ValidateNotNullorEmpty()]
+                    [string]$msiFile,
+
+                    [parameter()]
+                    [ValidateNotNullorEmpty()]
+                    [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)){
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "/L*V $RemoteDesktopManagerLog"
+            )
+            if ($targetDir){
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -eq 0) {
+                }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) für Datei  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+        switch ($RemoteDesktopManagerType) {
+            0 {
+                $Product = "RemoteDesktopManager Free"
+                # Check, if a new version is available
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $RemoteDesktopManagerFree = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion
+                $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
+                if ($RemoteDesktopManagerFree -ne $Version) {
+                    # Installation RemoteDesktopManager Free
+                    Write-Verbose "Installing $Product" -Verbose
+                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    try	{
+                        "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerFree.msi" | Install-MSIFile
+                        Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
+                        Remove-Item $RemoteDesktopManagerLog
+                    } catch {
+                        DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Verbose "No Update available for $Product" -Verbose
+                    Write-Output ""
+                }
+            }
+            1 {
+                $Product = "RemoteDesktopManager Enterprise"
+                # Check, if a new version is available
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $RemoteDesktopManagerEnterprise = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion
+                $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
+                IF ($RemoteDesktopManagerEnterprise -ne $Version) {
+                    # Installation RemoteDesktopManager Enterprise
+                    Write-Verbose "Installing $Product" -Verbose
+                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    try	{
+                        "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerEnterprise.msi" | Install-MSIFile
+                        Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
+                        Remove-Item $RemoteDesktopManagerLog
+                    } catch {
+                        DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile       
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Verbose "No Update available for $Product" -Verbose
+                    Write-Output ""
+                }
+            }
+        }
+    }
+
+    #// Mark: Install ShareX
+    IF ($ShareX -eq 1) {
+        $Product = "ShareX"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $ShareXV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
+        If ($ShareXV -eq $NULL) {
+            $ShareXV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
+        }
+        $ShareXInstaller = "ShareX-setup" + ".exe"
+        IF ($ShareXV -ne $Version) {
+            # Installation ShareX
+            $Options = @(
+                "/VERYSILENT"
+                "/UPDATE"
+            )
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try	{
+                Start-Process "$PSScriptRoot\$Product\$ShareXInstaller" -ArgumentList $Options -NoNewWindow
+                $p = Get-Process ShareX-setup
+                if ($p) {
+                    $p.WaitForExit()
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                }
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Slack
+    IF ($Slack -eq 1) {
+        $Product = "Slack"
+    
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "/norestart"
+                "/L*V $SlackLog"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product $ArchitectureClear $SlackPlatformClear finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product $ArchitectureClear $SlackPlatformClear finished!" $LogFile
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$SlackPlatformClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+        If ($SlackV -eq $NULL) {
+            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+        }
+        If ($SlackV -eq $NULL) {
+            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+        }
+        If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
+        $SlackLog = "$LogTemp\Slack.log"
+        $SlackInstaller = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear" + ".msi"
+        If ($SlackV -ne $Version) {
+            # Slack
+            Write-Verbose "Installing $Product $ArchitectureClear $SlackPlatformClear" -Verbose
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear $SlackPlatformClear" $LogFile
+            try {
+                "$PSScriptRoot\$Product\$SlackInstaller" | Install-MSIFile
+                Start-Sleep 25
+                Get-Content $SlackLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $SlackLog
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install TreeSize
     IF ($TreeSize -eq 1) {
         switch ($TreeSizeType) {
             0 {
                 $Product = "TreeSize Free"
-
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
                 $Version = $Version.Insert(3,'.')
@@ -3489,7 +4557,7 @@ if ($download -eq $False) {
                     Write-Verbose "Installing $Product" -Verbose
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     try	{
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow -Wait
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow
                         $p = Get-Process TreeSize_Free
                         if ($p) {
                             $p.WaitForExit()
@@ -3509,17 +4577,16 @@ if ($download -eq $False) {
             }
             1 {
                 $Product = "TreeSize Professional"
-
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
                 $Version = $Version.Insert(3,'.')
                 $TreeSize = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
                 IF ($TreeSize -ne $Version) {
-                    # Installation Tree Size Free
+                    # Installation Tree Size Professional
                     Write-Verbose "Installing $Product" -Verbose
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     try	{
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow -Wait
+                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow
                         $p = Get-Process TreeSize_Professional
                         if ($p) {
                             $p.WaitForExit()
@@ -3604,7 +4671,7 @@ if ($download -eq $False) {
                 "$PSScriptRoot\$Product\$VLCInstaller" | Install-MSIFile
                 Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $VLCLog
-                Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force
+                if (Test-Path -Path "$env:PUBLIC\Desktop\VLC media player.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force}
             } catch {
                 DS_WriteLog "E" "An error occurred installing $Product (error: $($Error[0]))" $LogFile 
             }
@@ -3684,6 +4751,7 @@ if ($download -eq $False) {
                 if($inst -ne $null) {
                     Wait-Process -InputObject $inst
                     Write-Verbose "Installation $Product finished!" -Verbose
+                    if (Test-Path -Path "$env:PUBLIC\Desktop\WinSCP.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\WinSCP.lnk" -Force}
                 }
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
@@ -3695,6 +4763,159 @@ if ($download -eq $False) {
         Else {
             Write-Verbose "No Update available for $Product" -Verbose
             Write-Output ""
+        }
+    }
+
+    #// Mark: Install Zoom VDI Installer
+    If ($Zoom -eq 1) {
+        $Product = "Zoom VDI"
+    
+        # FUNCTION MSI Installation
+        #========================================================================================================================================
+        function Install-MSIFile {
+            [CmdletBinding()]
+            Param(
+                [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                [ValidateNotNullorEmpty()]
+                [string]$msiFile,
+
+                [parameter()]
+                [ValidateNotNullorEmpty()]
+                [string]$targetDir
+            )
+            if (!(Test-Path $msiFile)) {
+                throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+            }
+            $arguments = @(
+                "/i"
+                "`"$msiFile`""
+                "/qn"
+                "/norestart"
+                "/L*V $ZoomLog"
+            )
+            if ($targetDir) {
+                if (!(Test-Path $targetDir)) {
+                    throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                }
+                $arguments += "INSTALLDIR=`"$targetDir`""
+            }
+            $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+            if($inst -ne $null) {
+                Wait-Process -InputObject $inst
+                Write-Verbose "Installation $Product finished!" -Verbose
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
+            }
+            if ($process.ExitCode -eq 0) {
+            }
+            else {
+                Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+            }
+        }
+        #========================================================================================================================================
+
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion
+        If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
+        $ZoomLog = "$LogTemp\Zoom.log"
+        $ZoomInstaller = "ZoomInstallerVDI" + ".msi"
+        If ($ZoomV -ne $Version) {
+            # Zoom
+            Write-Verbose "Installing $Product" -Verbose
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            try {
+                "$PSScriptRoot\$Product\$ZoomInstaller" | Install-MSIFile
+                Start-Sleep 25
+                Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $ZoomLog
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Verbose "No Update available for $Product" -Verbose
+            Write-Output ""
+        }
+    }
+    If ($Zoom -eq 1) {
+        If ($ZoomCitrixClient -eq 1) {
+            $Product = "Zoom Citrix Client"
+
+                    # FUNCTION MSI Installation
+            #========================================================================================================================================
+            function Install-MSIFile {
+                [CmdletBinding()]
+                Param(
+                    [parameter(mandatory=$true,ValueFromPipeline=$true,ValueFromPipelinebyPropertyName=$true)]
+                    [ValidateNotNullorEmpty()]
+                    [string]$msiFile,
+
+                    [parameter()]
+                    [ValidateNotNullorEmpty()]
+                    [string]$targetDir
+                )
+                if (!(Test-Path $msiFile)) {
+                    throw "Path to MSI file ($msiFile) is invalid. Please check name and path"
+                }
+                $arguments = @(
+                    "/i"
+                    "`"$msiFile`""
+                    "/qn"
+                    "/norestart"
+                    "/L*V $ZoomLog"
+                )
+                if ($targetDir) {
+                    if (!(Test-Path $targetDir)) {
+                        throw "Path to installation directory $($targetDir) is invalid. Please check path and file name!"
+                    }
+                    $arguments += "INSTALLDIR=`"$targetDir`""
+                }
+                $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -NoNewWindow -PassThru
+                if($inst -ne $null) {
+                    Wait-Process -InputObject $inst
+                    Write-Verbose "Installation $Product finished!" -Verbose
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
+                }
+                if ($process.ExitCode -eq 0) {
+                }
+                else {
+                    Write-Verbose "Installer Exit Code  $($process.ExitCode) for file  $($msifile)"
+                }
+            }
+            #========================================================================================================================================
+
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Plugin*"}).DisplayVersion
+            If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
+            $ZoomInstaller = "ZoomCitrixHDXMediaPlugin" + ".msi"
+            $ZoomLog = "$LogTemp\Zoom.log"
+            If ($ZoomV -ne $Version) {
+                # Zoom
+                Write-Verbose "Installing $Product" -Verbose
+                DS_WriteLog "I" "Installing $Product" $LogFile
+                try {
+                    "$PSScriptRoot\$Product\$ZoomInstaller" | Install-MSIFile
+                    Start-Sleep 25
+                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $ZoomLog
+                    Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force
+                } catch {
+                    DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Verbose "No Update available for $Product" -Verbose
+                Write-Output ""
+            }
         }
     }
 }
