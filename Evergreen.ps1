@@ -4829,6 +4829,7 @@ if ($download -eq $False) {
                 Start-Sleep 25
                 Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $ZoomLog
+                Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force
             } catch {
                 DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
             }
@@ -4904,7 +4905,6 @@ if ($download -eq $False) {
                     Start-Sleep 25
                     Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
                     Remove-Item $ZoomLog
-                    Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force
                 } catch {
                     DS_WriteLog "E" "Error installing $Product (error: $($Error[0]))" $LogFile
                 }
