@@ -95,6 +95,19 @@ If neither parameter -Download or -Install is also used, both processes will be 
     # 1 = Long Term Service Release
     $CitrixWorkspaceAppRelease = 1
 
+    # deviceTRUST
+    # 0 = Client
+    # 1 = Host
+    # 2 = Console
+    # 3 = Client + Host
+    # 4 = Host + Console
+    $deviceTRUSTPackage = 1
+
+    # Microsoft .Net Framework
+    # 0 = Current Channel
+    # 1 = LTS (Long Term Support) Channel
+    $MSDotNetFrameworkChannel = 1
+
     # Microsoft 365 Apps
     # 0 = Current (Preview) Channel
     # 1 = Current Channel
@@ -108,6 +121,11 @@ If neither parameter -Download or -Install is also used, both processes will be 
     # 1 = Production Ring
     # 2 = Enterprise Ring
     $MSOneDriveRing = 2
+
+    # Microsoft PowerShell
+    # 0 = Stable Release
+    # 1 = LTS (Long Term Support) Release
+    $MSPowerShellRelease = 1
 
     # Microsoft Teams
     # 0 = Developer Ring
@@ -125,10 +143,25 @@ If neither parameter -Download or -Install is also used, both processes will be 
     # 1 = ESR
     $FirefoxChannel = 0
 
+    # Remote Desktop Manager
+    # 0 = Free
+    # 1 = Enterprise
+    $RemoteDesktopManagerType = 0
+
+    # Slack
+    # 0 = Per Machine
+    # 1 = Per User
+    $SlackPlatform = 0
+
     # TreeSize
     # 0 = Free
     # 1 = Professional
     $TreeSizeType = 0
+
+    # Zoom
+    # 0 = VDI Installer
+    # 1 = VDI Installer + Citrix Plugin
+    $ZoomCitrixClient = 1
 
     # Select software
     # 0 = Not selected
@@ -139,6 +172,7 @@ If neither parameter -Download or -Install is also used, both processes will be 
     $BISF = 0
     $Citrix_Hypervisor_Tools = 0
     $Citrix_WorkspaceApp = 0
+    $deviceTRUST = 0
     $Filezilla = 0
     $Firefox = 0
     $Foxit_Reader = 0
@@ -148,18 +182,24 @@ If neither parameter -Download or -Install is also used, both processes will be 
     $IrfanView = 0
     $KeePass = 0
     $mRemoteNG = 0
+    $MSDotNetFramework = 0
     $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSEdge = 0
     $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
+    $MSPowerShell = 0
     $MSTeams = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
+    $RemoteDesktopManager = 0
+    $Slack = 0
+    $ShareX = 0
     $TreeSize = 0
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
+    $Zoom = 0
 For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
 
 ### -download
@@ -264,6 +304,11 @@ After the installation, various registry keys are set (from line 2354).
 
 As always, after installing the new WorkspaceApp, the system should be rebooted.
 
+### deviceTRUST
+Line 819 define which package are installed in the non-GUI start.
+
+For deviceTRUST Client this is an exe file and for the Console / Host this is a msi file.
+
 ### Filezilla
 Line 1064 defines which package is downloaded.
 
@@ -311,6 +356,11 @@ For IrfanView this is an exe file.
 Line 1276 defines which package is downloaded.
 
 For KeePass this is the msi file.
+
+### Microsoft .Net Framework
+Line 1608 defines which package is downloaded (You can change the architecture in line 805 and the Channel in line 824 for a non-GUI start).
+
+For Microsoft .Net Framework this is an exe file.
 
 ### Microsoft 365 Apps
 Line 1309 defines which package is downloaded (You can change the channel in line 647 for non GUI start).
@@ -415,6 +465,11 @@ For Microsoft OneDrive this is the Production Ring exe file.
 
 Microsoft OneDrive is installed with the Machine Based Install parameter.
 
+### Microsoft PowerShell
+Line 1974 defines which package is downloaded (You can change the architecture in line 805 and the Release in line 843 for a non-GUI start).
+
+For Microsoft PowerShell this is a msi file.
+
 ### Microsoft Teams
 Line 1637 and 1640 define which package is downloaded (You can change the architecture in line 633 and update ring in line 659 for non GUI start).
  
@@ -464,6 +519,21 @@ Line 1810 defines which package is downloaded (You can change the architecture i
 
 For Oracle Java 8 this is the x64 msi file.
 
+### Remote Desktop Manager
+Line 2223 and 2257 define which package is downloaded (You can change the version in line 864 for a non-GUI start).
+
+For Remote Desktop Manager this is a msi file.
+
+### ShareX
+Line 2290 define which package is downloaded.
+
+For ShareX this is an exe file.
+
+### Slack
+Line 2323 define which package is downloaded (You can change the architecture in line 633 and the version in line 869 for a non-GUI start).
+
+For Slack this is a msi file.
+
 ### TreeSize
 Line 1846 and 1877 define which package is downloaded (You can change the version in line 674 for non GUI start).
 
@@ -487,6 +557,11 @@ Then the script must be started again, so that the new version is installed clea
 Line 1980 defines which package is downloaded.
 
 For WinSCP this is the exe file.
+
+### Zoom
+Line 2526 defines which package is downloaded.
+
+For Zoom this is the exe file.
 
 ## Shortcut
 In GitHub I have placed a sample lnk file under [shortcut](https://github.com/Deyda/Evergreen/tree/main/shortcut), as well as the Evergreen Script logo as an icon file.
