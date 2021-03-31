@@ -11,6 +11,8 @@ Don't forget to set the Software Version, Update Ring, Architecture and so on.
 
 ![Parameter -list1](/img/script-list1.png)
 ![Parameter -list2](/img/script-list2.png)
+![Parameter -list3](/img/script-list3.png)
+
 
 A new folder for every single package will be created, together with a version file and a log file. 
 
