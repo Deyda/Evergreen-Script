@@ -10,7 +10,9 @@ To update or download a software package just switch from 0 to 1 in the section 
 Don't forget to set the Software Version, Update Ring, Architecture and so on.
 
 ![Parameter -list1](/img/script-list1.png)
+
 ![Parameter -list2](/img/script-list2.png)
+
 ![Parameter -list3](/img/script-list3.png)
 
 
