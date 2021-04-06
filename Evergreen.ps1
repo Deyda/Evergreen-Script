@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.1
+  Version:          1.2
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -42,7 +42,8 @@ the script checks the version number and will update the package.
   2021-03-26        Add Pending Reboot Check / Add Install RemoteDesktopManager / Icon Delete Public Desktop for KeePass, mRemoteNG, WinSCP and VLC Player
   2021-03-29        Correction Microsoft FSLogix registry entries / Correction Microsoft OneDrive Installer / Add Install Microsoft .Net Framework, ShareX, Slack and Microsoft PowerShell / Correction Zoom and deviceTRUST Download
   2021-03-30        Add Install Zoom + Zoom Plugin for Citrix Receiver and deviceTRUST (Client, Host and Console)
-.PARAMETER list
+  2021-04-06        Change to new Evergreen Commands
+  .PARAMETER list
 
 Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
@@ -238,7 +239,7 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 }
 # Script Version
 # ========================================================================================================================================
-$eVersion = "1.1"
+$eVersion = "1.2"
 Write-Verbose "Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion" -Verbose
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 Write-Output ""
@@ -1094,7 +1095,7 @@ if ($install -eq $False) {
     if ($7ZIP -eq 1) {
         $Product = "7-Zip"
         $PackageName = "7-Zip_" + "$ArchitectureClear"
-        $7ZipD = Get-7zip | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*exe*" }
+        $7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
         $InstallerType = "exe"
@@ -1128,7 +1129,7 @@ if ($install -eq $False) {
     if ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
         $PackageName = "Adobe_Pro_DC_Update"
-        $AdobeProD = Get-AdobeAcrobat | Where-Object { $_.Type -eq "Updater" -and $_.URI -like "*AcrobatDC*" }
+        $AdobeProD = Get-EvergreenApp -Name AdobeAcrobat | Where-Object { $_.Track -eq "DC" -and $_.Language -eq "Multi" }
         $Version = $AdobeProD.Version
         $URL = $AdobeProD.uri
         $InstallerType = "msp"
@@ -1161,7 +1162,7 @@ if ($install -eq $False) {
     if ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
         $PackageName = "Adobe_Reader_DC_"
-        $AdobeReaderD = Get-AdobeAcrobatReaderDC | Where-Object {$_.Architecture -eq "$AdobeArchitectureClear" -and $_.Language -eq "$AdobeLanguageClear"}
+        $AdobeReaderD = Get-EvergreenApp -Name AdobeAcrobatReaderDC | Where-Object {$_.Architecture -eq "$AdobeArchitectureClear" -and $_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
         $InstallerType = "exe"
@@ -1194,7 +1195,7 @@ if ($install -eq $False) {
     if ($BISF -eq 1) {
         $Product = "BIS-F"
         $PackageName = "setup-BIS-F"
-        $BISFD = Get-BISF | Where-Object { $_.URI -like "*msi*" }
+        $BISFD = Get-EvergreenApp -Name BISF | Where-Object { $_.Type -eq "msi" }
         $Version = $BISFD.Version
         $URL = $BISFD.uri
         $InstallerType = "msi"
@@ -1227,7 +1228,7 @@ if ($install -eq $False) {
     if ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
         $PackageName = "managementagent" + "$ArchitectureClear"
-        $CitrixHypervisor = Get-CitrixVMTools | Where-Object {$_.Architecture -eq "$ArchitectureClear"} | Select-Object -Last 1
+        $CitrixHypervisor = Get-EvergreenApp -Name CitrixVMTools | Where-Object {$_.Architecture -eq "$ArchitectureClear"} | Select-Object -Last 1
         $Version = $CitrixHypervisor.Version
         $URL = $CitrixHypervisor.uri
         $InstallerType = "msi"
@@ -1261,7 +1262,7 @@ if ($install -eq $False) {
     if ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         $PackageName = "CitrixWorkspaceApp"
-        $WSACD = Get-CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and "*$CitrixWorkspaceAppReleaseClear*" -and $_.Platform -eq "Windows" -and $_.Title -like "*$CitrixWorkspaceAppReleaseClear*" }
+        $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and "*$CitrixWorkspaceAppReleaseClear*" -and $_.Platform -eq "Windows" -and $_.Title -like "*$CitrixWorkspaceAppReleaseClear*" }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
         $InstallerType = "exe"
@@ -1360,7 +1361,7 @@ if ($install -eq $False) {
     if ($Filezilla -eq 1) {
         $Product = "Filezilla"
         $PackageName = "Filezilla-win64"
-        $FilezillaD = Get-Filezilla | Where-Object { $_.URI -like "*win64*"}
+        $FilezillaD = Get-EvergreenApp -Name Filezilla | Where-Object { $_.URI -like "*win64*"}
         $Version = $FilezillaD.Version
         $URL = $FilezillaD.uri
         $InstallerType = "exe"
@@ -1393,7 +1394,7 @@ if ($install -eq $False) {
     if ($Foxit_Reader -eq 1) {
         $Product = "Foxit Reader"
         $PackageName = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear"
-        $Foxit_ReaderD = Get-FoxitReader | Where-Object {$_.Language -eq "$FoxitReaderLanguageClear"}
+        $Foxit_ReaderD = Get-EvergreenApp -Name FoxitReader | Where-Object {$_.Language -eq "$FoxitReaderLanguageClear"}
         $Version = $Foxit_ReaderD.Version
         $URL = $Foxit_ReaderD.uri
         $InstallerType = "exe"
@@ -1427,7 +1428,7 @@ if ($install -eq $False) {
     if ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
         $PackageName = "googlechromestandaloneenterprise_" + "$ArchitectureClear"
-        $ChromeD = Get-GoogleChrome | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $ChromeD = Get-EvergreenApp -Name GoogleChrome | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $ChromeD.Version
         $URL = $ChromeD.uri
         $InstallerType = "msi"
@@ -1461,7 +1462,7 @@ if ($install -eq $False) {
     if ($Greenshot -eq 1) {
         $Product = "Greenshot"
         $PackageName = "Greenshot-INSTALLER-x86"
-        $GreenshotD = Get-Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
+        $GreenshotD = Get-EvergreenApp -Name Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
         $Version = $GreenshotD.Version
         $URL = $GreenshotD.uri
         $InstallerType = "exe"
@@ -1572,7 +1573,7 @@ if ($install -eq $False) {
     if ($KeePass -eq 1) {
         $Product = "KeePass"
         $PackageName = "KeePass"
-        $KeePassD = Get-KeePass | Where-Object { $_.URI -like "*msi*" }
+        $KeePassD = Get-EvergreenApp -Name KeePass | Where-Object { $_.Type -eq "msi" }
         $Version = $KeePassD.Version
         $URL = $KeePassD.uri
         $InstallerType = "msi"
@@ -1605,7 +1606,7 @@ if ($install -eq $False) {
     if ($MSDotNetFramework -eq 1) {
         $Product = "Microsoft Dot Net Framework"
         $PackageName = "NetFramework-runtime_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear"
-        $MSDotNetFrameworkD = Get-Microsoft.NET | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear"}
+        $MSDotNetFrameworkD = Get-EvergreenApp -Name Microsoft.NET | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear"}
         $Version = $MSDotNetFrameworkD.Version
         $URL = $MSDotNetFrameworkD.uri
         $InstallerType = "exe"
@@ -1639,7 +1640,7 @@ if ($install -eq $False) {
     if ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         $PackageName = "setup_" + "$MS365AppsChannelClear"
-        $MS365AppsD = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
+        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
         $InstallerType = "exe"
@@ -1748,7 +1749,7 @@ if ($install -eq $False) {
     if ($MSEdge -eq 1) {
         $Product = "Microsoft Edge"
         $PackageName = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear"
-        $EdgeD = Get-MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "stable" -and $_.Architecture -eq "$ArchitectureClear" }
+        $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "Stable" -and $_.Architecture -eq "$ArchitectureClear" }
         #$EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $EdgeD.Version
         $URL = $EdgeD.uri
@@ -1783,7 +1784,7 @@ if ($install -eq $False) {
     if ($FSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
         $PackageName = "FSLogixAppsSetup"
-        $FSLogixD = Get-MicrosoftFSLogixApps
+        $FSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps
         $Version = $FSLogixD.Version
         $URL = $FSLogixD.uri
         $InstallerType = "zip"
@@ -1828,7 +1829,7 @@ if ($install -eq $False) {
     if ($MSOffice2019 -eq 1) {
         $Product = "Microsoft Office 2019"
         $PackageName = "setup"
-        $MSOffice2019D = Get-Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
+        $MSOffice2019D = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
         $Version = $MSOffice2019D.Version
         $URL = $MSOffice2019D.uri
         $InstallerType = "exe"
@@ -1937,7 +1938,7 @@ if ($install -eq $False) {
     if ($MSOneDrive -eq 1) {
         $Product = "Microsoft OneDrive"
         $PackageName = "OneDriveSetup-" + "$MSOneDriveRingClear"
-        $MSOneDriveD = Get-MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
+        $MSOneDriveD = Get-EvergreenApp -Name MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
         $Version = $MSOneDriveD.Version
         $URL = $MSOneDriveD.uri
         $InstallerType = "exe"
@@ -1971,7 +1972,7 @@ if ($install -eq $False) {
     If ($MSPowerShell -eq 1) {
         $Product = "Microsoft PowerShell"
         $PackageName = "PowerShell" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear"
-        $MSPowershellD = Get-MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
+        $MSPowershellD = Get-EvergreenApp -Name MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
         $Version = $MSPowershellD.Version
         $URL = $MSPowershellD.uri
         $InstallerType = "msi"
@@ -2009,7 +2010,7 @@ if ($install -eq $False) {
             $TeamsD = Get-MicrosoftTeamsDev | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
         }
         else {
-            $TeamsD = Get-MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+            $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
         }
         $Version = $TeamsD.Version
         $URL = $TeamsD.uri
@@ -2044,7 +2045,7 @@ if ($install -eq $False) {
     if ($Firefox -eq 1) {
         $Product = "Mozilla Firefox"
         $PackageName = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear"
-        $FirefoxD = Get-MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
+        $FirefoxD = Get-EvergreenApp -Name MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
         $Version = $FirefoxD.Version
         $URL = $FirefoxD.uri
         $InstallerType = "msi"
@@ -2078,7 +2079,7 @@ if ($install -eq $False) {
     if ($mRemoteNG -eq 1) {
         $Product = "mRemoteNG"
         $PackageName = "mRemoteNG"
-        $mRemoteNGD = Get-mRemoteNG | Where-Object { $_.URI -like "*msi*" }
+        $mRemoteNGD = Get-EvergreenApp -Name mRemoteNG | Where-Object { $_.Type -eq "msi" }
         $Version = $mRemoteNGD.Version
         $URL = $mRemoteNGD.uri
         $InstallerType = "msi"
@@ -2111,7 +2112,7 @@ if ($install -eq $False) {
     if ($NotePadPlusPlus -eq 1) {
         $Product = "NotePadPlusPlus"
         $PackageName = "NotePadPlusPlus_" + "$ArchitectureClear"
-        $NotepadD = Get-NotepadPlusPlus | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
+        $NotepadD = Get-EvergreenApp -Name NotepadPlusPlus | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $NotepadD.Version
         $URL = $NotepadD.uri
         $InstallerType = "exe"
@@ -2145,7 +2146,7 @@ if ($install -eq $False) {
     if ($OpenJDK -eq 1) {
         $Product = "open JDK"
         $PackageName = "OpenJDK" + "$ArchitectureClear"
-        $OpenJDKD = Get-OpenJDK | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $OpenJDKD.Version
         $URL = $OpenJDKD.uri
         $InstallerType = "msi"
@@ -2179,7 +2180,7 @@ if ($install -eq $False) {
     if ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
         $PackageName = "OracleJava8_" + "$ArchitectureClear"
-        $OracleJava8D = Get-OracleJava8 | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $OracleJava8D.Version
         $URL = $OracleJava8D.uri
         $InstallerType = "exe"
@@ -2287,7 +2288,7 @@ if ($install -eq $False) {
     if ($ShareX -eq 1) {
         $Product = "ShareX"
         $PackageName = "ShareX-setup"
-        $ShareXD = Get-ShareX | Where-Object {$_.Type -like "exe"}
+        $ShareXD = Get-EvergreenApp -Name ShareX | Where-Object {$_.Type -eq "exe"}
         $Version = $ShareXD.Version
         $URL = $ShareXD.uri
         $InstallerType = "exe"
@@ -2320,7 +2321,7 @@ if ($install -eq $False) {
     if ($Slack -eq 1) {
         $Product = "Slack"
         $PackageName = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear"
-        $SlackD = Get-Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
+        $SlackD = Get-EvergreenApp -Name Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
         $Version = $SlackD.Version
         $URL = $SlackD.uri
         $InstallerType = "msi"
@@ -2356,7 +2357,7 @@ if ($install -eq $False) {
             0 {
                 $Product = "TreeSize Free"
                 $PackageName = "TreeSize_Free"
-                $TreeSizeFreeD = Get-JamTreeSizeFree
+                $TreeSizeFreeD = Get-EvergreenApp -Name JamTreeSizeFree
                 $Version = $TreeSizeFreeD.Version
                 $URL = $TreeSizeFreeD.uri
                 $InstallerType = "exe"
@@ -2387,7 +2388,7 @@ if ($install -eq $False) {
             1 {
                 $Product = "TreeSize Professional"
                 $PackageName = "TreeSize_Professional"
-                $TreeSizeProfD = Get-JamTreeSizeProfessional
+                $TreeSizeProfD = Get-EvergreenApp -Name JamTreeSizeProfessional
                 $Version = $TreeSizeProfD.Version
                 $URL = $TreeSizeProfD.uri
                 $InstallerType = "exe"
@@ -2422,7 +2423,7 @@ if ($install -eq $False) {
     if ($VLCPlayer -eq 1) {
         $Product = "VLC Player"
         $PackageName = "VLC-Player_" + "$ArchitectureClear"
-        $VLCD = Get-VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "MSI" }
+        $VLCD = Get-EvergreenApp -Name VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "MSI" }
         $Version = $VLCD.Version
         $URL = $VLCD.uri
         $InstallerType = "msi"
@@ -2456,7 +2457,7 @@ if ($install -eq $False) {
     if ($VMWareTools -eq 1) {
         $Product = "VMWare Tools"
         $PackageName = "VMWareTools_" + "$ArchitectureClear"
-        $VMWareToolsD = Get-VMwareTools | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $VMWareToolsD = Get-EvergreenApp -Name VMwareTools | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $VMWareToolsD.Version
         $URL = $VMWareToolsD.uri
         $InstallerType = "exe"
@@ -2490,7 +2491,7 @@ if ($install -eq $False) {
     if ($WinSCP -eq 1) {
         $Product = "WinSCP"
         $PackageName = "WinSCP"
-        $WinSCPD = Get-WinSCP | Where-Object {$_.URI -like "*Setup*"}
+        $WinSCPD = Get-EvergreenApp -Name WinSCP | Where-Object {$_.URI -like "*Setup*"}
         $Version = $WinSCPD.Version
         $URL = $WinSCPD.uri
         $InstallerType = "exe"
@@ -2523,7 +2524,7 @@ if ($install -eq $False) {
     If ($Zoom -eq 1) {
         $Product = "Zoom VDI"
         $PackageName = "ZoomInstallerVDI"
-        $ZoomVDI = Get-Zoom | Where-Object {$_.Platform -eq "VDI"}
+        $ZoomVDI = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "VDI"}
         $URLVersion = "https://support.zoom.us/hc/en-us/articles/360041602711"
         $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
         $regexAppVersion = "(\d\.\d\.\d)"
@@ -2555,7 +2556,7 @@ if ($install -eq $False) {
         If ($ZoomCitrixClient -eq 1) {
             $Product2 = "Zoom Citrix Client"
             $PackageName2 = "ZoomCitrixHDXMediaPlugin"
-            $ZoomCitrix = Get-Zoom | Where-Object {$_.Platform -eq "Citrix"}
+            $ZoomCitrix = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "Citrix"}
             $URL = $ZoomCitrix.uri
             $Source2 = "$PackageName2" + "." + "$InstallerType"
             $CurrentVersion2 = Get-Content -Path "$PSScriptRoot\$Product2\Version.txt" -EA SilentlyContinue
