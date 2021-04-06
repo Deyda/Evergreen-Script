@@ -1804,10 +1804,10 @@ if ($install -eq $False) {
             expand-archive -path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -destinationpath "$PSScriptRoot\$Product\Install"
             Remove-Item -Path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -Force
             switch ($Architecture) {
-                0 {
+                1 {
                     Move-Item -Path "$PSScriptRoot\$Product\Install\Win32\Release\*" -Destination "$PSScriptRoot\$Product\Install"
                 }
-                1 {
+                0 {
                     Move-Item -Path "$PSScriptRoot\$Product\Install\x64\Release\*" -Destination "$PSScriptRoot\$Product\Install"
                 }
             }
@@ -2209,7 +2209,7 @@ if ($install -eq $False) {
         }
     }
 
-    #// Mark: Download RemoteDesktopManager
+    #// Mark: Download Remote Desktop Manager
     if ($RemoteDesktopManager -eq 1) {
         switch ($RemoteDesktopManagerType) {
             0 {
@@ -4328,7 +4328,7 @@ if ($download -eq $False) {
         }
     }
 
-    #// Mark: Install RemoteDesktopManager
+    #// Mark: Install Remote Desktop Manager
     if ($RemoteDesktopManager -eq 1) {
         # FUNCTION MSI Installation
         #========================================================================================================================================
