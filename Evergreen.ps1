@@ -153,7 +153,7 @@ Function Get-Download {
     $destination = Join-Path $destinationFolder $file
     $start = Get-Date
     $wc.DownloadFile($url, $destination)
-    $elapsed = ((Get-Date) – $start).ToString('hh\:mm\:ss')
+    $elapsed = ((Get-Date) - $start).ToString('hh\:mm\:ss')
     $totalSize = (Get-Item $destination).Length | Get-FileSize
     If ($includeStats.IsPresent){
         $DownloadStat = [PSCustomObject]@{TotalSize=$totalSize;Time=$elapsed}
