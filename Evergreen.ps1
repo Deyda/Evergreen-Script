@@ -48,7 +48,7 @@ the script checks the version number and will update the package.
   2021-04-09        Change color scheme of the messages in Install section
   2021-04-11        Implement new MSI Install Function
   2021-04-12        Correction eng dash
-  2021-04-13        Change encoding to UTF-8withBOM
+  2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
 
   .PARAMETER list
 
@@ -2852,7 +2852,7 @@ If ($download -eq $False) {
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $AdobeArchitectureClear $AdobeLanguageClear"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $SevenZipAdobe"
+        Write-Host "Current Version: $Adobe"
         If ($Adobe -ne $Version) {
             DS_WriteLog "I" "Installing $Product $AdobeArchitectureClear $AdobeLanguageClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
