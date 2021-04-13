@@ -1,4 +1,4 @@
-#requires -version 3
+﻿#requires -version 3
 <#
 .SYNOPSIS
 Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
@@ -47,6 +47,8 @@ the script checks the version number and will update the package.
   2021-04-08        Change color scheme of the messages in Download section / New central MSI Install Function
   2021-04-09        Change color scheme of the messages in Install section
   2021-04-11        Implement new MSI Install Function
+  2021-04-12        Correction eng dash
+  2021-04-13        Change encoding to UTF-8withBOM
 
   .PARAMETER list
 
@@ -3692,6 +3694,7 @@ If ($download -eq $False) {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             Try {
+                Start-Sleep -s 20
                 # Application post deployment tasks (Thx to Kasper https://github.com/kaspersmjohansen)
                 Write-Host "Applying $Product post setup customizations"
                 Write-Host "Post setup customizations for $OS"
