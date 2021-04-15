@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.3
+  Version:          1.4
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -49,6 +49,7 @@ the script checks the version number and will update the package.
   2021-04-11        Implement new MSI Install Function
   2021-04-12        Correction eng dash
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
+  2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
 
   .PARAMETER list
 
@@ -323,7 +324,8 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "1.3"
+$eVersion = "1.4"
+Write-Output ""
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way   "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "               Manuel Winkel (www.deyda.net)               "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                           "
@@ -503,6 +505,11 @@ $inputXML = @"
             <ListBoxItem Content="Client + Host"/>
             <ListBoxItem Content="Host + Console"/>
         </ComboBox>
+        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="179,400,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Developer"/>
+            <ListBoxItem Content="Beta"/>
+            <ListBoxItem Content="Stable"/>
+        </ComboBox>
     </Grid>
 </Window>
 "@
@@ -549,6 +556,7 @@ $inputXML = @"
         $WPFBox_Slack.SelectedIndex = $LastSetting[46] -as [int]
         $WPFBox_Zoom.SelectedIndex = $LastSetting[49] -as [int]
         $WPFBox_deviceTRUST.SelectedIndex = $LastSetting[50] -as [int]
+        $WPFBox_MSEdge.SelectedIndex = $LastSetting[51] -as [int]
         Switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -828,8 +836,9 @@ $inputXML = @"
         $Script:SlackPlatform = $WPFBox_Slack.SelectedIndex
         $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
         $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
+        $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -912,6 +921,12 @@ If ($list -eq $True) {
     # 3 = Semi-Annual Enterprise (Preview) Channel
     # 4 = Semi-Annual Enterprise Channel
     $MS365AppsChannel = 4
+
+    # Microsoft Edge
+    # 0 = Developer Channel
+    # 1 = Beta Channel
+    # 2 = Stable Channel
+    $MSEdgeChannel = 2
 
     # Microsoft OneDrive
     # 0 = Insider Ring
@@ -1002,7 +1017,7 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel -ErrorAction SilentlyContinue
     gui_mode
 }
 # Disable progress bar while downloading
@@ -1109,10 +1124,21 @@ Switch ($Language) {
     14 { $MS365AppsLanguageClear = 'sv-SE'}
 }
 
+Switch ($MSEdgeChannel) {
+    0 { $MSEdgeChannelClear = 'Dev'}
+    1 { $MSEdgeChannelClear = 'Beta'}
+    2 { $MSEdgeChannelClear = 'Stable'}
+}
+
 Switch ($MSOneDriveRing) {
     0 { $MSOneDriveRingClear = 'Insider'}
     1 { $MSOneDriveRingClear = 'Production'}
     2 { $MSOneDriveRingClear = 'Enterprise'}
+}
+
+Switch ($Architecture) {
+    0 { $MSOneDriveArchitectureClear = 'AMD64'}
+    1 { $MSOneDriveArchitectureClear = 'x86'}
 }
 
 Switch ($MSPowerShellRelease) {
@@ -1865,16 +1891,16 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft Edge
     If ($MSEdge -eq 1) {
         $Product = "Microsoft Edge"
-        $PackageName = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear"
-        $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Channel -eq "Stable" -and $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + "_$MSEdgeChannelClear"
+        $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Release -eq "Enterprise" -and $_.Channel -eq "$MSEdgeChannelClear" -and $_.Architecture -eq "$ArchitectureClear" }
         #$EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $EdgeD.Version
         $URL = $EdgeD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue 
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSEdgeChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         If (!($CurrentVersion -eq $Version)) {
@@ -1884,7 +1910,7 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $MSEdgeChannelClear $ArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -2057,15 +2083,15 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft OneDrive
     If ($MSOneDrive -eq 1) {
         $Product = "Microsoft OneDrive"
-        $PackageName = "OneDriveSetup-" + "$MSOneDriveRingClear"
-        $MSOneDriveD = Get-EvergreenApp -Name MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" } | Sort-Object -Property Version -Descending | Select-Object -Last 1
+        $PackageName = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear"
+        $MSOneDriveD = Get-EvergreenApp -Name MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" -and $_.Architecture -eq "$MSOneDriveArchitectureClear"} | Sort-Object -Property Version -Descending | Select-Object -Last 1
         $Version = $MSOneDriveD.Version
         $URL = $MSOneDriveD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $MSOneDriveRingClear Ring"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         If (!($CurrentVersion -eq $Version)) {
@@ -2075,7 +2101,7 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $MSOneDriveRingClear Ring $Version"
+            Write-Host "Starting download of $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -3556,16 +3582,16 @@ If ($download -eq $False) {
     If ($MSEdge -eq 1) {
         $Product = "Microsoft Edge"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
         $EdgeLog = "$LogTemp\MSEdge.log"
         If ($Edge -eq $NULL) {
             $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
         }
-        $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + ".msi"
+        $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$EdgeInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Edge"
         If ($Edge -ne $Version) {
@@ -3581,7 +3607,7 @@ If ($download -eq $False) {
                 "/L*V $EdgeLog"
             )
             try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $MSEdgeChannelClear $ArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Get-Content $EdgeLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $EdgeLog
@@ -3834,30 +3860,33 @@ If ($download -eq $False) {
     If ($MSOneDrive -eq 1) {
         $Product = "Microsoft OneDrive"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
-        $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + ".exe"
-        $OneDriveProcess = "OneDriveSetup-" + "$MSOneDriveRingClear"
-        Write-Host -ForegroundColor Magenta "Install $Product $MSOneDriveRingClear Ring"
+        If ($MSOneDriveV -eq $NULL) {
+            $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+        }
+        $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".exe"
+        $OneDriveProcess = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSOneDriveV"
         If ($MSOneDriveV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
-            DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring" $LogFile
+            DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
             $Options = @(
                 "/ALLUSERS"
                 "/SILENT"
             )
             Try {
-                Write-Host "Starting install of $Product $MSOneDriveRingClear Ring $Version"
+                Write-Host "Starting install of $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear $Version"
                 $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
                 while (Get-Process -Name $OneDriveProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 # OneDrive starts automatically after setup. kill!
-                Stop-Process -Name "OneDrive" -Force
+                #Stop-Process -Name "OneDrive" -Force
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $MSOneDriveRingClear Ring (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
