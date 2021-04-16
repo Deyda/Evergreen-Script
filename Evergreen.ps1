@@ -363,10 +363,10 @@ Else {
         $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            Start-Process $PSScriptRoot\evergreen.ps1
+            & "$PSScriptRoot\evergreen.ps1"
 '@
-$update > $PSScriptRoot\update.ps1
-        Start-Process $PSScriptRoot\update.ps1
+        $update > $PSScriptRoot\update.ps1
+        & "$PSScriptRoot\update.ps1"
         Break
     }
 }
