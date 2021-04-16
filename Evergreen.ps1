@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.4
+  Version:          1.41
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -50,6 +50,7 @@ the script checks the version number and will update the package.
   2021-04-12        Correction eng dash
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
+  2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check
 
   .PARAMETER list
 
@@ -128,9 +129,8 @@ Function Install-MSI {
         Write-Host -ForegroundColor Red "Path to MSI file ($msiFile) is invalid. Please check name and path"
     }
     $inst = $process = Start-Process -FilePath msiexec.exe -ArgumentList $Arguments -NoNewWindow -PassThru
-    If ($inst -ne $null) {
+    If ($inst) {
             Wait-Process -InputObject $inst
-            
     }
     If ($process.ExitCode -eq 0) {
         Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -274,6 +274,19 @@ Function DS_WriteLog {
     }
 }
 
+# Disable progress bar while downloading
+$ProgressPreference = 'SilentlyContinue'
+
+# Is there a newer Evergreen Script version?
+# ========================================================================================================================================
+$eVersion = "1.4"
+[bool]$NewerVersion = $false
+$WebResponseVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
+$WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
+If ($WebVersion -gt $eVersion) {
+    $NewerVersion = $true
+}
+
 # Do you run the script as admin?
 # ========================================================================================================================================
 $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -324,15 +337,31 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 
 # Script Version
 # ========================================================================================================================================
-$eVersion = "1.4"
 Write-Output ""
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way   "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "               Manuel Winkel (www.deyda.net)               "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                           "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 Write-Output ""
-Write-Host -Foregroundcolor DarkGray "Does the script run under admin rights?"
+Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
+If ($NewerVersion -eq $false) {
+    # No new version available
+    Write-Host -Foregroundcolor Green "OK, script is newest version!"
+    Write-Output ""
+}
+Else {
+    # There is a new Evergreen Script Version
+    Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
+    Write-Output ""
+    $wshell = New-Object -ComObject Wscript.Shell
+    $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
+    If ($AnswerPending -eq "6") {
+        Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
+        Break
+    }
+}
 
+Write-Host -Foregroundcolor DarkGray "Does the script run under admin rights?"
 If ($myWindowsPrincipal.IsInRole($adminRole)) {
     # OK, runs as admin
     Write-Host -Foregroundcolor Green "OK, script is running with admin rights."
@@ -343,6 +372,7 @@ Else {
     Write-Host -Foregroundcolor Red "Error! Script is NOT running with admin rights!"
     Break
 }
+
 Write-Host -Foregroundcolor DarkGray "Are there still pending reboots?"
 If ($PendingReboot -eq $false) {
     # OK, no pending reboot
@@ -530,7 +560,7 @@ $inputXML = @"
     }
 
     # Load XAML Objects In PowerShell  
-    $xaml.SelectNodes("//*[@Name]") | %{"trying item $($_.Name)";
+    $xaml.SelectNodes("//*[@Name]") | ForEach-Object{"trying item $($_.Name)";
         Try {Set-Variable -Name "WPF$($_.Name)" -Value $Form.FindName($_.Name) -ErrorAction Stop}
         Catch {Throw}
     } | out-null
@@ -1020,8 +1050,6 @@ Else {
     Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel -ErrorAction SilentlyContinue
     gui_mode
 }
-# Disable progress bar while downloading
-$ProgressPreference = 'SilentlyContinue'
 
 #// MARK: Variable definition (Architecture,Language etc) (AddScript)
 Switch ($Architecture) {
@@ -1468,13 +1496,13 @@ If ($install -eq $False) {
             If (Test-Path -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe") {Remove-Item -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe" -Force}
             Switch ($Architecture) {
                 0 {
-                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where Name -like *"x86"* | Remove-Item
+                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x86"* | Remove-Item
                     Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
                     Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x64-release-$Version.0.msi" -NewName "dtconsole-x64-release.msi"
                     Rename-Item -Path "$PSScriptRoot\$Product\dthost-x64-release-$Version.0.msi" -NewName "dthost-x64-release.msi"
                 }
                 1 {
-                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where Name -like *"x64"* | Remove-Item
+                    Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x64"* | Remove-Item
                     Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
                     Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x86-release-$Version.0.msi" -NewName "dtconsole-x86-release.msi"
                     Rename-Item -Path "$PSScriptRoot\$Product\dthost-x86-release-$Version.0.msi" -NewName "dthost-x86-release.msi"
@@ -2782,7 +2810,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
-        If ($SevenZip -eq $NULL) {
+        If (!$SevenZip) {
             $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
         }
         $7ZipInstaller = "7-Zip_" + "$ArchitectureClear" + ".exe"
@@ -2830,7 +2858,7 @@ If ($download -eq $False) {
                 Write-Host "Starting install of $Product $Version"
                 $mspArgs = "/P `"$PSScriptRoot\$Product\Adobe_Pro_DC_Update.msp`" /quiet /qn"
                 $inst = Start-Process -FilePath msiexec.exe -ArgumentList $mspArgs -Wait
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -2993,7 +3021,7 @@ If ($download -eq $False) {
         $HypToolsInstaller = "managementagent" + "$ArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\Citrix\$Product\$HypToolsInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
-        If ($HypTools -eq $NULL) {
+        If (!$HypTools) {
             $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
         }
         If ($HypTools) {$HypTools = $HypTools.Insert(3,'.0')}
@@ -3065,7 +3093,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\CitrixWorkspaceApp.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -3096,17 +3124,17 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version" + "_$ArchitectureClear"+ ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
-        If ($deviceTRUSTClientV -eq $NULL) {
+        If (!$deviceTRUSTClientV) {
             $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
         }
         If ($deviceTRUSTClientV.length -ne "8") {$deviceTRUSTClientV = $deviceTRUSTClientV -replace ".{2}$"}
         $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
-        If ($deviceTRUSTHostV -eq $NULL) {
+        If (!$deviceTRUSTHostV) {
             $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
         }
         If ($deviceTRUSTHostV.length -ne "8") {$deviceTRUSTHostV = $deviceTRUSTHostV -replace ".{2}$"}
         $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
-        If ($deviceTRUSTConsoleV -eq $NULL) {
+        If (!$deviceTRUSTConsoleV) {
             $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
         }
         If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
@@ -3224,7 +3252,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Filezilla-win64.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -3271,7 +3299,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $FoxitReaderLanguageClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$FoxitReaderInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -3298,7 +3326,7 @@ If ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
         $ChromeLog = "$LogTemp\GoogleChrome.log"
-        If ($Chrome -eq $NULL) {
+        If (!$Chrome) {
             $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
         }
         $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
@@ -3378,7 +3406,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Greenshot-INSTALLER-x86.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -3403,7 +3431,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
-        If ($IrfanViewV -eq $NULL) {
+        If (!$IrfanViewV) {
             $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
         }
         $IrfanViewInstaller = "IrfanView" + "$ArchitectureClear" +".exe"
@@ -3423,7 +3451,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$IrfanViewInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -3488,7 +3516,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
-        If ($MSDotNetFrameworkV -eq $NULL) {
+        If (!$MSDotNetFrameworkV) {
             $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
         }
         $MSDotNetFrameworkInstaller = "NetFramework-runtime_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".exe"
@@ -3505,7 +3533,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSDotNetFrameworkInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -3529,7 +3557,7 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
         $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
-        If ($MS365AppsV -eq $NULL) {
+        If (!$MS365AppsV) {
             $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
         }
         $MS365AppsInstaller = "setup_" + "$MS365AppsChannelClear" + ".exe"
@@ -3586,7 +3614,7 @@ If ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
         $EdgeLog = "$LogTemp\MSEdge.log"
-        If ($Edge -eq $NULL) {
+        If (!$Edge) {
             $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
         }
         $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".msi"
@@ -3768,7 +3796,7 @@ If ($download -eq $False) {
                     # Implement scheduled task to restart Windows Search service on Event ID 2
                     # Define CIM object variables
                     # This is needed for accessing the non-default trigger settings when creating a schedule task using Powershell
-                    $Class = cimclass MSFT_TaskEventTrigger root/Microsoft/Windows/TaskScheduler
+                    $Class = Get-CimClass MSFT_TaskEventTrigger root/Microsoft/Windows/TaskScheduler
                     $Trigger = $class | New-CimInstance -ClientOnly
                     $Trigger.Enabled = $true
                     $Trigger.Subscription = "<QueryList><Query Id=`"0`" Path=`"Application`"><Select Path=`"Application`">*[System[Provider[@Name='Microsoft-Windows-Search-ProfileNotify'] and EventID=2]]</Select></Query></QueryList>"
@@ -3863,7 +3891,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
-        If ($MSOneDriveV -eq $NULL) {
+        If (!$MSOneDriveV) {
             $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
         }
         $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".exe"
@@ -3906,7 +3934,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
-        If ($MSPowerShellV -eq $NULL) {
+        If (!$MSPowerShellV) {
             $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
         }
         If ($MSPowerShellV) {$MSPowerShellV = $MSPowerShellV -replace ".{2}$"}
@@ -3963,7 +3991,7 @@ If ($download -eq $False) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             #Uninstalling MS Teams
-            If ($Teams -ne $null) {
+            If ($Teams) {
                 Write-Host "Uninstall $Product"
                 DS_WriteLog "I" "Uninstall $Product" $LogFile
                 Try {
@@ -4052,7 +4080,7 @@ If ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $FirefoxV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
         $FirefoxLog = "$LogTemp\Firefox.log"
-        If ($FirefoxV -eq $NULL) {
+        If (!$FirefoxV) {
             $FirefoxV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
         }
         $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear" + ".msi"
@@ -4138,7 +4166,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
-        If ($Notepad -eq $NULL) {
+        If (!$Notepad) {
             $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
         }
         $NotepadPlusPlusInstaller = "NotePadPlusPlus_" + "$ArchitectureClear" + ".exe"
@@ -4178,7 +4206,7 @@ If ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
         $openJDKLog = "$LogTemp\OpenJDK.log"
-        If ($OpenJDKV -eq $NULL) {
+        If (!$OpenJDKV) {
             $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
         }
         $OpenJDKInstaller = "OpenJDK" + "$ArchitectureClear" + ".msi"
@@ -4228,7 +4256,7 @@ If ($download -eq $False) {
         If ($Version) {$Version = $Version -replace "_"}
         If ($Version) {$Version = $Version -replace "-b"}
         $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
-        If ($OracleJava -eq $NULL) {
+        If (!$OracleJava) {
             $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
         }
         If ($OracleJava) {$OracleJava = $OracleJava -replace "\."}
@@ -4349,7 +4377,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $ShareXV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
-        If ($ShareXV -eq $NULL) {
+        If (!$ShareXV) {
             $ShareXV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
         }
         $ShareXInstaller = "ShareX-setup" + ".exe"
@@ -4392,10 +4420,10 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$SlackPlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
-        If ($SlackV -eq $NULL) {
+        If (!$SlackV) {
             $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
         }
-        If ($SlackV -eq $NULL) {
+        If (!$SlackV) {
             $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
         }
         If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
@@ -4514,7 +4542,7 @@ If ($download -eq $False) {
         $Version = Get-Content -Path "$VersionPath"
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
         $VLCLog = "$LogTemp\VLC.log"
-        If ($VLC -eq $NULL) {
+        If (!$VLC) {
             $VLC = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
         }
         If ($VLC) {$VLC = $VLC -replace ".{2}$"}
@@ -4558,7 +4586,7 @@ If ($download -eq $False) {
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
-        If ($VMWT -eq $NULL) {
+        If (!$VMWT) {
             $VMWT = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
         }
         If ($VMWT) {$VMWT = $VMWT -replace ".{9}$"}
@@ -4577,7 +4605,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$VMWareToolsInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     Write-Host -ForegroundColor Yellow "System needs to reboot after installation!"
@@ -4617,7 +4645,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\WinSCP.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst -ne $null) {
+                If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     If (Test-Path -Path "$env:PUBLIC\Desktop\WinSCP.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\WinSCP.lnk" -Force}
