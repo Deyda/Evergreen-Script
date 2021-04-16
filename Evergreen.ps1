@@ -50,7 +50,7 @@ the script checks the version number and will update the package.
   2021-04-12        Correction eng dash
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
-  2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check
+  2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
 
   .PARAMETER list
 
@@ -279,7 +279,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.4"
+$eVersion = "1.41"
 [bool]$NewerVersion = $false
 $WebResponseVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
 $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
@@ -342,6 +342,9 @@ Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Scri
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "               Manuel Winkel (www.deyda.net)               "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                           "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
+If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
+    Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
+}
 Write-Output ""
 Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
 If ($NewerVersion -eq $false) {
@@ -357,6 +360,13 @@ Else {
     $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
     If ($AnswerPending -eq "6") {
         Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
+        $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            Start-Process $PSScriptRoot\evergreen.ps1
+'@
+$update > $PSScriptRoot\update.ps1
+        Start-Process $PSScriptRoot\update.ps1
         Break
     }
 }
