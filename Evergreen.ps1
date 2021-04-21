@@ -51,7 +51,7 @@ the script checks the version number and will update the package.
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
   2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
-  2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query
+  2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query / Correction Teams Outlook Addin registration
 
   .PARAMETER list
 
@@ -1341,7 +1341,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $AdobeArchitectureClear $AdobeLanguageClear $Version"
@@ -2213,7 +2213,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Include *.msi, *.log, Version.txt, Download* -Recurse
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
@@ -4058,8 +4058,10 @@ If ($download -eq $False) {
                 If ($MSTeamsNoAutoStart -eq 1) {
                     #Prevents MS Teams from starting at logon, better do this with WEM or similar
                     Write-Host "Customize $Product Autorun"
-                    If (Test-RegistryValue -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
-                        Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                    If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
+                        If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                            Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                        }
                     }
                     Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
                 }
@@ -4068,8 +4070,8 @@ If ($download -eq $False) {
                 $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
                 $appX64DLL = $appDLLs[0]
                 $appX86DLL = $appDLLs[1]
-                Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s /n /i:user `"$appX64DLL`"" -ContinueOnError $True
-                Execute-Process -Path "$envWinDir\SysWOW64\regsvr32.exe" -Parameters "/s /n /i:user `"$appX86DLL`"" -ContinueOnError $True
+                Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`""
+                Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`""
                 Write-Host -ForegroundColor Green "Register $Product Add-In for Outlook finished!"
                 Write-Host -ForegroundColor Green "Customize $Product finished!"
             } Catch {
