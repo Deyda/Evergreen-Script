@@ -51,7 +51,7 @@ the script checks the version number and will update the package.
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
   2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
-  2021-04-21        Customize Auto Update (TLS12 Error)
+  2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query
 
   .PARAMETER list
 
@@ -4058,7 +4058,9 @@ If ($download -eq $False) {
                 If ($MSTeamsNoAutoStart -eq 1) {
                     #Prevents MS Teams from starting at logon, better do this with WEM or similar
                     Write-Host "Customize $Product Autorun"
-                    Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                    If (Test-RegistryValue -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                        Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                    }
                     Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
                 }
                 Write-Host "Register $Product Add-In for Outlook"
