@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.41
+  Version:          1.42
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -51,6 +51,7 @@ the script checks the version number and will update the package.
   2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
   2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
+  2021-04-21        Customize Auto Update (TLS12 Error)
 
   .PARAMETER list
 
@@ -279,7 +280,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.41"
+$eVersion = "1.42"
 [bool]$NewerVersion = $false
 $WebResponseVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
 $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
@@ -356,6 +357,7 @@ Else {
     # There is a new Evergreen Script Version
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $wshell = New-Object -ComObject Wscript.Shell
     $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
     If ($AnswerPending -eq "6") {
