@@ -282,6 +282,7 @@ $ProgressPreference = 'SilentlyContinue'
 # ========================================================================================================================================
 $eVersion = "1.42"
 [bool]$NewerVersion = $false
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
 $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 If ($WebVersion -gt $eVersion) {
@@ -357,7 +358,6 @@ Else {
     # There is a new Evergreen Script Version
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $wshell = New-Object -ComObject Wscript.Shell
     $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
     If ($AnswerPending -eq "6") {
