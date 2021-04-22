@@ -52,6 +52,7 @@ the script checks the version number and will update the package.
   2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
   2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
   2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query / Correction Teams Outlook Addin registration
+  2021-04-22        Little customize to the auto update (Error with IE first launch error)
 
   .PARAMETER list
 
@@ -283,7 +284,7 @@ $ProgressPreference = 'SilentlyContinue'
 $eVersion = "1.42"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$WebResponseVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
+$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
 $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 If ($WebVersion -gt $eVersion) {
     $NewerVersion = $true
