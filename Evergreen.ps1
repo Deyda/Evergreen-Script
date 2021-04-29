@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.42
+  Version:          1.43
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -53,6 +53,7 @@ the script checks the version number and will update the package.
   2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
   2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query / Correction Teams Outlook Addin registration
   2021-04-22        Little customize to the auto update (Error with IE first launch error)
+  2021-04-29        Correction Pending Reboot and AutoUpdate Script with List Parameter
 
   .PARAMETER list
 
@@ -281,7 +282,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.42"
+$eVersion = "1.43"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -359,18 +360,52 @@ Else {
     # There is a new Evergreen Script Version
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
-    $wshell = New-Object -ComObject Wscript.Shell
-    $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
-    If ($AnswerPending -eq "6") {
-        Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
-        $update = @'
+    If ($list -eq $True) {
+        If ($install -eq $False -and $download -eq $True) {
+            $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1"
+            & "$PSScriptRoot\evergreen.ps1" -list -download
 '@
-        $update > $PSScriptRoot\update.ps1
-        & "$PSScriptRoot\update.ps1"
-        Break
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
+        }
+        ElseIf ($install -eq $True -and $download -eq $False) {
+            $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            & "$PSScriptRoot\evergreen.ps1" -list -install
+'@
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
+        }
+        Else {
+            $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            & "$PSScriptRoot\evergreen.ps1" -list
+'@
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
+        }
+    }
+    Else {
+        $wshell = New-Object -ComObject Wscript.Shell
+        $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
+        If ($AnswerPending -eq "6") {
+            Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
+            $update = @'
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1"
+'@
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
+        }
     }
 }
 
@@ -387,21 +422,23 @@ Else {
 }
 
 Write-Host -Foregroundcolor DarkGray "Are there still pending reboots?"
-If ($PendingReboot -eq $false) {
-    # OK, no pending reboot
-    Write-Host -Foregroundcolor Green "OK, no pending reboot"
-    Write-Output ""
-}
-Else {
-    # Oh Oh pending reboot, stop the script and reboot!
-    Write-Host -Foregroundcolor Red "Error! Pending reboot! Reboot System!"
-    Write-Output ""
-    $wshell = New-Object -ComObject Wscript.Shell
-    $AnswerPending = $wshell.Popup("Do you want to restart?",0,"Pending reboot alert!",32+4)
-    If ($AnswerPending -eq "6") {
-        Restart-Computer -Force
+If ($list -eq $False) {
+    If ($PendingReboot -eq $false) {
+        # OK, no pending reboot
+        Write-Host -Foregroundcolor Green "OK, no pending reboot"
+        Write-Output ""
     }
-    #Break
+    Else {
+        # Oh Oh pending reboot, stop the script and reboot!
+        Write-Host -Foregroundcolor Red "Error! Pending reboot! Reboot System!"
+        Write-Output ""
+        $wshell = New-Object -ComObject Wscript.Shell
+        $AnswerPending = $wshell.Popup("Do you want to restart?",0,"Pending reboot alert!",32+4)
+        If ($AnswerPending -eq "6") {
+            Restart-Computer -Force
+        }
+        #Break
+    }
 }
 
 # Function GUI
