@@ -361,7 +361,7 @@ Else {
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
     If ($list -eq $True) {
-        If ($install -eq $False -and $download -eq $True) {
+<#        If ($install -eq $False -and $download -eq $True) {
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
@@ -390,7 +390,7 @@ Else {
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
-        }
+        }#>
     }
     Else {
         $wshell = New-Object -ComObject Wscript.Shell
