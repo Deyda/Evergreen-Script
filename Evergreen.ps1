@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.43
+  Version:          1.44
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -54,8 +54,9 @@ the script checks the version number and will update the package.
   2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query / Correction Teams Outlook Addin registration
   2021-04-22        Little customize to the auto update (Error with IE first launch error)
   2021-04-29        Correction Pending Reboot and AutoUpdate Script with List Parameter
+  2021-04-30        Add PuTTY Download Function / Add Paint.Net, GIMP, Microsoft PowerToys, Microsoft Visual Studio 2019, Microsoft Visual Studio Code, PuTTY & TeamViewer
 
-  .PARAMETER list
+.PARAMETER list
 
 Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
@@ -178,6 +179,53 @@ Filter Get-FileSize {
 	)
 }
 
+# Function IrfanView Download
+#========================================================================================================================================
+Function Get-IrfanView {
+    <#
+        .NOTES
+            Author: Trond Eirik Haavarstein
+            Twitter: @xenappblog
+    #>
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+        $url = "https://www.irfanview.com/"
+    Try {
+        $web = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Throw "Failed to connect to URL: $url with error $_."
+        Break
+    }
+    Finally {
+        $m = $web.ToString() -split "[`r`n]" | Select-String "Version" | Select-Object -First 1
+        $m = $m -replace "<((?!@).)*?>"
+        $m = $m.Replace(' ','')
+        $Version = $m -replace "Version"
+        $File = $Version -replace "\.",""
+        $x32 = "http://download.betanews.com/download/967963863-1/iview$($File)_setup.exe"
+        $x64 = "http://download.betanews.com/download/967963863-1/iview$($File)_x64_setup.exe"
+
+
+        $PSObjectx32 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x86"
+        Language     = "english"
+        URI          = $x32
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x64"
+        Language     = "english"
+        URI          = $x64
+        }
+        Write-Output -InputObject $PSObjectx32
+        Write-Output -InputObject $PSObjectx64
+    }
+}
+
 # Function Microsoft Teams Download Developer Version
 #========================================================================================================================================
 Function Get-MicrosoftTeamsDev() {
@@ -219,6 +267,72 @@ Function Get-MicrosoftTeamsDev() {
         }
         Write-Output -InputObject $PSObjectx86
         Write-Output -InputObject $PSObjectx64
+    }
+}
+
+# Function PuTTY Download Stable and Pre-Release Version
+#========================================================================================================================================
+Function Get-PuTTY() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html"
+    $appURLVersionPre = "https://www.chiark.greenend.org.uk/~sgtatham/putty/prerel.html"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+        $webRequestPre = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersionPre) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion or $appURLVersionPre with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "\(.*\)\<\/TITLE\>"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $CacheVersion = $webVersion.Split()[0].Trim("</TITLE>")
+        $CacheVersion = $CacheVersion.Split()[0].Trim("(")
+        $CacheVersion = $CacheVersion.Split()[0].Trim(")")
+        $appVersion = $CacheVersion
+        $appx64URL = "https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-$appVersion-installer.msi"
+        $appx86URL = "https://the.earth.li/~sgtatham/putty/latest/w32/putty-$appVersion-installer.msi"
+        $regexAppVersionPre = "of .*"
+        $webVersionPre = $webRequestPre.RawContent | Select-String -Pattern $regexAppVersionPre -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersionPre = $webVersionPre.Split()[1].Trim("of ")
+        $appx64URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w64/putty-64bit-installer.msi"
+        $appx86URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w32/putty-installer.msi"
+
+        $PSObjectx86 = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x86"
+            URI          = $appx86URL
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+
+        $PSObjectx86Pre = [PSCustomObject] @{
+            Version      = $appVersionPre
+            Channel      = "Pre-Release"
+            Architecture = "x86"
+            URI          = $appx86URLPre
+        }
+
+        $PSObjectx64Pre = [PSCustomObject] @{
+            Version      = $appVersionPre
+            Channel      = "Pre-Release"
+            Architecture = "x64"
+            URI          = $appx64URLPre
+        }
+
+        Write-Output -InputObject $PSObjectx86
+        Write-Output -InputObject $PSObjectx64
+        Write-Output -InputObject $PSObjectx86Pre
+        Write-Output -InputObject $PSObjectx64Pre
     }
 }
 
@@ -282,7 +396,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.43"
+$eVersion = "1.44"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -344,7 +458,7 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 Write-Output ""
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way   "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "               Manuel Winkel (www.deyda.net)               "
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                           "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                          "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
@@ -454,21 +568,21 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="518" Width="855">
-    <Grid x:Name="Evergreen_GUI" Margin="0,0,0,0" VerticalAlignment="Stretch">
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="618" Width="855">
+    <Grid x:Name="Evergreen_GUI" Margin="0,0,0,1" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
             <ColumnDefinition Width="234*"/>
             <ColumnDefinition Width="586*"/>
         </Grid.ColumnDefinitions>
-        <Image x:Name="Image_Logo" Height="100" Margin="472,0,24,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="258,421,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="353,421,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Image x:Name="Image_Logo" Height="100" Margin="472,16,24,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="131,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="147,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="9,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="25,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="Danish"/>
             <ListBoxItem Content="Dutch"/>
             <ListBoxItem Content="English"/>
@@ -485,112 +599,137 @@ $inputXML = @"
             <ListBoxItem Content="Spanish"/>
             <ListBoxItem Content="Swedish"/>
         </ComboBox>
-        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="286,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="320,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
+        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="164,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="198,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
             <ListBoxItem Content="x64"/>
             <ListBoxItem Content="x86"/>
         </ComboBox>
-        <Label x:Name="Label_Explanation" Content="When software download can be filtered on language or architecture." HorizontalAlignment="Left" Margin="100,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,51,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,82,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,102,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
-        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,122,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,142,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,162,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,182,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="179,177,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <Label x:Name="Label_SelectSession" Content="Select Session" HorizontalAlignment="Left" Margin="319,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Session" HorizontalAlignment="Left" Margin="305,30,0,0" VerticalAlignment="Top" SelectedIndex="1" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+            <ListBoxItem Content="Single-Session OS"/>
+            <ListBoxItem Content="Multi-Session OS"/>
+        </ComboBox>
+        <Label x:Name="Label_Explanation" Content="When software download / install can be filtered on language, architecture.or session mode" HorizontalAlignment="Left" Margin="13,49,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
+        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,138,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="184,193,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Current Release"/>
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,222,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,242,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,262,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,282,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="15,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,402,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,422,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="153,82,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="153,102,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="320,96,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
-            <ListBoxItem Content="Insider Ring"/>
-            <ListBoxItem Content="Production Ring"/>
-            <ListBoxItem Content="Enterprise Ring"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,142,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="320,138,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
-            <ListBoxItem Content="Developer Ring"/>
-            <ListBoxItem Content="Preview Ring"/>
-            <ListBoxItem Content="General Ring"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="153,162,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="320,159,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Current"/>
-            <ListBoxItem Content="ESR"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="153,182,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="153,202,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,222,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="320,299,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Free"/>
-            <ListBoxItem Content="Professional"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,322,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,342,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,362,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="127,425,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2"/>
-        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="286,453,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,382,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="179,379,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Current (Preview)"/>
-            <ListBoxItem Content="Current"/>
-            <ListBoxItem Content="Monthly Enterprise"/>
-            <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
-            <ListBoxItem Content="Semi-Annual Enterprise"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,302,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="438,142,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
-        <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,202,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,362,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="153,122,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="153,242,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="153,262,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="153,282,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,382,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="179,358,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Current"/>
-            <ListBoxItem Content="LTS (Long Term Support)"/>
-        </ComboBox>
-        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="320,117,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-            <ListBoxItem Content="Stable"/>
-            <ListBoxItem Content="LTS (Long Term Support)"/>
-        </ComboBox>
-        <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="320,238,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Free"/>
-            <ListBoxItem Content="Enterprise"/>
-        </ComboBox>
-        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="320,379,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="VDI Client"/>
-            <ListBoxItem Content="VDI Client + Citrix Plugin"/>
-        </ComboBox>
-        <ComboBox x:Name="Box_Slack" HorizontalAlignment="Left" Margin="320,278,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Per Machine"/>
-            <ListBoxItem Content="Per User"/>
-        </ComboBox>
-        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="179,198,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="184,214,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1">
             <ListBoxItem Content="Client"/>
             <ListBoxItem Content="Host"/>
             <ListBoxItem Content="Console"/>
             <ListBoxItem Content="Client + Host"/>
             <ListBoxItem Content="Host + Console"/>
         </ComboBox>
-        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="179,400,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,258,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,339,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="184,374,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="LTS (Long Term Support)"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="184,395,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Current (Preview)"/>
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="Monthly Enterprise"/>
+            <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
+            <ListBoxItem Content="Semi-Annual Enterprise"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="184,416,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Developer"/>
             <ListBoxItem Content="Beta"/>
             <ListBoxItem Content="Stable"/>
         </ComboBox>
-    </Grid>
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Machine Based Install"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="187,472,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" ToolTip="Machine Based Install" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Insider Ring"/>
+            <ListBoxItem Content="Production Ring"/>
+            <ListBoxItem Content="Enterprise Ring"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="187,493,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Stable"/>
+            <ListBoxItem Content="LTS (Long Term Support)"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="153,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,118,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Machine Based Install"/>
+        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="450,118,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="340,113,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
+            <ListBoxItem Content="Developer Ring"/>
+            <ListBoxItem Content="Preview Ring"/>
+            <ListBoxItem Content="General Ring"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="153,138,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="340,134,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+            <ListBoxItem Content="Enterprise Edition"/>
+            <ListBoxItem Content="Professional Edition"/>
+            <ListBoxItem Content="Community Edition"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="153,158,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="340,155,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+            <ListBoxItem Content="Insider"/>
+            <ListBoxItem Content="Stable"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="153,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="340,175,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Current"/>
+            <ListBoxItem Content="ESR"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="153,198,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="153,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="153,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="153,278,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="153,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+		<ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="340,293,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+			<ListBoxItem Content="Pre-Release"/>
+			<ListBoxItem Content="Stable"/>
+		</ComboBox>
+		<CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="153,318,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="340,314,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Free"/>
+            <ListBoxItem Content="Enterprise"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="153,338,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="153,358,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_Slack" HorizontalAlignment="Left" Margin="340,354,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Per Machine"/>
+            <ListBoxItem Content="Per User"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="153,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="340,395,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Free"/>
+            <ListBoxItem Content="Professional"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,458,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="340,475,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="VDI Client"/>
+            <ListBoxItem Content="VDI Client + Citrix Plugin"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="153,533,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+		<Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,553,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+	</Grid>
 </Window>
 "@
 
@@ -637,6 +776,10 @@ $inputXML = @"
         $WPFBox_Zoom.SelectedIndex = $LastSetting[49] -as [int]
         $WPFBox_deviceTRUST.SelectedIndex = $LastSetting[50] -as [int]
         $WPFBox_MSEdge.SelectedIndex = $LastSetting[51] -as [int]
+        $WPFBox_MSVisualStudioCode.SelectedIndex = $LastSetting[56] -as [int]
+        $WPFBox_Session.SelectedIndex = $LastSetting[60] -as [int]
+        $WPFBox_MSVisualStudio.SelectedIndex = $LastSetting[61] -as [int]
+        $WPFBox_Putty.SelectedIndex = $LastSetting[62] -as [int]
         Switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -748,6 +891,27 @@ $inputXML = @"
         Switch ($LastSetting[48]) {
             1 { $WPFCheckbox_Zoom.IsChecked = "True"}
         }
+        Switch ($LastSetting[52]) {
+            1 { $WPFCheckbox_GIMP.IsChecked = "True"}
+        }
+        Switch ($LastSetting[53]) {
+            1 { $WPFCheckbox_MSPowerToys.IsChecked = "True"}
+        }
+        Switch ($LastSetting[54]) {
+            1 { $WPFCheckbox_MSVisualStudio.IsChecked = "True"}
+        }
+        Switch ($LastSetting[55]) {
+            1 { $WPFCheckbox_MSVisualStudioCode.IsChecked = "True"}
+        }
+        Switch ($LastSetting[57]) {
+            1 { $WPFCheckbox_PaintDotNet.IsChecked = "True"}
+        }
+        Switch ($LastSetting[58]) {
+            1 { $WPFCheckbox_Putty.IsChecked = "True"}
+        }
+        Switch ($LastSetting[59]) {
+            1 { $WPFCheckbox_TeamViewer.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -787,6 +951,13 @@ $inputXML = @"
         $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_ShareX.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Putty.IsChecked = $WPFCheckbox_SelectAll.Ischecked
+        $WPFCheckbox_PaintDotNet.IsChecked = $WPFCheckbox_SelectAll.Ischecked
+        $WPFCheckbox_MSVisualStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSVisualStudioCode.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSPowerToys.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -824,6 +995,13 @@ $inputXML = @"
         $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_ShareX.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Putty.IsChecked = $WPFCheckbox_SelectAll.Ischecked
+        $WPFCheckbox_PaintDotNet.IsChecked = $WPFCheckbox_SelectAll.Ischecked
+        $WPFCheckbox_MSVisualStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSVisualStudioCode.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSPowerToys.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -848,8 +1026,8 @@ $inputXML = @"
         Else {$Script:Filezilla = 0}
         If ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
         Else {$Script:Firefox = 0}
-        If ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:FSLogix = 1}
-        Else {$Script:FSLogix = 0}
+        If ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:MSFSLogix = 1}
+        Else {$Script:MSFSLogix = 0}
         If ($WPFCheckbox_FoxitReader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
         Else {$Script:Foxit_Reader = 0}
         If ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
@@ -902,8 +1080,23 @@ $inputXML = @"
         Else {$Script:ShareX = 0}
         If ($WPFCheckbox_Zoom.ischecked -eq $true) {$Script:Zoom = 1}
         Else {$Script:Zoom = 0}
+        If ($WPFCheckbox_GIMP.ischecked -eq $true) {$Script:GIMP = 1}
+        Else {$Script:GIMP = 0}
+        If ($WPFCheckbox_MSPowerToys.ischecked -eq $true) {$Script:MSPowerToys = 1}
+        Else {$Script:MSPowerToys = 0}
+        If ($WPFCheckbox_MSVisualStudio.ischecked -eq $true) {$Script:MSVisualStudio = 1}
+        Else {$Script:MSVisualStudio = 0}
+        If ($WPFCheckbox_MSVisualStudioCode.ischecked -eq $true) {$Script:MSVisualStudioCode = 1}
+        Else {$Script:MSVisualStudioCode = 0}
+        If ($WPFCheckbox_PaintDotNet.ischecked -eq $true) {$Script:PaintDotNet = 1}
+        Else {$Script:PaintDotNet = 0}
+        If ($WPFCheckbox_Putty.ischecked -eq $true) {$Script:Putty = 1}
+        Else {$Script:Putty = 0}
+        If ($WPFCheckbox_TeamViewer.ischecked -eq $true) {$Script:TeamViewer = 1}
+        Else {$Script:TeamViewer = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
+        $Script:Session = $WPFBox_Session.SelectedIndex
         $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
         $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
         $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
@@ -917,8 +1110,11 @@ $inputXML = @"
         $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
         $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
         $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
+        $Script:MSVisualStudioCodeChannel = $WPFBox_MSVisualStudioCode.SelectedIndex
+        $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
+        $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$FSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Session,$MSVisualStudioEdition,$PuttyChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -975,6 +1171,11 @@ If ($list -eq $True) {
     # 1 = x86
     $Architecture = 0
 
+    # Select Session Mode (If this is selectable at install)
+    # 0 = Single-Session OS
+    # 1 = Multi-Session OS
+    $Session = 1
+
     # Software Release / Ring / Channel / Type ?!
     # Citrix Workspace App
     # 0 = Current Release
@@ -1030,10 +1231,26 @@ If ($list -eq $True) {
     # 1 = No AutoStart (Delete HKLM Registry Entry)
     $MSTeamsNoAutoStart = 0
 
+    # Microsoft Visual Studio
+    # 0 = Enterprise Edition
+    # 1 = Professional Edition
+    # 2 = Community Edition
+    $MSVisualStudioEdition = 1
+
+    # Microsoft Visual Studio Code
+    # 0 = Insider Channel
+    # 1 = Stable Channel
+    $MSVisualStudioCodeChannel = 1
+
     # Mozilla Firefox
     # 0 = Current
     # 1 = ESR
     $FirefoxChannel = 0
+
+    # PuTTY
+    # 0 = Pre-Release
+    # 1 = Stable
+    $PuttyChannel = 1
 
     # Remote Desktop Manager
     # 0 = Free
@@ -1068,7 +1285,7 @@ If ($list -eq $True) {
     $Filezilla = 0
     $Firefox = 0
     $Foxit_Reader = 0
-    $FSLogix = 0
+    $GIMP = 0
     $GoogleChrome = 0
     $Greenshot = 0
     $IrfanView = 0
@@ -1077,16 +1294,23 @@ If ($list -eq $True) {
     $MSDotNetFramework = 0
     $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSEdge = 0
+    $MSFSLogix = 0
     $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
     $MSPowerShell = 0
+    $MSPowerToys = 0
     $MSTeams = 0
+    $MSVisualStudio = 0
+    $MSVisualStudioCode = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
+    $PaintDotNet = 0
+    $Putty = 0
     $RemoteDesktopManager = 0
     $Slack = 0
     $ShareX = 0
+    $TeamViewer = 0
     $TreeSize = 0
     $VLCPlayer = 0
     $VMWareTools = 0
@@ -1097,7 +1321,7 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,FSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Session,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -1228,6 +1452,27 @@ Switch ($MSTeamsRing) {
     0 { $MSTeamsRingClear = 'Developer'}
     1 { $MSTeamsRingClear = 'Preview'}
     2 { $MSTeamsRingClear = 'General'}
+}
+
+Switch ($MSVisualStudioEdition) {
+    0 { $MSVisualStudioEditionClear = 'Enterprise'}
+    1 { $MSVisualStudioEditionClear = 'Professional'}
+    2 { $MSVisualStudioEditionClear = 'Community'}
+}
+
+Switch ($MSVisualStudioCodeChannel) {
+    0 { $MSVisualStudioCodeChannelClear = 'Insider'}
+    1 { $MSVisualStudioCodeChannelClear = 'Stable'}
+}
+
+Switch ($Architecture) {
+    0 { $MSVisualStudioCodePlatformClear = 'win32-x64'}
+    1 { $MSVisualStudioCodePlatformClear = 'win32'}
+}
+
+Switch ($PuttyChannel) {
+    0 { $PuttyChannelClear = 'Pre-Release'}
+    1 { $PuttyChannelClear = 'Stable'}
 }
 
 Switch ($FirefoxChannel) {
@@ -1638,6 +1883,40 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download GIMP
+    If ($GIMP -eq 1) {
+        $Product = "GIMP"
+        $PackageName = "gimp-setup"
+        $GIMPD = Get-EvergreenApp -Name GIMP
+        $Version = $GIMPD.Version
+        $URL = $GIMPD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download Google Chrome
     If ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
@@ -1709,50 +1988,6 @@ If ($install -eq $False) {
 
     #// Mark: Download IrfanView
     If ($IrfanView -eq 1) {
-        Function Get-IrfanView {
-            <#
-                .NOTES
-                    Author: Trond Eirik Haavarstein
-                    Twitter: @xenappblog
-            #>
-            [OutputType([System.Management.Automation.PSObject])]
-            [CmdletBinding()]
-            Param ()
-                $url = "https://www.irfanview.com/"
-            Try {
-                $web = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
-            }
-            Catch {
-                Throw "Failed to connect to URL: $url with error $_."
-                Break
-            }
-            Finally {
-                $m = $web.ToString() -split "[`r`n]" | Select-String "Version" | Select-Object -First 1
-                $m = $m -replace "<((?!@).)*?>"
-                $m = $m.Replace(' ','')
-                $Version = $m -replace "Version"
-                $File = $Version -replace "\.",""
-                $x32 = "http://download.betanews.com/download/967963863-1/iview$($File)_setup.exe"
-                $x64 = "http://download.betanews.com/download/967963863-1/iview$($File)_x64_setup.exe"
-        
-        
-                $PSObjectx32 = [PSCustomObject] @{
-                Version      = $Version
-                Architecture = "x86"
-                Language     = "english"
-                URI          = $x32
-                }
-        
-                $PSObjectx64 = [PSCustomObject] @{
-                Version      = $Version
-                Architecture = "x64"
-                Language     = "english"
-                URI          = $x64
-                }
-                Write-Output -InputObject $PSObjectx32
-                Write-Output -InputObject $PSObjectx64
-            }
-        }
         $Product = "IrfanView"
         $PackageName = "IrfanView" + "$ArchitectureClear"
         $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
@@ -2003,12 +2238,12 @@ If ($install -eq $False) {
     }
 
     #// Mark: Download Microsoft FSLogix
-    If ($FSLogix -eq 1) {
+    If ($MSFSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
         $PackageName = "FSLogixAppsSetup"
-        $FSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps
-        $Version = $FSLogixD.Version
-        $URL = $FSLogixD.uri
+        $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps
+        $Version = $MSFSLogixD.Version
+        $URL = $MSFSLogixD.uri
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt" -EA SilentlyContinue
@@ -2228,6 +2463,41 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download Microsoft PowerToys
+    If ($MSPowerToys -eq 1) {
+        $Product = "Microsoft PowerToys"
+        $PackageName = "PowerToysSetup-x64"
+        $MSPowerToysD = Get-EvergreenApp -Name MicrosoftPowerToys
+        $Version = $MSPowerToysD.Version
+        $URL = $MSPowerToysD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download Microsoft Teams
     If ($MSTeams -eq 1) {
         $Product = "Microsoft Teams"
@@ -2255,6 +2525,76 @@ If ($install -eq $False) {
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft Visual Studio 2019
+    If ($MSVisualStudio -eq 1) {
+        $Product = "Microsoft Visual Studio 2019"
+        $PackageName = "VS-Setup"
+        $MSVisualStudioD = Get-EvergreenApp -Name MicrosoftVisualStudio
+        $Version = $MSVisualStudioD.Version
+        $URL = $MSVisualStudioD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft Visual Studio Code
+    If ($MSVisualStudioCode -eq 1) {
+        $Product = "Microsoft Visual Studio Code"
+        $PackageName = "VSCode-Setup-"
+        $MSVisualStudioCodeD = Get-EvergreenApp -Name MicrosoftVisualStudioCode | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSVisualStudioCodeChannelClear" -and $_.Platform -eq "$MSVisualStudioCodePlatformClear"}
+        $Version = $MSVisualStudioCodeD.Version
+        $URL = $MSVisualStudioCodeD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -2442,6 +2782,78 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download Paint.Net
+    If ($PaintDotNet -eq 1) {
+        $Product = "Paint Dot Net"
+        $PackageName = "Paint.net"
+        $PaintDotNetD = Get-EvergreenApp -Name PaintDotNet | Where-Object { $_.URI -like "*files*" }
+        $Version = $PaintDotNetD.Version
+        $URL = $PaintDotNetD.uri
+        $InstallerType = "zip"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
+            Get-Download $URL "$PSScriptRoot\$Product" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            expand-archive -path "$PSScriptRoot\$Product\Paint.Net.zip" -destinationpath "$PSScriptRoot\$Product"
+            Move-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\$Product\paint.net.install.exe"
+            Remove-Item -Path "$PSScriptRoot\$Product\Paint.Net.zip" -Force
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download PuTTY
+    If ($Putty -eq 1) {
+        $Product = "PuTTY"
+        $PackageName = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear"
+        $PuTTYD = Get-Putty | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$PuttyChannelClear"}
+        $Version = $PuTTYD.Version
+        $URL = $PuTTYD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $PuttyChannelClear $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $PuttyChannelClear $ArchitectureClear $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download Remote Desktop Manager
     If ($RemoteDesktopManager -eq 1) {
         Switch ($RemoteDesktopManagerType) {
@@ -2574,6 +2986,40 @@ If ($install -eq $False) {
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $SlackArchitectureClear $SlackPlatformClear $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download TeamViewer
+    If ($TeamViewer -eq 1) {
+        $Product = "TeamViewer"
+        $PackageName = "TeamViewer-setup"
+        $TeamViewerD = Get-EvergreenApp -Name TeamViewer
+        $Version = $TeamViewerD.Version
+        $URL = $TeamViewerD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -3368,6 +3814,44 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install GIMP
+    If ($GIMP -eq 1) {
+        $Product = "GIMP"
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $GIMPV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $GIMPV"
+        If ($GIMPV -ne $Version) {
+            $Options = @(
+                "/VERYSILENT"
+                "/NORESTART"
+                "/ALLUSERS"
+            )
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\gimp-setup.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($inst) {
+                    Wait-Process -InputObject $inst
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Google Chrome
     If ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
@@ -3746,12 +4230,12 @@ If ($download -eq $False) {
     }
 
     #// Mark: Install Microsoft FSLogix
-    If ($FSLogix -eq 1) {
+    If ($MSFSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
         $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt"
-        $FSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion
+        $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion
         If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}) {
             $UninstallFSL = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).UninstallString.replace("/uninstall","")
         }
@@ -3760,8 +4244,8 @@ If ($download -eq $False) {
         }
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $FSLogixV"
-        If ($FSLogixV -ne $Version) {
+        Write-Host "Current Version: $MSFSLogixV"
+        If ($MSFSLogixV -ne $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # FSLogix Uninstall
@@ -4023,6 +4507,45 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install Microsoft PowerToys
+    If ($MSPowerToys -eq 1) {
+        $Product = "Microsoft PowerToys"
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion
+        If (!$MSPowerToysV) {
+            $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion
+        }
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $MSPowerToysV"
+        If ($MSPowerToysV -ne $Version) {
+            $Options = @(
+                "--silent"
+            )
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\PowerToysSetup-x64.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($inst) {
+                    Wait-Process -InputObject $inst
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Microsoft Teams
     If ($MSTeams -eq 1) {
         $Product = "Microsoft Teams"
@@ -4115,6 +4638,102 @@ If ($download -eq $False) {
             } Catch {
                 Write-Host -ForegroundColor Red "Error when customizing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error when customizing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Microsoft Visual Studio
+    If ($MSVisualStudio -eq 1) {
+        $Product = "Microsoft Visual Studio 2019"
+        # Check, if a new version is available
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion
+        If (!$MSVisualStudioV) {
+            $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion
+        }
+        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioEditionClear Edition"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $MSVisualStudioV"
+        If ($MSVisualStudioV -ne $Version) {
+            $MSVisualStudioEditionInstall = "Microsoft.VisualStudio.Product." + "$MSVisualStudioEditionClear"
+            If ($MSVisualStudioV) {
+                $Options = @(
+                    "update"
+                    "--quiet"
+                    "--norestart"
+                    "--productid $MSVisualStudioEditionInstall"
+                    "--channelid VisualStudio.16.Release"
+                )
+            }
+            Else {
+                $Options = @(
+                    "--quiet"
+                    "--norestart"
+                    "--productid $MSVisualStudioEditionInstall"
+                    "--channelid VisualStudio.16.Release"
+                )
+            }
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $MSVisualStudioEditionClear Edition $Version"
+                $null = Start-Process -FilePath "$PSScriptRoot\$Product\VS-Setup.exe" -ArgumentList $Options -PassThru -NoNewWindow
+                while (Get-Process -Name setup -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioEditionClear Edition (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product $MSVisualStudioEditionClear Edition (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualStudioEditionClear Edition"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Microsoft Visual Studio Code
+    If ($MSVisualStudioCode -eq 1) {
+        $Product = "Microsoft Visual Studio Code"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+        If (!$MSVisualStudioCodeV) {
+            $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+        }
+        If (!$MSVisualStudioCodeV) {
+            $MSVisualStudioCodeV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+        }
+        $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + "." + "exe"
+        $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $MSVisualStudioCodeV"
+        If ($MSVisualStudioCodeV -ne $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear" $LogFile
+            $Options = @(
+                "/VERYSILENT"
+                "/MERGETASKS=!runcode"
+            )
+            Try {
+                Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $Version"
+                $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $ArchitectureClear (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -4346,6 +4965,100 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install Paint.Net
+    If ($PaintDotNet -eq 1) {
+        $Product = "Paint Dot Net"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        If ($Version) {
+            $VersionSplit = $Version.split(".")
+            $VersionSplit2 = $VersionSplit[1] -split("",3)
+            $Version = $VersionSplit[0] + "." + $VersionSplit2[1] + "." + $VersionSplit2[2]
+        }
+        $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion
+        If (!$PaintDotNetV) {
+            $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion
+        }
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $PaintDotNetV"
+        If ($PaintDotNetV -ne $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/auto DESKTOPSHORTCUT=0 CHECKFORUPDATES=0"
+            )
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                Start-Process "$PSScriptRoot\$Product\paint.net.install.exe" -ArgumentList $Options -NoNewWindow
+                $p = Get-Process paint.net.install
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install PuTTY
+    If ($PuTTY -eq 1) {
+        $Product = "PuTTY"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $PuTTYV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion
+        $PuTTYLog = "$LogTemp\PuTTY.log"
+        If (!$PuTTYV) {
+            $PuTTYV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion
+        }
+        $PuTTYInstaller = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear" + ".msi"
+        $InstallMSI = "$PSScriptRoot\$Product\$PuTTYInstaller"
+        $PuTTYV = $PuTTYV.Split("\.",3)
+        $PuTTYV = $PuTTYV[0] + "." + $PuTTYV[1]
+        Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $PuTTYV"
+        If ($PuTTYV -ne $Version) {
+            DS_WriteLog "I" "Installing $Product $PuttyChannelClear $ArchitectureClear" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
+                "/qn"
+                "INSTALLLEVEL=3"
+                "UPDATE_NOTIFIER=0"
+                "/L*V $PuTTYLog"
+            )
+            Try {
+                Write-Host "Starting install of $Product $PuttyChannelClear $ArchitectureClear $Version"
+                Install-MSI $InstallMSI $Arguments
+                Start-Sleep 25
+                Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $PuTTYLog
+            } Catch {
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Remote Desktop Manager
     If ($RemoteDesktopManager -eq 1) {
         Switch ($RemoteDesktopManagerType) {
@@ -4505,6 +5218,45 @@ If ($download -eq $False) {
                 Remove-Item $SlackLog
             } Catch {
                 DS_WriteLog "E" "Error installing $Product $ArchitectureClear $SlackPlatformClear (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install TeamViewer
+    If ($TeamViewer -eq 1) {
+        $Product = "TeamViewer"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $TeamViewerV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TeamViewer*"}).DisplayVersion
+        $TeamViewerInstaller = "TeamViewer-setup" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $TeamViewerV"
+        If ($TeamViewerV -ne $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/S"
+            )
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                Start-Process "$PSScriptRoot\$Product\$TeamViewerInstaller" -ArgumentList $Options -NoNewWindow
+                $p = Get-Process TeamViewer-setup
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
