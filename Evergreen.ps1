@@ -95,7 +95,7 @@ Download and install the selected Software out of the list.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -list -file LastSettings.txt
+.\Evergreen.ps1 -list -file LastSetting.txt
 
 Download and install the selected Software out of the file LastSettings.txt.
 
