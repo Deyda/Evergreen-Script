@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.44
+  Version:          1.45
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -55,6 +55,9 @@ the script checks the version number and will update the package.
   2021-04-22        Little customize to the auto update (Error with IE first launch error)
   2021-04-29        Correction Pending Reboot and AutoUpdate Script with List Parameter
   2021-04-30        Add PuTTY Download Function / Add Paint.Net, GIMP, Microsoft PowerToys, Microsoft Visual Studio 2019, Microsoft Visual Studio Code, PuTTY & TeamViewer
+  2021-05-01        Adding the new parameter file to extend the parameter execution with a possibility of software selection. / Add auto update for parameter start (-list) with -file parameter / Add Machine Type Selection
+  2021-05-02        Add Microsoft Teams User Based Download and Install / Add Visual Studio Code Per User Installer / Connect the Selection Machine Type Physical to Microsoft Teams User Based, Slack Per User and Visual Studio Code Per User
+  2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
 
 .PARAMETER list
 
@@ -67,6 +70,10 @@ Only download the software packages in list Mode (-list).
 .PARAMETER install
 
 Only install the software packages in list Mode (-list).
+
+.PARAMETER file
+
+Path to file for software selection in list Mode.
 
 .EXAMPLE
 
@@ -85,6 +92,12 @@ Install the selected Software out of the list.
 .\Evergreen.ps1 -list
 
 Download and install the selected Software out of the list.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -list -file LastSettings.txt
+
+Download and install the selected Software out of the file LastSettings.txt.
 
 .EXAMPLE
 
@@ -109,6 +122,12 @@ Param (
             ValuefromPipelineByPropertyName = $true
         )]
         [switch]$install,
+
+        [Parameter(
+            HelpMessage='File with Software Selection',
+            ValuefromPipelineByPropertyName = $true
+        )]
+        [string]$file,
     
         [Parameter(
             HelpMessage='Start the Gui to select the Software',
@@ -270,6 +289,85 @@ Function Get-MicrosoftTeamsDev() {
     }
 }
 
+# Function Microsoft Teams Download User Version
+#========================================================================================================================================
+Function Get-MicrosoftTeamsUser() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://whatpulse.org/app/microsoft-teams#versions"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+        $TeamsUserVersionGeneral = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "General"}
+        $VersionGeneral = $TeamsUserVersionGeneral.Version
+        $TeamsUserVersionPreview = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "Preview"}
+        $VersionPreview = $TeamsUserVersionPreview.Version
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "\<td\>\d.\d.\d{2}.\d+<\/td\>\n.+windows"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split()[0].Trim("</td>")
+        $appx64URL = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersion/Teams_windows_x64.exe"
+        $appx86URL = "https://statics.teams.cdn.office.net/production-windows-x86/$appVersion/Teams_windows_x86.exe"
+        $appx64URLG = "https://statics.teams.cdn.office.net/production-windows-x64/$VersionGeneral/Teams_windows_x64.exe"
+        $appx86URLG = "https://statics.teams.cdn.office.net/production-windows-x86/$VersionGeneral/Teams_windows_x86.exe"
+        $appx64URLP = "https://statics.teams.cdn.office.net/production-windows-x64/$VersionPreview/Teams_windows_x64.exe"
+        $appx86URLP = "https://statics.teams.cdn.office.net/production-windows-x86/$VersionPreview/Teams_windows_x86.exe"
+
+        $PSObjectx86G = [PSCustomObject] @{
+            Version      = $VersionGeneral
+            Ring         = "General"
+            Architecture = "x86"
+            URI          = $appx86URLG
+        }
+
+        $PSObjectx64G = [PSCustomObject] @{
+            Version      = $VersionGeneral
+            Ring         = "General"
+            Architecture = "x64"
+            URI          = $appx64URLG
+        }
+
+        $PSObjectx86P = [PSCustomObject] @{
+            Version      = $VersionPreview
+            Ring         = "Preview"
+            Architecture = "x86"
+            URI          = $appx86URLP
+        }
+
+        $PSObjectx64P = [PSCustomObject] @{
+            Version      = $VersionPreview
+            Ring         = "Preview"
+            Architecture = "x64"
+            URI          = $appx64URLP
+        }
+
+        $PSObjectx86 = [PSCustomObject] @{
+            Version      = $appVersion
+            Ring         = "Developer"
+            Architecture = "x86"
+            URI          = $appx86URL
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Ring         = "Developer"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+        Write-Output -InputObject $PSObjectx86G
+        Write-Output -InputObject $PSObjectx64G
+        Write-Output -InputObject $PSObjectx86P
+        Write-Output -InputObject $PSObjectx64P
+        Write-Output -InputObject $PSObjectx86
+        Write-Output -InputObject $PSObjectx64
+    }
+}
+
 # Function PuTTY Download Stable and Pre-Release Version
 #========================================================================================================================================
 Function Get-PuTTY() {
@@ -336,6 +434,46 @@ Function Get-PuTTY() {
     }
 }
 
+    # Function Wireshark Download Stable Version
+#========================================================================================================================================
+Function Get-Wireshark() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.wireshark.org/#download"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion or $appURLVersionPre with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "is [0123456789]*\.[0123456789]*\.[0123456789]*"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split()[1].Trim("")
+        $appx64URL = "https://2.na.dl.wireshark.org/win64/Wireshark-win64-$appVersion.exe"
+        $appx86URL = "https://2.na.dl.wireshark.org/win32/Wireshark-win32-$appVersion.exe"
+
+        $PSObjectx86 = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x86"
+            URI          = $appx86URL
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+
+        Write-Output -InputObject $PSObjectx86
+        Write-Output -InputObject $PSObjectx64
+    }
+}
+
 # Function Test RegistryValue Pending Reboot
 #========================================================================================================================================
 Function Test-RegistryValue {
@@ -396,7 +534,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.44"
+$eVersion = "1.45"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -474,8 +612,8 @@ Else {
     # There is a new Evergreen Script Version
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
-    If ($list -eq $True) {
-<#        If ($install -eq $False -and $download -eq $True) {
+    If ($list -eq $True -and $file) {
+        If ($install -eq $False -and $download -eq $True) {
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
@@ -504,7 +642,7 @@ Else {
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
-        }#>
+        }
     }
     Else {
         $wshell = New-Object -ComObject Wscript.Shell
@@ -604,12 +742,12 @@ $inputXML = @"
             <ListBoxItem Content="x64"/>
             <ListBoxItem Content="x86"/>
         </ComboBox>
-        <Label x:Name="Label_SelectSession" Content="Select Session" HorizontalAlignment="Left" Margin="319,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Session" HorizontalAlignment="Left" Margin="305,30,0,0" VerticalAlignment="Top" SelectedIndex="1" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
-            <ListBoxItem Content="Single-Session OS"/>
-            <ListBoxItem Content="Multi-Session OS"/>
+        <Label x:Name="Label_SelectMachine" Content="Select Machine Type" HorizontalAlignment="Left" Margin="319,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <ComboBox x:Name="Box_Machine" HorizontalAlignment="Left" Margin="349,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+            <ListBoxItem Content="Virtual"/>
+            <ListBoxItem Content="Physical"/>
         </ComboBox>
-        <Label x:Name="Label_Explanation" Content="When software download / install can be filtered on language, architecture.or session mode" HorizontalAlignment="Left" Margin="13,49,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_Explanation" Content="When software download / install can be filtered on language, architecture or machine type" HorizontalAlignment="Left" Margin="13,49,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
         <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
@@ -622,7 +760,7 @@ $inputXML = @"
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="184,214,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1">
+        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="184,214,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Client"/>
             <ListBoxItem Content="Host"/>
             <ListBoxItem Content="Console"/>
@@ -670,7 +808,7 @@ $inputXML = @"
         </ComboBox>
         <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="153,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
         <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,118,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Machine Based Install"/>
-        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="450,118,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="488,116,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
         <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="340,113,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="Machine Based Install">
             <ListBoxItem Content="Developer Ring"/>
             <ListBoxItem Content="Preview Ring"/>
@@ -709,10 +847,6 @@ $inputXML = @"
         </ComboBox>
         <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="153,338,0,0" VerticalAlignment="Top" Grid.Column="2" />
         <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="153,358,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_Slack" HorizontalAlignment="Left" Margin="340,354,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Per Machine"/>
-            <ListBoxItem Content="Per User"/>
-        </ComboBox>
         <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="153,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="153,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="340,395,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
@@ -722,14 +856,15 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,458,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="340,475,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="VDI Client"/>
-            <ListBoxItem Content="VDI Client + Citrix Plugin"/>
+        <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="153,478,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="340,495,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Client"/>
+            <ListBoxItem Content="Client + Citrix Plugin"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="153,533,0,0" VerticalAlignment="Top" Grid.Column="2"/>
 		<Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,553,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-	</Grid>
+    </Grid>
 </Window>
 "@
 
@@ -772,12 +907,11 @@ $inputXML = @"
         $WPFBox_MSDotNetFramework.SelectedIndex = $LastSetting[40] -as [int]
         $WPFBox_MSPowerShell.SelectedIndex = $LastSetting[42] -as [int]
         $WPFBox_RemoteDesktopManager.SelectedIndex = $LastSetting[44] -as [int]
-        $WPFBox_Slack.SelectedIndex = $LastSetting[46] -as [int]
         $WPFBox_Zoom.SelectedIndex = $LastSetting[49] -as [int]
         $WPFBox_deviceTRUST.SelectedIndex = $LastSetting[50] -as [int]
         $WPFBox_MSEdge.SelectedIndex = $LastSetting[51] -as [int]
         $WPFBox_MSVisualStudioCode.SelectedIndex = $LastSetting[56] -as [int]
-        $WPFBox_Session.SelectedIndex = $LastSetting[60] -as [int]
+        $WPFBox_Machine.SelectedIndex = $LastSetting[60] -as [int]
         $WPFBox_MSVisualStudio.SelectedIndex = $LastSetting[61] -as [int]
         $WPFBox_Putty.SelectedIndex = $LastSetting[62] -as [int]
         Switch ($LastSetting[8]) {
@@ -885,6 +1019,9 @@ $inputXML = @"
         Switch ($LastSetting[45]) {
             1 { $WPFCheckbox_Slack.IsChecked = "True"}
         }
+        Switch ($LastSetting[46]) {
+            1 { $WPFCheckbox_Wireshark.IsChecked = "True"}
+        }
         Switch ($LastSetting[47]) {
             1 { $WPFCheckbox_ShareX.IsChecked = "True"}
         }
@@ -958,6 +1095,7 @@ $inputXML = @"
         $WPFCheckbox_MSPowerToys.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -1002,6 +1140,7 @@ $inputXML = @"
         $WPFCheckbox_MSPowerToys.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -1094,9 +1233,11 @@ $inputXML = @"
         Else {$Script:Putty = 0}
         If ($WPFCheckbox_TeamViewer.ischecked -eq $true) {$Script:TeamViewer = 1}
         Else {$Script:TeamViewer = 0}
+        If ($WPFCheckbox_Wireshark.ischecked -eq $true) {$Script:Wireshark = 1}
+        Else {$Script:Wireshark = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
-        $Script:Session = $WPFBox_Session.SelectedIndex
+        $Script:Machine = $WPFBox_Machine.SelectedIndex
         $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
         $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
         $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
@@ -1106,7 +1247,6 @@ $inputXML = @"
         $Script:MSDotNetFrameworkChannel = $WPFBox_MSDotNetFramework.SelectedIndex
         $Script:MSPowerShellRelease = $WPFBox_MSPowerShell.SelectedIndex
         $Script:RemoteDesktopManagerType = $WPFBox_RemoteDesktopManager.SelectedIndex
-        $Script:SlackPlatform = $WPFBox_Slack.SelectedIndex
         $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
         $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
         $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
@@ -1114,7 +1254,7 @@ $inputXML = @"
         $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$SlackPlatform,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Session,$MSVisualStudioEdition,$PuttyChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -1148,180 +1288,245 @@ $Script:download = $download
 
 # Define the variables for the unattended install or download (Parameter -list) (AddScript)
 If ($list -eq $True) {
-    # Select Language (If this is selectable at download)
-    # 0 = Danish
-    # 1 = Dutch
-    # 2 = English
-    # 3 = Finnish
-    # 4 = French
-    # 5 = German
-    # 6 = Italian
-    # 7 = Japanese
-    # 8 = Korean
-    # 9 = Norwegian
-    # 10 = Polish
-    # 11 = Portuguese
-    # 12 = Russian
-    # 13 = Spanish
-    # 14 = Swedish
-    $Language = 2
+    If ($file) {
+        # Read File Parameter to get the settings. (AddScript)
+        If (Test-Path "$File" -PathType leaf) {
+            $FileSetting = Get-Content "$file"
+            $Language = $FileSetting[0] -as [int]
+            $Architecture = $FileSetting[1] -as [int]
+            $CitrixWorkspaceAppRelease = $FileSetting[2] -as [int]
+            $MS365AppsChannel = $FileSetting[3] -as [int]
+            $MSOneDriveRing = $FileSetting[4] -as [int]
+            $MSTeamsRing = $FileSetting[5] -as [int]
+            $FirefoxChannel = $FileSetting[6] -as [int]
+            $TreeSizeType = $FileSetting[7] -as [int]
+            $MSDotNetFrameworkChannel = $FileSetting[40] -as [int]
+            $MSPowerShellRelease = $FileSetting[42] -as [int]
+            $RemoteDesktopManagerType = $FileSetting[44] -as [int]
+            $ZoomCitrixClient = $FileSetting[49] -as [int]
+            $deviceTRUSTPackage = $FileSetting[50] -as [int]
+            $MSEdgeChannel = $FileSetting[51] -as [int]
+            $MSVisualStudioCodeChannel = $FileSetting[56] -as [int]
+            $Machine = $FileSetting[60] -as [int]
+            $MSVisualStudioEdition= $FileSetting[61] -as [int]
+            $PuttyChannel = $FileSetting[62] -as [int]
+            $7ZIP = $FileSetting[8] -as [int]
+            $AdobeProDC = $FileSetting[9] -as [int]
+            $AdobeReaderDC = $FileSetting[10] -as [int]
+            $BISF = $FileSetting[11] -as [int]
+            $Citrix_Hypervisor_Tools = $FileSetting[12] -as [int]
+            $Citrix_WorkspaceApp = $FileSetting[13] -as [int]
+            $Filezilla = $FileSetting[14] -as [int]
+            $Firefox = $FileSetting[15] -as [int]
+            $Foxit_Reader = $FileSetting[16] -as [int]
+            $MSFSLogix = $FileSetting[17] -as [int]
+            $GoogleChrome = $FileSetting[18] -as [int]
+            $Greenshot = $FileSetting[19] -as [int]
+            $KeePass = $FileSetting[20] -as [int]
+            $mRemoteNG = $FileSetting[21] -as [int]
+            $MS365Apps = $FileSetting[22] -as [int]
+            $MSEdge = $FileSetting[23] -as [int]
+            $MSOffice2019 = $FileSetting[24] -as [int]
+            $MSOneDrive = $FileSetting[25] -as [int]
+            $MSTeams = $FileSetting[26] -as [int]
+            $NotePadPlusPlus = $FileSetting[27] -as [int]
+            $OpenJDK = $FileSetting[28] -as [int]
+            $OracleJava8 = $FileSetting[29] -as [int]
+            $TreeSize = $FileSetting[30] -as [int]
+            $VLCPlayer = $FileSetting[31] -as [int]
+            $VMWareTools = $FileSetting[32] -as [int]
+            $WinSCP = $FileSetting[33] -as [int]
+            $IrfanView = $FileSetting[36] -as [int]
+            $MSTeamsNoAutoStart = $FileSetting[37] -as [int]
+            $deviceTRUST = $FileSetting[38] -as [int]
+            $MSDotNetFramework = $FileSetting[39] -as [int]
+            $MSPowerShell = $FileSetting[41] -as [int]
+            $RemoteDesktopManager = $FileSetting[43] -as [int]
+            $Slack = $FileSetting[45] -as [int]
+            $Wireshark = $FileSetting[46] -as [int]
+            $ShareX = $FileSetting[47] -as [int]
+            $Zoom = $FileSetting[48] -as [int]
+            $GIMP = $FileSetting[52] -as [int]
+            $MSPowerToys = $FileSetting[53] -as [int]
+            $MSVisualStudio = $FileSetting[54] -as [int]
+            $MSVisualStudioCode = $FileSetting[55] -as [int]
+            $PaintDotNet = $FileSetting[57] -as [int]
+            $Putty = $FileSetting[58] -as [int]
+            $TeamViewer = $FileSetting[59] -as [int]
+        }
+    }
+    Else {
+        # Define the variables for the unattended install or download (Parameter -list without Parameter -file) (AddScript)
+        # Select Language (If this is selectable at download)
+        # 0 = Danish
+        # 1 = Dutch
+        # 2 = English
+        # 3 = Finnish
+        # 4 = French
+        # 5 = German
+        # 6 = Italian
+        # 7 = Japanese
+        # 8 = Korean
+        # 9 = Norwegian
+        # 10 = Polish
+        # 11 = Portuguese
+        # 12 = Russian
+        # 13 = Spanish
+        # 14 = Swedish
+        $Language = 2
 
-    # Select Architecture (If this is selectable at download)
-    # 0 = x64
-    # 1 = x86
-    $Architecture = 0
+        # Select Architecture (If this is selectable at download)
+        # 0 = x64
+        # 1 = x86
+        $Architecture = 0
 
-    # Select Session Mode (If this is selectable at install)
-    # 0 = Single-Session OS
-    # 1 = Multi-Session OS
-    $Session = 1
+        # Select Machine Type (If this is selectable at install or download)
+        # 0 = Virtual
+        # 1 = Physical
+        $Machine = 0
 
-    # Software Release / Ring / Channel / Type ?!
-    # Citrix Workspace App
-    # 0 = Current Release
-    # 1 = Long Term Service Release
-    $CitrixWorkspaceAppRelease = 1
+        # Software Release / Ring / Channel / Type ?!
+        # Citrix Workspace App
+        # 0 = Current Release
+        # 1 = Long Term Service Release
+        $CitrixWorkspaceAppRelease = 1
 
-    # deviceTRUST
-    # 0 = Client
-    # 1 = Host
-    # 2 = Console
-    # 3 = Client + Host
-    # 4 = Host + Console
-    $deviceTRUSTPackage = 1
+        # deviceTRUST
+        # 0 = Client
+        # 1 = Host
+        # 2 = Console
+        # 3 = Client + Host
+        # 4 = Host + Console
+        $deviceTRUSTPackage = 1
 
-    # Microsoft .Net Framework
-    # 0 = Current Channel
-    # 1 = LTS (Long Term Support) Channel
-    $MSDotNetFrameworkChannel = 1
+        # Microsoft .Net Framework
+        # 0 = Current Channel
+        # 1 = LTS (Long Term Support) Channel
+        $MSDotNetFrameworkChannel = 1
 
-    # Microsoft 365 Apps
-    # 0 = Current (Preview) Channel
-    # 1 = Current Channel
-    # 2 = Monthly Enterprise Channel
-    # 3 = Semi-Annual Enterprise (Preview) Channel
-    # 4 = Semi-Annual Enterprise Channel
-    $MS365AppsChannel = 4
+        # Microsoft 365 Apps
+        # 0 = Current (Preview) Channel
+        # 1 = Current Channel
+        # 2 = Monthly Enterprise Channel
+        # 3 = Semi-Annual Enterprise (Preview) Channel
+        # 4 = Semi-Annual Enterprise Channel
+        $MS365AppsChannel = 4
 
-    # Microsoft Edge
-    # 0 = Developer Channel
-    # 1 = Beta Channel
-    # 2 = Stable Channel
-    $MSEdgeChannel = 2
+        # Microsoft Edge
+        # 0 = Developer Channel
+        # 1 = Beta Channel
+        # 2 = Stable Channel
+        $MSEdgeChannel = 2
 
-    # Microsoft OneDrive
-    # 0 = Insider Ring
-    # 1 = Production Ring
-    # 2 = Enterprise Ring
-    $MSOneDriveRing = 2
+        # Microsoft OneDrive
+        # 0 = Insider Ring
+        # 1 = Production Ring
+        # 2 = Enterprise Ring
+        $MSOneDriveRing = 2
 
-    # Microsoft PowerShell
-    # 0 = Stable Release
-    # 1 = LTS (Long Term Support) Release
-    $MSPowerShellRelease = 1
+        # Microsoft PowerShell
+        # 0 = Stable Release
+        # 1 = LTS (Long Term Support) Release
+        $MSPowerShellRelease = 1
 
-    # Microsoft Teams
-    # 0 = Developer Ring
-    # 1 = Preview Ring
-    # 2 = General Ring
-    $MSTeamsRing = 2
+        # Microsoft Teams
+        # 0 = Developer Ring
+        # 1 = Preview Ring
+        # 2 = General Ring
+        $MSTeamsRing = 2
 
-    # Microsoft Teams AutoStart
-    # 0 = AutoStart Microsoft Teams
-    # 1 = No AutoStart (Delete HKLM Registry Entry)
-    $MSTeamsNoAutoStart = 0
+        # Microsoft Teams AutoStart
+        # 0 = AutoStart Microsoft Teams
+        # 1 = No AutoStart (Delete HKLM Registry Entry)
+        $MSTeamsNoAutoStart = 0
 
-    # Microsoft Visual Studio
-    # 0 = Enterprise Edition
-    # 1 = Professional Edition
-    # 2 = Community Edition
-    $MSVisualStudioEdition = 1
+        # Microsoft Visual Studio
+        # 0 = Enterprise Edition
+        # 1 = Professional Edition
+        # 2 = Community Edition
+        $MSVisualStudioEdition = 1
 
-    # Microsoft Visual Studio Code
-    # 0 = Insider Channel
-    # 1 = Stable Channel
-    $MSVisualStudioCodeChannel = 1
+        # Microsoft Visual Studio Code
+        # 0 = Insider Channel
+        # 1 = Stable Channel
+        $MSVisualStudioCodeChannel = 1
 
-    # Mozilla Firefox
-    # 0 = Current
-    # 1 = ESR
-    $FirefoxChannel = 0
+        # Mozilla Firefox
+        # 0 = Current
+        # 1 = ESR
+        $FirefoxChannel = 0
 
-    # PuTTY
-    # 0 = Pre-Release
-    # 1 = Stable
-    $PuttyChannel = 1
+        # PuTTY
+        # 0 = Pre-Release
+        # 1 = Stable
+        $PuttyChannel = 1
 
-    # Remote Desktop Manager
-    # 0 = Free
-    # 1 = Enterprise
-    $RemoteDesktopManagerType = 0
+        # Remote Desktop Manager
+        # 0 = Free
+        # 1 = Enterprise
+        $RemoteDesktopManagerType = 0
 
-    # Slack
-    # 0 = Per Machine
-    # 1 = Per User
-    $SlackPlatform = 0
+        # TreeSize
+        # 0 = Free
+        # 1 = Professional
+        $TreeSizeType = 0
 
-    # TreeSize
-    # 0 = Free
-    # 1 = Professional
-    $TreeSizeType = 0
+        # Zoom
+        # 0 = Installer
+        # 1 = Installer + Citrix Plugin
+        $ZoomCitrixClient = 1
 
-    # Zoom
-    # 0 = VDI Installer
-    # 1 = VDI Installer + Citrix Plugin
-    $ZoomCitrixClient = 1
-
-    # Select Software
-    # 0 = Not selected
-    # 1 = Selected
-    $7ZIP = 0
-    $AdobeProDC = 0 # Only Update @ the moment
-    $AdobeReaderDC = 0
-    $BISF = 0
-    $Citrix_Hypervisor_Tools = 0
-    $Citrix_WorkspaceApp = 0
-    $deviceTRUST = 0
-    $Filezilla = 0
-    $Firefox = 0
-    $Foxit_Reader = 0
-    $GIMP = 0
-    $GoogleChrome = 0
-    $Greenshot = 0
-    $IrfanView = 0
-    $KeePass = 0
-    $mRemoteNG = 0
-    $MSDotNetFramework = 0
-    $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-    $MSEdge = 0
-    $MSFSLogix = 0
-    $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-    $MSOneDrive = 0
-    $MSPowerShell = 0
-    $MSPowerToys = 0
-    $MSTeams = 0
-    $MSVisualStudio = 0
-    $MSVisualStudioCode = 0
-    $NotePadPlusPlus = 0
-    $OpenJDK = 0
-    $OracleJava8 = 0
-    $PaintDotNet = 0
-    $Putty = 0
-    $RemoteDesktopManager = 0
-    $Slack = 0
-    $ShareX = 0
-    $TeamViewer = 0
-    $TreeSize = 0
-    $VLCPlayer = 0
-    $VMWareTools = 0
-    $WinSCP = 0
-    $Zoom = 0
-
+        # Select Software
+        # 0 = Not selected
+        # 1 = Selected
+        $7ZIP = 0
+        $AdobeProDC = 0 # Only Update @ the moment
+        $AdobeReaderDC = 0
+        $BISF = 0
+        $Citrix_Hypervisor_Tools = 0
+        $Citrix_WorkspaceApp = 0
+        $deviceTRUST = 0
+        $Filezilla = 0
+        $Firefox = 0
+        $Foxit_Reader = 0
+        $GIMP = 0
+        $GoogleChrome = 0
+        $Greenshot = 0
+        $IrfanView = 0
+        $KeePass = 0
+        $mRemoteNG = 0
+        $MSDotNetFramework = 0
+        $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+        $MSEdge = 0
+        $MSFSLogix = 0
+        $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+        $MSOneDrive = 0
+        $MSPowerShell = 0
+        $MSPowerToys = 0
+        $MSTeams = 0
+        $MSVisualStudio = 0
+        $MSVisualStudioCode = 0
+        $NotePadPlusPlus = 0
+        $OpenJDK = 0
+        $OracleJava8 = 0
+        $PaintDotNet = 0
+        $Putty = 0
+        $RemoteDesktopManager = 0
+        $Slack = 0
+        $ShareX = 0
+        $TeamViewer = 0
+        $TreeSize = 0
+        $VLCPlayer = 0
+        $VMWareTools = 0
+        $WinSCP = 0
+        $Wireshark = 0
+        $Zoom = 0
+    }
     Write-Host "Unattended Mode."
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,SlackPlatform,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Session,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -1465,9 +1670,20 @@ Switch ($MSVisualStudioCodeChannel) {
     1 { $MSVisualStudioCodeChannelClear = 'Stable'}
 }
 
-Switch ($Architecture) {
-    0 { $MSVisualStudioCodePlatformClear = 'win32-x64'}
-    1 { $MSVisualStudioCodePlatformClear = 'win32'}
+If ($Machine -eq 0) {
+    Switch ($Architecture) {
+        0 { $MSVisualStudioCodePlatformClear = 'win32-x64'}
+        1 { $MSVisualStudioCodePlatformClear = 'win32'}
+    }
+    $MSVisualStudioCodeModeClear = 'Per Machine'
+}
+
+If ($Machine -eq 1) {
+    Switch ($Architecture) {
+        0 { $MSVisualStudioCodePlatformClear = 'win32-x64-user'}
+        1 { $MSVisualStudioCodePlatformClear = 'win32-user'}
+    }
+    $MSVisualStudioCodeModeClear = 'Per User'
 }
 
 Switch ($PuttyChannel) {
@@ -1498,12 +1714,12 @@ Switch ($LanguageClear) {
     Swedish { $FFLanguageClear = 'sv-SE'}
 }
 
-Switch ($SlackPlatform) {
+Switch ($Machine) {
     0 { $SlackPlatformClear = 'PerMachine'}
     1 { $SlackPlatformClear = 'PerUser'}
 }
 
-Switch ($SlackPlatform) {
+Switch ($Machine) {
     0 { $SlackArchitectureClear = $ArchitectureClear}
     1 { $SlackArchitectureClear = 'x64'}
 }
@@ -2130,70 +2346,102 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green "Create remove.xml finished!"
         }
         If (!(Test-Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml" -PathType leaf)) {
-            Write-Host "Create install.xml"
-            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
-            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
-                $XML.appendChild($Root) | out-null
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
-                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
-                $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
-            [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                $Node2.SetAttribute("ID","O365ProPlusRetail")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                $Node3.SetAttribute("ID","MatchOS")
-                $Node3.SetAttribute("Fallback","en-us")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Teams")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Lync")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Groove")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","OneDrive")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
-                $Node1.SetAttribute("Level","None")
-                $Node1.SetAttribute("AcceptEULA","TRUE")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
-                $Node1.SetAttribute("Level","Standard")
-                $Node1.SetAttribute("Path","%temp%")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                $Node1.SetAttribute("Name","SharedComputerLicensing")
-                $Node1.SetAttribute("Value","1")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
-                $Node1.SetAttribute("Value","TRUE")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
-                $Node1.SetAttribute("Enabled","FALSE")
-                $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
-            Write-Host -ForegroundColor Green "Create install.xml finished!"
-        }
-        If (!($CurrentVersion -eq $Version)) {
-            Write-Host -ForegroundColor Green "Update available"
-            $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
-            Start-Transcript $LogPS | Out-Null
-            Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
-            Write-Host "Starting download of $Product $MS365AppsChannelClear $Version setup file"
-            Get-Download $URL "$PSScriptRoot\$Product\$MS365AppsChannelClear" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
-            Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
-            # Download Apps 365 install files
-            If (!(Test-Path -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Office\Data\$Version")) {
-                Write-Host "Starting download of $Product install files"
-                $DApps365 = @(
-                    "/download install.xml"
-                )
-                set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
-                Start-Process ".\$Source" -ArgumentList $DApps365 -wait -NoNewWindow
-                set-location $PSScriptRoot
-                Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
+            If ($Machine -eq '0') {
+                Write-Host "Create install.xml for Virtual Machine"
+                [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+                [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                    $XML.appendChild($Root) | out-null
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                    $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
+                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","O365ProPlusRetail")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","MatchOS")
+                    $Node3.SetAttribute("Fallback","en-us")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Teams")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Lync")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Groove")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","OneDrive")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                    $Node1.SetAttribute("Level","None")
+                    $Node1.SetAttribute("AcceptEULA","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                    $Node1.SetAttribute("Level","Standard")
+                    $Node1.SetAttribute("Path","%temp%")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","SharedComputerLicensing")
+                    $Node1.SetAttribute("Value","1")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                    $Node1.SetAttribute("Value","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                    $Node1.SetAttribute("Enabled","FALSE")
+                    $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
+                Write-Host -ForegroundColor Green "Create install.xml for Virtual Machine finished!"
             }
-            Write-Verbose "Stop logging"
-            Stop-Transcript | Out-Null
-            Write-Output ""
+            If ($Machine -eq '1') {
+                Write-Host "Create install.xml for Physical Machine"
+                [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+                [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                    $XML.appendChild($Root) | out-null
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                    $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
+                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","O365ProPlusRetail")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","MatchOS")
+                    $Node3.SetAttribute("Fallback","en-us")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Teams")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Lync")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Groove")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","OneDrive")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                    $Node1.SetAttribute("Level","None")
+                    $Node1.SetAttribute("AcceptEULA","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                    $Node1.SetAttribute("Level","Standard")
+                    $Node1.SetAttribute("Path","%temp%")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","SharedComputerLicensing")
+                    $Node1.SetAttribute("Value","0")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                    $Node1.SetAttribute("Value","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                    $Node1.SetAttribute("Enabled","FALSE")
+                    $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
+                Write-Host -ForegroundColor Green "Create install.xml for Physical Machine finished!"
+            }
+            If (!($CurrentVersion -eq $Version)) {
+                Write-Host -ForegroundColor Green "Update available"
+                $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
+                Write-Host "Starting download of $Product $MS365AppsChannelClear $Version setup file"
+                Get-Download $URL "$PSScriptRoot\$Product\$MS365AppsChannelClear" $Source -includeStats
+                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
+                Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+                Write-Output ""
+            }
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -2323,45 +2571,88 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green  "Create remove.xml finished!"
         }
         If (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
-            Write-Host "Create install.xml"
-            [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
-            [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
-                $XML.appendChild($Root) | out-null
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
-                $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                $Node1.SetAttribute("Channel","PerpetualVL2019")
-            [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                $Node2.SetAttribute("ID","ProPlus2019Volume")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                $Node3.SetAttribute("ID","MatchOS")
-                $Node3.SetAttribute("Fallback","en-us")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Teams")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Lync")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","Groove")
-            [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
-                $Node3.SetAttribute("ID","OneDrive")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
-                $Node1.SetAttribute("Level","None")
-                $Node1.SetAttribute("AcceptEULA","TRUE")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
-                $Node1.SetAttribute("Level","Standard")
-                $Node1.SetAttribute("Path","%temp%")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                $Node1.SetAttribute("Name","SharedComputerLicensing")
-                $Node1.SetAttribute("Value","1")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
-                $Node1.SetAttribute("Value","TRUE")
-            [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
-                $Node1.SetAttribute("Enabled","FALSE")
-                $XML.Save("$PSScriptRoot\$Product\install.xml")
-            Write-Host -ForegroundColor Green  "Create install.xml finished!"
+            If ($Machine -eq '0') {
+                Write-Host "Create install.xml for Virtual Machine"
+                [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+                [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                    $XML.appendChild($Root) | out-null
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                    $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
+                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("Channel","PerpetualVL2019")
+                [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","ProPlus2019Volume")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","MatchOS")
+                    $Node3.SetAttribute("Fallback","en-us")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Teams")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Lync")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Groove")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","OneDrive")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                    $Node1.SetAttribute("Level","None")
+                    $Node1.SetAttribute("AcceptEULA","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                    $Node1.SetAttribute("Level","Standard")
+                    $Node1.SetAttribute("Path","%temp%")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","SharedComputerLicensing")
+                    $Node1.SetAttribute("Value","1")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                    $Node1.SetAttribute("Value","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                    $Node1.SetAttribute("Enabled","FALSE")
+                    $XML.Save("$PSScriptRoot\$Product\install.xml")
+                Write-Host -ForegroundColor Green  "Create install.xml for Virtual Machine finished!"
+            }
+            If ($Machine -eq '1') {
+                Write-Host "Create install.xml for Physical Machine"
+                [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+                [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                    $XML.appendChild($Root) | out-null
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                    $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
+                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("Channel","PerpetualVL2019")
+                [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","ProPlus2019Volume")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","MatchOS")
+                    $Node3.SetAttribute("Fallback","en-us")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Teams")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Lync")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Groove")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","OneDrive")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                    $Node1.SetAttribute("Level","None")
+                    $Node1.SetAttribute("AcceptEULA","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                    $Node1.SetAttribute("Level","Standard")
+                    $Node1.SetAttribute("Path","%temp%")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","SharedComputerLicensing")
+                    $Node1.SetAttribute("Value","0")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                    $Node1.SetAttribute("Value","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                    $Node1.SetAttribute("Enabled","FALSE")
+                    $XML.Save("$PSScriptRoot\$Product\install.xml")
+                Write-Host -ForegroundColor Green  "Create install.xml for Physical Machine finished!"
+            }
         }
         If (!($CurrentVersion -eq $Version)) {
             Write-Host -ForegroundColor Green "Update available"
@@ -2372,17 +2663,6 @@ If ($install -eq $False) {
             Write-Host "Starting download of $Product $Version setup file"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            # Download MS Office 2019 install files
-            If (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
-                Write-Host "Starting download of $Product install files"
-                $DOffice2019 = @(
-                    "/download install.xml"
-                )
-                set-location $PSScriptRoot\$Product
-                Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
-                set-location $PSScriptRoot
-                Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
-            }
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Output ""
@@ -2500,41 +2780,75 @@ If ($install -eq $False) {
 
     #// Mark: Download Microsoft Teams
     If ($MSTeams -eq 1) {
-        $Product = "Microsoft Teams"
         $PackageName = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
-        If ($MSTeamsRingClear -eq 'Developer') {
-            $TeamsD = Get-MicrosoftTeamsDev | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+        If ($Machine -eq '0') {
+            $Product = "Microsoft Teams Machine Based"
+            If ($MSTeamsRingClear -eq 'Developer') {
+                $TeamsD = Get-MicrosoftTeamsDev | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+            }
+            Else {
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+            }
+            $Version = $TeamsD.Version
+            $URL = $TeamsD.uri
+            $InstallerType = "msi"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $CurrentVersion"
+            If (!($CurrentVersion -eq $Version)) {
+                Write-Host -ForegroundColor Green "Update available"
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+                Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
         }
-        Else {
-            $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
-        }
-        $Version = $TeamsD.Version
-        $URL = $TeamsD.uri
-        $InstallerType = "msi"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
-        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
-            Write-Host -ForegroundColor Green "Update available"
-            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS | Out-Null
-            Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
-            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging"
-            Stop-Transcript | Out-Null
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
-            Write-Output ""
-        }
-        Else {
-            Write-Host -ForegroundColor Cyan "No new version available"
-            Write-Output ""
+        If ($Machine -eq '1') {
+            $Product = "Microsoft Teams User Based"
+            $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+            $Version = $TeamsD.Version
+            $URL = $TeamsD.uri
+            $InstallerType = "exe"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $CurrentVersion"
+            If (!($CurrentVersion -eq $Version)) {
+                Write-Host -ForegroundColor Green "Update available"
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+                Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
         }
     }
 
@@ -2581,10 +2895,10 @@ If ($install -eq $False) {
         $Version = $MSVisualStudioCodeD.Version
         $URL = $MSVisualStudioCodeD.uri
         $InstallerType = "exe"
-        $Source = "$PackageName" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + ".txt"
+        $Source = "$PackageName" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         If (!($CurrentVersion -eq $Version)) {
@@ -2594,7 +2908,7 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -3207,30 +3521,28 @@ If ($install -eq $False) {
         }
     }
 
-    #// Mark: Download Zoom VDI Installer
-    If ($Zoom -eq 1) {
-        $Product = "Zoom VDI"
-        $PackageName = "ZoomInstallerVDI"
-        $ZoomVDI = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "VDI"}
-        $URLVersion = "https://support.zoom.us/hc/en-us/articles/360041602711"
-        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
-        $regexAppVersion = "(\d\.\d\.\d)"
-        $Version = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Sort-Object -Descending | Select-Object -First 1
-        $URL = $ZoomVDI.uri
-        $InstallerType = "msi"
+    #// Mark: Download Wireshark
+    If ($Wireshark -eq 1) {
+        $Product = "Wireshark"
+        $PackageName = "Wireshark-" + "$ArchitectureClear"
+        $WiresharkD = Get-Wireshark | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+        $Version = $WiresharkD.Version
+        $URL = $WiresharkD.uri
+        $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         If (!($CurrentVersion -eq $Version)) {
             Write-Host -ForegroundColor Green "Update available"
-            If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
-            Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
-            Write-Host "Starting download of $Product $Version"
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $ArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -3241,6 +3553,77 @@ If ($install -eq $False) {
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
             Write-Output ""
+        }
+    }
+
+    #// Mark: Download Zoom
+    If ($Zoom -eq 1) {
+        If ($Machine -eq '0') {
+            $Product = "Zoom VDI"
+            $PackageName = "ZoomInstaller"
+            $ZoomD = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "VDI"}
+            $URLVersion = "https://support.zoom.us/hc/en-us/articles/360041602711"
+            $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
+            $regexAppVersion = "(\d\.\d\.\d)"
+            $Version = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Sort-Object -Descending | Select-Object -First 1
+            $URL = $ZoomD.uri
+            $InstallerType = "msi"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $CurrentVersion"
+            If (!($CurrentVersion -eq $Version)) {
+                Write-Host -ForegroundColor Green "Update available"
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                Write-Host "Starting download of $Product $Version"
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+        }
+        If ($Machine -eq '1') {
+            $Product = "Zoom"
+            $PackageName = "ZoomInstaller"
+            $ZoomD = Get-EvergreenApp -Name Zoom | Where-Object {$_.Type -eq "Msi"}
+            $Version = $ZoomD.version
+            $URL = $ZoomD.uri
+            $InstallerType = "msi"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $CurrentVersion"
+            If (!($CurrentVersion -eq $Version)) {
+                Write-Host -ForegroundColor Green "Update available"
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                Write-Host "Starting download of $Product $Version"
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
         }
         If ($ZoomCitrixClient -eq 1) {
             $Product2 = "Zoom Citrix Client"
@@ -3473,6 +3856,7 @@ If ($download -eq $False) {
                 "`"$InstallMSI`""
                 "/qn"
                 "/L*V $BISFLog"
+                "/norestart"
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
@@ -3933,6 +4317,7 @@ If ($download -eq $False) {
             $Options = @(
                 "/VERYSILENT"
                 "/NORESTART"
+                "/NORESTARTAPPLICATIONS"
                 "/SUPPRESSMSGBOXES"
             )
             DS_WriteLog "I" "Install $Product" $LogFile
@@ -4023,6 +4408,7 @@ If ($download -eq $False) {
                 "`"$InstallMSI`""
                 "/qn"
                 "/L*V $KeePassLog"
+                "/silent"
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
@@ -4059,7 +4445,8 @@ If ($download -eq $False) {
         Write-Host "Current Version: $MSDotNetFrameworkV"
         If ($MSDotNetFrameworkV -ne $Version) {
             $Options = @(
-                "/q"
+                "/install"
+                "/quiet"
                 "/norestart"
             )
             DS_WriteLog "I" "Install $Product" $LogFile
@@ -4100,6 +4487,17 @@ If ($download -eq $False) {
         Write-Host "Current Version: $MS365AppsV"
         If ($MS365AppsV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
+            # Download Apps 365 install files
+            If (!(Test-Path -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Office\Data\$Version")) {
+                Write-Host "Starting download of $Product install files"
+                $DApps365 = @(
+                    "/download install.xml"
+                )
+                set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
+                Start-Process ".\$MS365AppsInstaller" -ArgumentList $DApps365 -wait -NoNewWindow
+                set-location $PSScriptRoot
+                Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
+            }
             # MS365Apps Uninstallation
             $Options = @(
                 "/configure remove.xml"
@@ -4378,6 +4776,17 @@ If ($download -eq $False) {
         If ($MSOffice2019V -ne $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
+            # Download MS Office 2019 install files
+            If (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
+                Write-Host "Starting download of $Product install files"
+                $DOffice2019 = @(
+                    "/download install.xml"
+                )
+                set-location $PSScriptRoot\$Product
+                Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
+                set-location $PSScriptRoot
+                Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
+            }
             # MS Office 2019 Uninstallation
             $Options = @(
                 "/configure remove.xml"
@@ -4428,6 +4837,9 @@ If ($download -eq $False) {
         If (!$MSOneDriveV) {
             $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
         }
+        If (!$MSOneDriveV) {
+            $MSOneDriveV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+        }
         $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".exe"
         $OneDriveProcess = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
@@ -4436,10 +4848,18 @@ If ($download -eq $False) {
         If ($MSOneDriveV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
-            $Options = @(
-                "/ALLUSERS"
-                "/SILENT"
-            )
+            If ($Machine -eq '0') {
+                $Options = @(
+                    "/ALLUSERS=1"
+                    "/ALLUSER=1"
+                    "/SILENT"
+                )
+            }
+            If ($Machine -eq '1') {
+                $Options = @(
+                    "/SILENT"
+                )
+            }
             Try {
                 Write-Host "Starting install of $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear $Version"
                 $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
@@ -4548,104 +4968,159 @@ If ($download -eq $False) {
 
     #// Mark: Install Microsoft Teams
     If ($MSTeams -eq 1) {
-        $Product = "Microsoft Teams"
-        # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
-        $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
-        $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
-        $TeamsLog = "$LogTemp\MSTeams.log"
-        $InstallMSI = "$PSScriptRoot\$Product\$TeamsInstaller"
-        If ($Teams) {$Teams = $Teams.Insert(5,'0')}
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $Teams"
-        If ($Teams -ne $Version) {
-            DS_WriteLog "I" "Install $Product" $LogFile
-            Write-Host -ForegroundColor Green "Update available"
-            #Uninstalling MS Teams
-            If ($Teams) {
-                Write-Host "Uninstall $Product"
-                DS_WriteLog "I" "Uninstall $Product" $LogFile
+        If ($Machine -eq '0') {
+            $Product = "Microsoft Teams Machine Based"
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
+            $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
+            $TeamsLog = "$LogTemp\MSTeams.log"
+            $InstallMSI = "$PSScriptRoot\$Product\$TeamsInstaller"
+            If ($Teams) {$Teams = $Teams.Insert(5,'0')}
+            Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $Teams"
+            If ($Teams -ne $Version) {
+                DS_WriteLog "I" "Install $Product" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                #Uninstalling MS Teams
+                If ($Teams) {
+                    Write-Host "Uninstall $Product"
+                    DS_WriteLog "I" "Uninstall $Product" $LogFile
+                    Try {
+                        $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                        $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
+                        Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
+                        Start-Sleep 20
+                        Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
+                        Remove-Item $TeamsLog
+                        Write-Host -ForegroundColor Green "Uninstall $Product finished!" -Verbose
+                        DS_WriteLog "I" "Uninstall $Product finished!" $LogFile
+                    } Catch {
+                        Write-Host -ForegroundColor Red "Error uninstalling $Product (Error: $($Error[0]))"
+                        DS_WriteLog "E" "Error uninstalling $Product (Error: $($Error[0]))" $LogFile       
+                    }
+                }
+                DS_WriteLog "-" "" $LogFile
+                #MS Teams Installation
+                $Arguments = @(
+                    "/i"
+                    "`"$InstallMSI`""
+                    "REBOOT=ReallySuppress"
+                    "ALLUSER=1"
+                    "ALLUSERS=1"
+                    "OPTIONS='noAutoStart=true'"
+                    "/qn"
+                    "/L*V $TeamsLog"
+                )
+                #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
+                If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
+                    Write-Host "Customize System for $Product Machine-Based Install"
+                    If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
+                    New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
+                    Write-Host -ForegroundColor Green "Customize System for $Product Machine-Based Install finished!"
+                }
                 Try {
-                    $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
-                    $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
-                    Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
-                    Start-Sleep 20
+                    Write-Host "Starting install of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 5
                     Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                     Remove-Item $TeamsLog
-                    Write-Host -ForegroundColor Green "Uninstall $Product finished!" -Verbose
-                    DS_WriteLog "I" "Uninstall $Product finished!" $LogFile
-                } Catch {
-                    Write-Host -ForegroundColor Red "Error uninstalling $Product (Error: $($Error[0]))"
-                    DS_WriteLog "E" "Error uninstalling $Product (Error: $($Error[0]))" $LogFile       
-                }
-            }
-            DS_WriteLog "-" "" $LogFile
-            #MS Teams Installation
-            $Arguments = @(
-                "/i"
-                "`"$InstallMSI`""
-                "REBOOT=ReallySuppress"
-                "ALLUSER=1"
-                "ALLUSERS=1"
-                "OPTIONS='noAutoStart=true'"
-                "/qn"
-                "/L*V $TeamsLog"
-            )
-            #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
-            If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
-                Write-Host "Customize System for $Product Machine-Based Install"
-                If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
-                New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
-                Write-Host -ForegroundColor Green "Customize System for $Product Machine-Based Install finished!"
-            }
-            Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 5
-                Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $TeamsLog
-                #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
-                If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") {
-                    Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
-                }
-            } Catch {
-                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
-            }
-            Try {
-                Write-Host "Customize $Product"
-                reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
-                If ($MSTeamsNoAutoStart -eq 1) {
-                    #Prevents MS Teams from starting at logon, better do this with WEM or similar
-                    Write-Host "Customize $Product Autorun"
-                    If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
-                        If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
-                            Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
-                        }
+                    #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
+                    If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") {
+                        Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
                     }
-                    Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
+                } Catch {
+                    DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
-                Write-Host "Register $Product Add-In for Outlook"
-                # Register Teams add-in for Outlook - https://microsoftteams.uservoice.com/forums/555103-public/suggestions/38846044-fix-the-teams-meeting-addin-for-outlook
-                $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
-                $appX64DLL = $appDLLs[0]
-                $appX86DLL = $appDLLs[1]
-                Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`""
-                Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`""
-                Write-Host -ForegroundColor Green "Register $Product Add-In for Outlook finished!"
-                Write-Host -ForegroundColor Green "Customize $Product finished!"
-            } Catch {
-                Write-Host -ForegroundColor Red "Error when customizing $Product (Error: $($Error[0]))"
-                DS_WriteLog "E" "Error when customizing $Product (Error: $($Error[0]))" $LogFile
+                Try {
+                    Write-Host "Customize $Product"
+                    reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
+                    If ($MSTeamsNoAutoStart -eq 1) {
+                        #Prevents MS Teams from starting at logon, better do this with WEM or similar
+                        Write-Host "Customize $Product Autorun"
+                        If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
+                            If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                            }
+                        }
+                        Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
+                    }
+                    Write-Host "Register $Product Add-In for Outlook"
+                    # Register Teams add-in for Outlook - https://microsoftteams.uservoice.com/forums/555103-public/suggestions/38846044-fix-the-teams-meeting-addin-for-outlook
+                    $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
+                    $appX64DLL = $appDLLs[0]
+                    $appX86DLL = $appDLLs[1]
+                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`""
+                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`""
+                    Write-Host -ForegroundColor Green "Register $Product Add-In for Outlook finished!"
+                    Write-Host -ForegroundColor Green "Customize $Product finished!"
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error when customizing $Product (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error when customizing $Product (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
             }
-            DS_WriteLog "-" "" $LogFile
-            Write-Output ""
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
         }
-        # Stop, if no new version is available
-        Else {
-            Write-Host -ForegroundColor Cyan "No update available for $Product"
-            Write-Output ""
+        If ($Machine -eq '1') {
+            $Product = "Microsoft Teams User Based"
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion
+            $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".exe"
+            $TeamsProcess = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
+            Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $Teams"
+            If ($Teams -ne $Version) {
+                DS_WriteLog "I" "Install $Product" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                $Options = @(
+                    "/s"
+                )
+                Try {
+                    Write-Host "Starting install of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                    $null = Start-Process -FilePath "$PSScriptRoot\$Product\$TeamsInstaller" -ArgumentList $Options -PassThru -NoNewWindow
+                    while (Get-Process -Name $TeamsProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    If (Test-Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk") {
+                        Remove-Item -Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk" -Force
+                    }
+                } Catch {
+                    DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+                }
+                Try {
+                    Write-Host "Customize $Product"
+                    If ($MSTeamsNoAutoStart -eq 1) {
+                        #Prevents MS Teams from starting at logon, better do this with WEM or similar
+                        Write-Host "Customize $Product Autorun"
+                        If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
+                            If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                            }
+                        }
+                        Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
+                    }
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error when customizing $Product (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error when customizing $Product (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
         }
     }
 
@@ -4705,7 +5180,7 @@ If ($download -eq $False) {
     If ($MSVisualStudioCode -eq 1) {
         $Product = "Microsoft Visual Studio Code"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
         If (!$MSVisualStudioCodeV) {
@@ -4714,25 +5189,25 @@ If ($download -eq $False) {
         If (!$MSVisualStudioCodeV) {
             $MSVisualStudioCodeV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
         }
-        $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear" + "." + "exe"
-        $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$ArchitectureClear"
-        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear"
+        $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "exe"
+        $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSVisualStudioCodeV"
         If ($MSVisualStudioCodeV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
-            DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear" $LogFile
             $Options = @(
                 "/VERYSILENT"
                 "/MERGETASKS=!runcode"
             )
             Try {
-                Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear $Version"
                 $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
                 while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -5024,8 +5499,10 @@ If ($download -eq $False) {
         }
         $PuTTYInstaller = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$PuTTYInstaller"
-        $PuTTYV = $PuTTYV.Split("\.",3)
-        $PuTTYV = $PuTTYV[0] + "." + $PuTTYV[1]
+        If ($PuTTYV) {
+            $PuTTYV = $PuTTYV.Split("\.",3)
+            $PuTTYV = $PuTTYV[0] + "." + $PuTTYV[1]
+        }
         Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $PuTTYV"
@@ -5036,8 +5513,6 @@ If ($download -eq $False) {
                 "/i"
                 "`"$InstallMSI`""
                 "/qn"
-                "INSTALLLEVEL=3"
-                "UPDATE_NOTIFIER=0"
                 "/L*V $PuTTYLog"
             )
             Try {
@@ -5046,6 +5521,8 @@ If ($download -eq $False) {
                 Start-Sleep 25
                 Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $PuTTYLog
+                If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY.lnk" -Force}
+                If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk" -Force}
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -5253,6 +5730,7 @@ If ($download -eq $False) {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\Teamviewer.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Teamviewer.lnk" -Force}
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -5470,38 +5948,37 @@ If ($download -eq $False) {
         }
     }
 
-    #// Mark: Install Zoom VDI Installer
-    If ($Zoom -eq 1) {
-        $Product = "Zoom VDI"
+    #// Mark: Install Wireshark
+    If ($Wireshark -eq 1) {
+        $Product = "Wireshark"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion
-        If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
-        $ZoomLog = "$LogTemp\Zoom.log"
-        $ZoomInstaller = "ZoomInstallerVDI" + ".msi"
-        $InstallMSI = "$PSScriptRoot\$Product\$ZoomInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product"
+        $WiresharkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion
+        If (!$WiresharkV) {
+            $WiresharkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion
+        }
+        $WiresharkInstaller = "Wireshark-" + "$ArchitectureClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $ZoomV"
-        If ($ZoomV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+        Write-Host "Current Version: $WiresharkV"
+        If ($WiresharkV -ne $Version) {
+            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
-            $Arguments = @(
-                "/i"
-                "`"$InstallMSI`""
-                "/qn"
-                "/norestart"
-                "/L*V $ZoomLog"
+            $Options = @(
+                "/S"
+                "/desktopicon=no"
+                "/quicklaunchicon=no"
             )
             Try {
-                Write-Host "Starting install of $Product $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
-                Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $ZoomLog
-                If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force}
+                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$WiresharkInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($inst) {
+                    Wait-Process -InputObject $inst
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
             } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -5511,6 +5988,94 @@ If ($download -eq $False) {
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
+        }
+    }
+
+    #// Mark: Install Zoom
+    If ($Zoom -eq 1) {
+        If ($Machine -eq '0') {
+            $Product = "Zoom VDI"
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion
+            If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
+            $ZoomLog = "$LogTemp\Zoom.log"
+            $ZoomInstaller = "ZoomInstaller" + ".msi"
+            $InstallMSI = "$PSScriptRoot\$Product\$ZoomInstaller"
+            Write-Host -ForegroundColor Magenta "Install $Product"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $ZoomV"
+            If ($ZoomV -ne $Version) {
+                DS_WriteLog "I" "Installing $Product" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                $Arguments = @(
+                    "/i"
+                    "`"$InstallMSI`""
+                    "/qn"
+                    "/norestart"
+                    "/L*V $ZoomLog"
+                )
+                Try {
+                    Write-Host "Starting install of $Product $Version"
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $ZoomLog
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force}
+                } Catch {
+                    DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
+        }
+        If ($Machine -eq '1') {
+            $Product = "Zoom"
+            # Check, if a new version is available
+            $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+            $Version = Get-Content -Path "$VersionPath"
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom*"}).DisplayVersion
+            If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
+            $ZoomLog = "$LogTemp\Zoom.log"
+            $ZoomInstaller = "ZoomInstaller" + ".msi"
+            $InstallMSI = "$PSScriptRoot\$Product\$ZoomInstaller"
+            Write-Host -ForegroundColor Magenta "Install $Product"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version: $ZoomV"
+            If ($ZoomV -ne $Version) {
+                DS_WriteLog "I" "Installing $Product" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                $Arguments = @(
+                    "/i"
+                    "`"$InstallMSI`""
+                    "/qn"
+                    "/norestart"
+                    "/L*V $ZoomLog"
+                )
+                Try {
+                    Write-Host "Starting install of $Product $Version"
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $ZoomLog
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom.lnk" -Force}
+                } Catch {
+                    DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
         }
     }
     If ($Zoom -eq 1) {
