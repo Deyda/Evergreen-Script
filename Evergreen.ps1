@@ -73,7 +73,7 @@ Only install the software packages in list Mode (-list).
 
 .PARAMETER file
 
-Path to file for software selection in list Mode.
+Path to GUI file (LastSettings.txt) for software selection in list Mode.
 
 .EXAMPLE
 
