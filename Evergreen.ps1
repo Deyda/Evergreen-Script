@@ -4679,9 +4679,9 @@ If ($download -eq $False) {
         $Product = "Microsoft 365 Apps"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
-        $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+        $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
         If (!$MS365AppsV) {
-            $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion
+            $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
         }
         $MS365AppsInstaller = "setup_" + "$MS365AppsChannelClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $MS365AppsChannelClear"
@@ -4791,10 +4791,10 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+        $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
         $EdgeLog = "$LogTemp\MSEdge.log"
         If (!$Edge) {
-            $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion
+            $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
         }
         $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$EdgeInstaller"
