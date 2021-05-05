@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.45
+  Version:          1.46
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -58,6 +58,7 @@ the script checks the version number and will update the package.
   2021-05-01        Adding the new parameter file to extend the parameter execution with a possibility of software selection. / Add auto update for parameter start (-list) with -file parameter / Add Machine Type Selection
   2021-05-02        Add Microsoft Teams User Based Download and Install / Add Visual Studio Code Per User Installer / Connect the Selection Machine Type Physical to Microsoft Teams User Based, Slack Per User and Visual Studio Code Per User
   2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
+  2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
 
 .PARAMETER list
 
@@ -534,7 +535,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.45"
+$eVersion = "1.46"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -716,6 +717,7 @@ $inputXML = @"
         <Image x:Name="Image_Logo" Height="100" Margin="472,16,24,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
         <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
         <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
@@ -755,12 +757,12 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1" />
         <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="184,193,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="191,193,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
             <ListBoxItem Content="Current Release"/>
             <ListBoxItem Content="Long Term Service Release"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="184,214,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="191,214,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Client"/>
             <ListBoxItem Content="Host"/>
             <ListBoxItem Content="Console"/>
@@ -775,34 +777,39 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,339,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="184,374,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="191,374,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="LTS (Long Term Support)"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="184,395,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="191,395,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current (Preview)"/>
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="Monthly Enterprise"/>
             <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
             <ListBoxItem Content="Semi-Annual Enterprise"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="184,416,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="191,416,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Insider"/>
+            <ListBoxItem Content="Stable"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="191,436,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Developer"/>
             <ListBoxItem Content="Beta"/>
             <ListBoxItem Content="Stable"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="187,472,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="191,492,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Insider Ring"/>
             <ListBoxItem Content="Production Ring"/>
             <ListBoxItem Content="Enterprise Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="187,493,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="191,513,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Stable"/>
             <ListBoxItem Content="LTS (Long Term Support)"/>
         </ComboBox>
@@ -836,11 +843,11 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="153,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="153,278,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="153,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-		<ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="340,293,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-			<ListBoxItem Content="Pre-Release"/>
-			<ListBoxItem Content="Stable"/>
-		</ComboBox>
-		<CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="153,318,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="340,293,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+            <ListBoxItem Content="Pre-Release"/>
+            <ListBoxItem Content="Stable"/>
+        </ComboBox>
+        <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="153,318,0,0" VerticalAlignment="Top" Grid.Column="2" />
         <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="340,314,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Free"/>
             <ListBoxItem Content="Enterprise"/>
@@ -863,7 +870,7 @@ $inputXML = @"
             <ListBoxItem Content="Client + Citrix Plugin"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="153,533,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-		<Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,553,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,553,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
     </Grid>
 </Window>
 "@
@@ -914,6 +921,7 @@ $inputXML = @"
         $WPFBox_Machine.SelectedIndex = $LastSetting[60] -as [int]
         $WPFBox_MSVisualStudio.SelectedIndex = $LastSetting[61] -as [int]
         $WPFBox_Putty.SelectedIndex = $LastSetting[62] -as [int]
+        $WPFBox_MSAzureDataStudio.SelectedIndex = $LastSetting[64] -as [int]
         Switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -1049,6 +1057,9 @@ $inputXML = @"
         Switch ($LastSetting[59]) {
             1 { $WPFCheckbox_TeamViewer.IsChecked = "True"}
         }
+        Switch ($LastSetting[63]) {
+            1 { $WPFCheckbox_MSAzureDataStudio.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -1096,6 +1107,7 @@ $inputXML = @"
         $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -1141,6 +1153,7 @@ $inputXML = @"
         $WPFCheckbox_GIMP.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -1181,6 +1194,8 @@ $inputXML = @"
         Else {$Script:mRemoteNG = 0}
         If ($WPFCheckbox_MS365Apps.ischecked -eq $true) {$Script:MS365Apps = 1}
         Else {$Script:MS365Apps = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
@@ -1235,6 +1250,8 @@ $inputXML = @"
         Else {$Script:TeamViewer = 0}
         If ($WPFCheckbox_Wireshark.ischecked -eq $true) {$Script:Wireshark = 1}
         Else {$Script:Wireshark = 0}
+        If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
+        Else {$Script:MSAzureDataStudio = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1253,8 +1270,9 @@ $inputXML = @"
         $Script:MSVisualStudioCodeChannel = $WPFBox_MSVisualStudioCode.SelectedIndex
         $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
+        $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -1266,6 +1284,126 @@ $inputXML = @"
         Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
         $Form.Close()
         Break
+    })
+
+    # Button Save (AddScript)
+    $WPFButton_Save.Add_Click({
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
+        Else {$Script:install = $true}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
+        Else {$Script:download = $true}
+        If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
+        Else {$Script:7ZIP = 0}
+        If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
+        Else {$Script:AdobeProDC = 0}
+        If ($WPFCheckbox_AdobeReaderDC.IsChecked -eq $true) {$Script:AdobeReaderDC = 1}
+        Else {$Script:AdobeReaderDC = 0}
+        If ($WPFCheckbox_BISF.IsChecked -eq $true) {$Script:BISF = 1}
+        Else {$Script:BISF = 0}
+        If ($WPFCheckbox_CitrixHypervisorTools.IsChecked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
+        Else {$Script:Citrix_Hypervisor_Tools = 0}
+        If ($WPFCheckbox_CitrixWorkspaceApp.IsChecked -eq $true) {$Script:Citrix_WorkspaceApp = 1}
+        Else {$Script:Citrix_WorkspaceApp = 0}
+        If ($WPFCheckbox_Filezilla.IsChecked -eq $true) {$Script:Filezilla = 1}
+        Else {$Script:Filezilla = 0}
+        If ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
+        Else {$Script:Firefox = 0}
+        If ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:MSFSLogix = 1}
+        Else {$Script:MSFSLogix = 0}
+        If ($WPFCheckbox_FoxitReader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
+        Else {$Script:Foxit_Reader = 0}
+        If ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
+        Else {$Script:GoogleChrome = 0}
+        If ($WPFCheckbox_Greenshot.ischecked -eq $true) {$Script:Greenshot = 1}
+        Else {$Script:Greenshot = 0}
+        If ($WPFCheckbox_IrfanView.ischecked -eq $true) {$Script:IrfanView = 1}
+        Else {$Script:IrfanView = 0}
+        If ($WPFCheckbox_KeePass.ischecked -eq $true) {$Script:KeePass = 1}
+        Else {$Script:KeePass = 0}
+        If ($WPFCheckbox_mRemoteNG.ischecked -eq $true) {$Script:mRemoteNG = 1}
+        Else {$Script:mRemoteNG = 0}
+        If ($WPFCheckbox_MS365Apps.ischecked -eq $true) {$Script:MS365Apps = 1}
+        Else {$Script:MS365Apps = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
+        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
+        Else {$Script:MSOneDrive = 0}
+        If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
+        Else {$Script:MSTeams = 0}
+        If ($WPFCheckbox_NotePadPlusPlus.ischecked -eq $true) {$Script:NotePadPlusPlus = 1}
+        Else {$Script:NotePadPlusPlus = 0}
+        If ($WPFCheckbox_OpenJDK.ischecked -eq $true) {$Script:OpenJDK = 1}
+        Else {$Script:OpenJDK = 0}
+        If ($WPFCheckbox_OracleJava8.ischecked -eq $true) {$Script:OracleJava8 = 1}
+        Else {$Script:OracleJava8 = 0}
+        If ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSize = 1}
+        Else {$Script:TreeSize = 0}
+        If ($WPFCheckbox_VLCPlayer.ischecked -eq $true) {$Script:VLCPlayer = 1}
+        Else {$Script:VLCPlayer = 0}
+        If ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
+        Else {$Script:VMWareTools = 0}
+        If ($WPFCheckbox_WinSCP.ischecked -eq $true) {$Script:WinSCP = 1}
+        Else {$Script:WinSCP = 0}        
+        If ($WPFCheckbox_MSTeams_No_AutoStart.ischecked -eq $true) {$Script:MSTeamsNoAutoStart = 1}
+        Else {$Script:MSTeamsNoAutoStart = 0}
+        If ($WPFCheckbox_deviceTRUST.ischecked -eq $true) {$Script:deviceTRUST = 1}
+        Else {$Script:deviceTRUST = 0}
+        If ($WPFCheckbox_MSDotNetFramework.ischecked -eq $true) {$Script:MSDotNetFramework = 1}
+        Else {$Script:MSDotNetFramework = 0}
+        If ($WPFCheckbox_MSPowerShell.ischecked -eq $true) {$Script:MSPowerShell = 1}
+        Else {$Script:MSPowerShell = 0}
+        If ($WPFCheckbox_RemoteDesktopManager.ischecked -eq $true) {$Script:RemoteDesktopManager = 1}
+        Else {$Script:RemoteDesktopManager = 0}
+        If ($WPFCheckbox_Slack.ischecked -eq $true) {$Script:Slack = 1}
+        Else {$Script:Slack = 0}
+        If ($WPFCheckbox_ShareX.ischecked -eq $true) {$Script:ShareX = 1}
+        Else {$Script:ShareX = 0}
+        If ($WPFCheckbox_Zoom.ischecked -eq $true) {$Script:Zoom = 1}
+        Else {$Script:Zoom = 0}
+        If ($WPFCheckbox_GIMP.ischecked -eq $true) {$Script:GIMP = 1}
+        Else {$Script:GIMP = 0}
+        If ($WPFCheckbox_MSPowerToys.ischecked -eq $true) {$Script:MSPowerToys = 1}
+        Else {$Script:MSPowerToys = 0}
+        If ($WPFCheckbox_MSVisualStudio.ischecked -eq $true) {$Script:MSVisualStudio = 1}
+        Else {$Script:MSVisualStudio = 0}
+        If ($WPFCheckbox_MSVisualStudioCode.ischecked -eq $true) {$Script:MSVisualStudioCode = 1}
+        Else {$Script:MSVisualStudioCode = 0}
+        If ($WPFCheckbox_PaintDotNet.ischecked -eq $true) {$Script:PaintDotNet = 1}
+        Else {$Script:PaintDotNet = 0}
+        If ($WPFCheckbox_Putty.ischecked -eq $true) {$Script:Putty = 1}
+        Else {$Script:Putty = 0}
+        If ($WPFCheckbox_TeamViewer.ischecked -eq $true) {$Script:TeamViewer = 1}
+        Else {$Script:TeamViewer = 0}
+        If ($WPFCheckbox_Wireshark.ischecked -eq $true) {$Script:Wireshark = 1}
+        Else {$Script:Wireshark = 0}
+        If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
+        Else {$Script:MSAzureDataStudio = 0}
+        $Script:Language = $WPFBox_Language.SelectedIndex
+        $Script:Architecture = $WPFBox_Architecture.SelectedIndex
+        $Script:Machine = $WPFBox_Machine.SelectedIndex
+        $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
+        $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
+        $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
+        $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
+        $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
+        $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        $Script:MSDotNetFrameworkChannel = $WPFBox_MSDotNetFramework.SelectedIndex
+        $Script:MSPowerShellRelease = $WPFBox_MSPowerShell.SelectedIndex
+        $Script:RemoteDesktopManagerType = $WPFBox_RemoteDesktopManager.SelectedIndex
+        $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
+        $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
+        $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
+        $Script:MSVisualStudioCodeChannel = $WPFBox_MSVisualStudioCode.SelectedIndex
+        $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
+        $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
+        $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
+        # Write LastSettings.txt to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        Write-Host "Save Settings"
     })
 
     # Image Logo
@@ -1310,6 +1448,7 @@ If ($list -eq $True) {
             $Machine = $FileSetting[60] -as [int]
             $MSVisualStudioEdition= $FileSetting[61] -as [int]
             $PuttyChannel = $FileSetting[62] -as [int]
+            $MSAzureDataStudioChannel = $FileSetting[64] -as [int]
             $7ZIP = $FileSetting[8] -as [int]
             $AdobeProDC = $FileSetting[9] -as [int]
             $AdobeReaderDC = $FileSetting[10] -as [int]
@@ -1353,6 +1492,7 @@ If ($list -eq $True) {
             $PaintDotNet = $FileSetting[57] -as [int]
             $Putty = $FileSetting[58] -as [int]
             $TeamViewer = $FileSetting[59] -as [int]
+            $MSAzureDataStudio = $FileSetting[63] -as [int]
         }
     }
     Else {
@@ -1411,6 +1551,11 @@ If ($list -eq $True) {
         # 3 = Semi-Annual Enterprise (Preview) Channel
         # 4 = Semi-Annual Enterprise Channel
         $MS365AppsChannel = 4
+
+        # Microsoft Azure Data Studio
+        # 0 = Insider Channel
+        # 1 = Stable Channel
+        $MSAzureDataStudioChannel = 1
 
         # Microsoft Edge
         # 0 = Developer Channel
@@ -1497,6 +1642,7 @@ If ($list -eq $True) {
         $mRemoteNG = 0
         $MSDotNetFramework = 0
         $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+        $MSAzureDataStudio = 0
         $MSEdge = 0
         $MSFSLogix = 0
         $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
@@ -1526,7 +1672,7 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel -ErrorAction SilentlyContinue
     gui_mode
 }
 
@@ -1629,6 +1775,27 @@ Switch ($Language) {
     12 { $MS365AppsLanguageClear = 'ru-RU'}
     13 { $MS365AppsLanguageClear = 'es-ES'}
     14 { $MS365AppsLanguageClear = 'sv-SE'}
+}
+
+Switch ($MSAzureDataStudioChannel) {
+    0 { $MSAzureDataStudioChannelClear = 'Insider'}
+    1 { $MSAzureDataStudioChannelClear = 'Stable'}
+}
+
+If ($Machine -eq 0) {
+    Switch ($Architecture) {
+        0 { $MSAzureDataStudioPlatformClear = 'win32-x64'}
+        1 { $MSAzureDataStudioPlatformClear = 'win32'}
+    }
+    $MSAzureDataStudioModeClear = 'Per Machine'
+}
+
+If ($Machine -eq 1) {
+    Switch ($Architecture) {
+        0 { $MSAzureDataStudioPlatformClear = 'win32-x64-user'}
+        1 { $MSAzureDataStudioPlatformClear = 'win32-user'}
+    }
+    $MSAzureDataStudioModeClear = 'Per User'
 }
 
 Switch ($MSEdgeChannel) {
@@ -2442,6 +2609,41 @@ If ($install -eq $False) {
                 Stop-Transcript | Out-Null
                 Write-Output ""
             }
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft Azure Data Studio
+    If ($MSAzureDataStudio -eq 1) {
+        $Product = "Microsoft Azure Data Studio"
+        $PackageName = "AzureDataStudio-Setup-"
+        $MSAzureDataStudioD = Get-EvergreenApp -Name microsoftazuredatastudio | Where-Object { $_.Channel -eq "$MSAzureDataStudioChannelClear" -and $_.Platform -eq "$MSAzureDataStudioPlatformClear"}
+        $Version = $MSAzureDataStudioD.Version
+        $URL = $MSAzureDataStudioD.uri
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If (!($CurrentVersion -eq $Version)) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -4526,6 +4728,51 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Microsoft Azure Data Studio
+    If ($MSAzureDataStudio -eq 1) {
+        $Product = "Microsoft Azure Data Studio"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+        If (!$MSAzureDataStudioV) {
+            $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+        }
+        If (!$MSAzureDataStudioV) {
+            $MSAzureDataStudioV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+        }
+        $MSAzureDataStudioInstaller = "AzureDataStudio-Setup-" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + "." + "exe"
+        $MSAzureDataStudioProcess = "AzureDataStudio-Setup-" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $MSAzureDataStudioV"
+        If ($MSAzureDataStudioV -ne $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            DS_WriteLog "I" "Install $Product $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear" $LogFile
+            $Options = @(
+                "/VERYSILENT"
+                "/NORESTART"
+                "/MERGETASKS=!runcode"
+            )
+            Try {
+                Write-Host "Starting install of $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear $Version"
+                $null = Start-Process "$PSScriptRoot\$Product\$MSAzureDataStudioInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                while (Get-Process -Name $MSAzureDataStudioProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
