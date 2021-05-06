@@ -59,6 +59,7 @@ the script checks the version number and will update the package.
   2021-05-02        Add Microsoft Teams User Based Download and Install / Add Visual Studio Code Per User Installer / Connect the Selection Machine Type Physical to Microsoft Teams User Based, Slack Per User and Visual Studio Code Per User
   2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
+  2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install
 
 .PARAMETER list
 
@@ -4221,6 +4222,7 @@ If ($download -eq $False) {
         }
         If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
         $deviceTRUSTLog = "$LogTemp\deviceTRUST.log"
+        $deviceTRUSTClientLog = "$LogTemp\deviceTRUST.txt"
         $deviceTRUSTClientInstaller = "dtclient-release" + ".exe"
         $deviceTRUSTHostInstaller = "dthost-" + "$ArchitectureClear" + "-release" + ".msi"
         $deviceTRUSTConsoleInstaller = "dtconsole-" + "$ArchitectureClear" + "-release" + ".msi"
@@ -4244,9 +4246,13 @@ If ($download -eq $False) {
                     $Options = @(
                         "/INSTALL"
                         "/QUIET"
+                        "/NORESTART"
+                        "/LOG $deviceTRUSTClientLog"
                     )
                     Write-Host "Starting install of $Product Client $Version"
                     Start-Process -FilePath "$PSScriptRoot\$Product\$deviceTRUSTClientInstaller" -ArgumentList $Options -PassThru -Wait -ErrorAction Stop | Out-Null
+                    Get-Content $deviceTRUSTClientLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $deviceTRUSTClientLog
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 } Catch {
                     Write-Host -ForegroundColor Red "Error installing $Product Client (Error: $($Error[0]))"
