@@ -59,7 +59,7 @@ the script checks the version number and will update the package.
   2021-05-02        Add Microsoft Teams User Based Download and Install / Add Visual Studio Code Per User Installer / Connect the Selection Machine Type Physical to Microsoft Teams User Based, Slack Per User and Visual Studio Code Per User
   2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
-  2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop
+  2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
 
 .PARAMETER list
 
@@ -1683,7 +1683,7 @@ Else {
         $Shortcut.WorkingDirectory = "C:\Windows\System32\WindowsPowerShell\v1.0"
         If (!(Test-Path -Path "$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico")) {Invoke-WebRequest -Uri https://github.com/Deyda/Evergreen-Script/blob/main/shortcut/EvergreenLeafDeyda.ico -OutFile ("$PSScriptRoot\shortcut\" + "EvergreenLeafDeyda.ico")}
         $shortcut.IconLocation="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
-        $Shortcut.Arguments = '-file "' + "$PSScriptRoot" + '\Evergreen.ps1"'
+        $Shortcut.Arguments = '-noexit -ExecutionPolicy Bypass -file "' + "$PSScriptRoot" + '\Evergreen.ps1"'
         $Shortcut.Save()
         $Admin = [System.IO.File]::ReadAllBytes("$ShortcutFile")
         $Admin[0x15] = $Admin[0x15] -bor 0x20
