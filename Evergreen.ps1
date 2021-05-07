@@ -1681,7 +1681,7 @@ Else {
         $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
         $Shortcut.TargetPath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
         $Shortcut.WorkingDirectory = "C:\Windows\System32\WindowsPowerShell\v1.0"
-        If (!(Test-Path -Path "$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico")) {Invoke-WebRequest -Uri https://github.com/Deyda/Evergreen-Script/blob/main/shortcut/EvergreenLeafDeyda.ico -OutFile ("$PSScriptRoot\shortcut\" + "EvergreenLeafDeyda.ico")}
+        If (!(Test-Path -Path "$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico")) {Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/shortcut/EvergreenLeafDeyda.ico -OutFile ("$PSScriptRoot\shortcut\" + "EvergreenLeafDeyda.ico")}
         $shortcut.IconLocation="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
         $Shortcut.Arguments = '-noexit -ExecutionPolicy Bypass -file "' + "$PSScriptRoot" + '\Evergreen.ps1"'
         $Shortcut.Save()
