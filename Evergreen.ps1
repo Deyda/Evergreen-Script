@@ -60,6 +60,7 @@ the script checks the version number and will update the package.
   2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
   2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
+  2021-05-07        Version formatting customized / Change Oracle Java Version format
 
 .PARAMETER list
 
@@ -1950,7 +1951,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -1984,7 +1985,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2019,7 +2020,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $AdobeArchitectureClear $AdobeLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2053,7 +2054,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2088,7 +2089,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
@@ -2132,7 +2133,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
@@ -2170,7 +2171,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2226,7 +2227,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2261,7 +2262,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $FoxitReaderLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2295,7 +2296,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2330,7 +2331,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2364,7 +2365,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2399,7 +2400,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2433,7 +2434,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2468,7 +2469,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2611,7 +2612,7 @@ If ($install -eq $False) {
                     $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
                 Write-Host -ForegroundColor Green "Create install.xml for Physical Machine finished!"
             }
-            If (!($CurrentVersion -eq $Version)) {
+            If ($CurrentVersion -lt $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
                 Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
@@ -2646,7 +2647,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2682,7 +2683,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $MSEdgeChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2716,7 +2717,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product\Install")) { New-Item -Path "$PSScriptRoot\$Product\Install" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\Install\" + "$Product $Version.log"
@@ -2872,7 +2873,7 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Green  "Create install.xml for Physical Machine finished!"
             }
         }
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
@@ -2905,7 +2906,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2940,7 +2941,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSPowerShellReleaseClear Release"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2975,7 +2976,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3016,7 +3017,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $CurrentVersion"
-            If (!($CurrentVersion -eq $Version)) {
+            If ($CurrentVersion -lt $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3048,7 +3049,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $CurrentVersion"
-            If (!($CurrentVersion -eq $Version)) {
+            If ($CurrentVersion -lt $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3084,7 +3085,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3119,7 +3120,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3154,7 +3155,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3188,7 +3189,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3223,7 +3224,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3258,7 +3259,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3293,7 +3294,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3327,7 +3328,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3365,7 +3366,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $PuttyChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3404,7 +3405,7 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $CurrentVersion"
-                If (!($CurrentVersion -eq $Version)) {
+                If ($CurrentVersion -lt $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3439,7 +3440,7 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $CurrentVersion"
-                If (!($CurrentVersion -eq $Version)) {
+                If ($CurrentVersion -lt $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3475,7 +3476,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3510,7 +3511,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $SlackArchitectureClear $SlackPlatformClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3544,7 +3545,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3580,7 +3581,7 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $CurrentVersion"
-                If (!($CurrentVersion -eq $Version)) {
+                If ($CurrentVersion -lt $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3612,7 +3613,7 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $CurrentVersion"
-                If (!($CurrentVersion -eq $Version)) {
+                If ($CurrentVersion -lt $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3649,7 +3650,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3684,7 +3685,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3718,7 +3719,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3753,7 +3754,7 @@ If ($install -eq $False) {
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If (!($CurrentVersion -eq $Version)) {
+        If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3791,7 +3792,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $CurrentVersion"
-            If (!($CurrentVersion -eq $Version)) {
+            If ($CurrentVersion -lt $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3823,7 +3824,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $CurrentVersion"
-            If (!($CurrentVersion -eq $Version)) {
+            If ($CurrentVersion -lt $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -3853,7 +3854,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product2" -Verbose
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $CurrentVersion2"
-            If (!($CurrentVersion2 -eq $Version)) {
+            If (!($CurrentVersion2 -lt $Version)) {
                 Write-Host -ForegroundColor Green "Update available"
                 If (!(Test-Path -Path "$PSScriptRoot\$Product2")) {New-Item -Path "$PSScriptRoot\$Product2" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product2\" + "$Product2 $Version.log"
@@ -3906,15 +3907,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+        $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SevenZip) {
-            $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Select-Object -First 1
+            $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $7ZipInstaller = "7-Zip_" + "$ArchitectureClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $SevenZip"
-        If ($SevenZip -ne $Version) {
+        If ($SevenZip -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
@@ -3944,11 +3945,14 @@ If ($download -eq $False) {
         $Product = "Adobe Pro DC"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion
+        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$Adobe) {
+            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Adobe"
-        If ($Adobe -ne $Version) {
+        If ($Adobe -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
@@ -3999,12 +4003,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*" | Sort-Object -Property DisplayVersion | Select-Object -Last 1 }).DisplayVersion
+        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$Adobe) {
+            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $AdobeArchitectureClear $AdobeLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Adobe"
-        If ($Adobe -ne $Version) {
+        If ($Adobe -lt $Version) {
             DS_WriteLog "I" "Installing $Product $AdobeArchitectureClear $AdobeLanguageClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -4059,14 +4066,17 @@ If ($download -eq $False) {
         $Product = "BIS-F"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $BISF = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $BISFV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$BISFV) {
+            $BISFV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         $BISFLog = "$LogTemp\BISF.log"
         $InstallMSI = "$PSScriptRoot\$Product\setup-BIS-F.msi"
         Write-Host -ForegroundColor Magenta "Install $Product"
-        If ($BISF) {$BISF = $BISF -replace ".{6}$"}
+        If ($BISFV) {$BISFV = $BISFV -replace ".{6}$"}
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $BISF"
-        If ($BISF -ne $Version) {
+        Write-Host "Current Version: $BISFV"
+        If ($BISFV -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -4114,18 +4124,18 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+        $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $CitrixHypLog = "$LogTemp\CitrixHypervisor.log"
         $HypToolsInstaller = "managementagent" + "$ArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\Citrix\$Product\$HypToolsInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         If (!$HypTools) {
-            $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion
+            $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($HypTools) {$HypTools = $HypTools.Insert(3,'.0')}
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $HypTools"
-        If ($HypTools -ne $Version) {
+        If ($HypTools -lt $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -4158,12 +4168,15 @@ If ($download -eq $False) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
-        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion
+        $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$WSA) {
+            $WSA = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         $UninstallWSACR = "$PSScriptRoot\Citrix\ReceiverCleanupUtility\ReceiverCleanupUtility.exe"
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $WSA"
-        If ($WSA -ne $Version) {
+        If ($WSA -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # Citrix WSA Uninstallation
@@ -4221,19 +4234,19 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + "_$ArchitectureClear"+ ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
+        $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTClientV) {
-            $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion
+            $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($deviceTRUSTClientV.length -ne "8") {$deviceTRUSTClientV = $deviceTRUSTClientV -replace ".{2}$"}
-        $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
+        $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTHostV) {
-            $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion
+            $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($deviceTRUSTHostV.length -ne "8") {$deviceTRUSTHostV = $deviceTRUSTHostV -replace ".{2}$"}
-        $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
+        $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTConsoleV) {
-            $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion
+            $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
         $deviceTRUSTLog = "$LogTemp\deviceTRUST.log"
@@ -4253,7 +4266,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product Client"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $deviceTRUSTClientV"
-            If ($deviceTRUSTClientV -ne $Version) {
+            If ($deviceTRUSTClientV -lt $Version) {
                 # deviceTRUST Client
                 DS_WriteLog "I" "Installing $Product Client" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
@@ -4286,7 +4299,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product Host"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $deviceTRUSTHostV"
-            If ($deviceTRUSTHostV -ne $Version) {
+            If ($deviceTRUSTHostV -lt $Version) {
                 # deviceTRUST Host
                 DS_WriteLog "I" "Installing $Product Host" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
@@ -4312,7 +4325,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product Console"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $deviceTRUSTConsoleV"
-            If ($deviceTRUSTConsoleV -ne $Version) {
+            If ($deviceTRUSTConsoleV -lt $Version) {
                 # deviceTRUST Console
                 DS_WriteLog "I" "Installing $Product Console" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
@@ -4341,11 +4354,14 @@ If ($download -eq $False) {
         $Product = "Filezilla"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $Filezilla = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion
+        $FilezillaV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$FilezillaV) {
+            $FilezillaV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $Filezilla"
-        If ($Filezilla -ne $Version) {
+        Write-Host "Current Version: $FilezillaV"
+        If ($FilezillaV -lt $Version) {
             $Options = @(
                 "/S"
                 "/user=all"
@@ -4379,12 +4395,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $FReader = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion
+        $FReader = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$FReader) {
+            $FReader = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         $FoxitReaderInstaller = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $FoxitReaderLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $FReader"
-        If ($FReader -ne $Version) {
+        If ($FReader -lt $Version) {
             $Options = @(
                 "/FORCEINSTALL"
                 "/VERYSILENT"
@@ -4426,11 +4445,14 @@ If ($download -eq $False) {
         $Product = "GIMP"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $GIMPV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion
+        $GIMPV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$GIMPV) {
+            $GIMPV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $GIMPV"
-        If ($GIMPV -ne $Version) {
+        If ($GIMPV -lt $Version) {
             $Options = @(
                 "/VERYSILENT"
                 "/NORESTART"
@@ -4465,17 +4487,17 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+        $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $ChromeLog = "$LogTemp\GoogleChrome.log"
         If (!$Chrome) {
-            $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion
+            $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ChromeInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Chrome"
-        If ($Chrome -ne $Version) {
+        If ($Chrome -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -4532,11 +4554,14 @@ If ($download -eq $False) {
         $Product = "Greenshot"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $Greenshot = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion
+        $GreenshotV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$GreenshotV) {
+            $GreenshotV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $Greenshot"
-        If ($Greenshot -ne $Version) {
+        Write-Host "Current Version: $GreenshotV"
+        If ($GreenshotV -lt $Version) {
             $Options = @(
                 "/VERYSILENT"
                 "/NORESTART"
@@ -4572,15 +4597,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
+        $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$IrfanViewV) {
-            $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion
+            $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $IrfanViewInstaller = "IrfanView" + "$ArchitectureClear" +".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $IrfanViewV"
-        If ($IrfanViewV -ne $Version) {
+        If ($IrfanViewV -lt $Version) {
             $Options = @(
                 "/assoc=1"
                 "/group=1"
@@ -4616,14 +4641,17 @@ If ($download -eq $False) {
         $Product = "KeePass"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $KeePassV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion
+        $KeePassV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$KeePassV) {
+            $KeePassV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         If ($KeePassV) {$KeePassV = $KeePassV -replace ".{2}$"}
         $KeePassLog = "$LogTemp\KeePass.log"
         $InstallMSI = "$PSScriptRoot\$Product\KeePass.msi"
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $KeePassV"
-        If ($KeePassV -ne $Version) {
+        If ($KeePassV -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -4658,15 +4686,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
+        $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSDotNetFrameworkV) {
-            $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Select-Object -First 1
+            $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $MSDotNetFrameworkInstaller = "NetFramework-runtime_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSDotNetFrameworkV"
-        If ($MSDotNetFrameworkV -ne $Version) {
+        If ($MSDotNetFrameworkV -lt $Version) {
             $Options = @(
                 "/install"
                 "/quiet"
@@ -4700,15 +4728,15 @@ If ($download -eq $False) {
         $Product = "Microsoft 365 Apps"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
-        $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
+        $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MS365AppsV) {
-            $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
+            $MS365AppsV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365 Apps*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $MS365AppsInstaller = "setup_" + "$MS365AppsChannelClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $MS365AppsChannelClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MS365AppsV"
-        If ($MS365AppsV -ne $Version) {
+        If ($MS365AppsV -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             # Download Apps 365 install files
             If (!(Test-Path -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Office\Data\$Version")) {
@@ -4767,19 +4795,19 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+        $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSAzureDataStudioV) {
-            $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+            $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$MSAzureDataStudioV) {
-            $MSAzureDataStudioV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion
+            $MSAzureDataStudioV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $MSAzureDataStudioInstaller = "AzureDataStudio-Setup-" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + "." + "exe"
         $MSAzureDataStudioProcess = "AzureDataStudio-Setup-" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSAzureDataStudioV"
-        If ($MSAzureDataStudioV -ne $Version) {
+        If ($MSAzureDataStudioV -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear" $LogFile
             $Options = @(
@@ -4812,17 +4840,17 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
+        $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $EdgeLog = "$LogTemp\MSEdge.log"
         If (!$Edge) {
-            $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"} | Sort-Object -Property Version -Descending | Select-Object -First 1).DisplayVersion
+            $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$EdgeInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Edge"
-        If ($Edge -ne $Version) {
+        If ($Edge -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -4901,7 +4929,10 @@ If ($download -eq $False) {
         $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt"
-        $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion
+        $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$MSFSLogixV) {
+            $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}) {
             $UninstallFSL = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).UninstallString.replace("/uninstall","")
         }
@@ -4911,11 +4942,11 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSFSLogixV"
-        If ($MSFSLogixV -ne $Version) {
+        If ($MSFSLogixV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # FSLogix Uninstall
-            If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}) {
+            If ($MSFSLogixV) {
                 Write-Host "Uninstall $Product"
                 DS_WriteLog "I" "Uninstall $Product" $LogFile
                 Try {
@@ -5037,11 +5068,14 @@ If ($download -eq $False) {
         $Product = "Microsoft Office 2019"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion
+        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$MSOffice2019V) {
+            $MSOffice2019V = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSOffice2019V"
-        If ($MSOffice2019V -ne $Version) {
+        If ($MSOffice2019V -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # Download MS Office 2019 install files
@@ -5101,19 +5135,19 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+        $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSOneDriveV) {
-            $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+            $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$MSOneDriveV) {
-            $MSOneDriveV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion
+            $MSOneDriveV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $OneDriveInstaller = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".exe"
         $OneDriveProcess = "OneDriveSetup-" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSOneDriveV"
-        If ($MSOneDriveV -ne $Version) {
+        If ($MSOneDriveV -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
             If ($Machine -eq '0') {
@@ -5155,9 +5189,9 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
+        $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerShellV) {
-            $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion
+            $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($MSPowerShellV) {$MSPowerShellV = $MSPowerShellV -replace ".{2}$"}
         $MSPowerShellLog = "$LogTemp\MSPowerShell.log"
@@ -5166,7 +5200,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSPowerShellReleaseClear Release"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSPowerShellV"
-        If ($MSPowerShellV -ne $Version) {
+        If ($MSPowerShellV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5200,14 +5234,14 @@ If ($download -eq $False) {
         $Product = "Microsoft PowerToys"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion
+        $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerToysV) {
-            $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion
+            $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSPowerToysV"
-        If ($MSPowerToysV -ne $Version) {
+        If ($MSPowerToysV -lt $Version) {
             $Options = @(
                 "--silent"
             )
@@ -5241,7 +5275,10 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion
+            $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If (!$Teams) {
+                $Teams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
             $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
             $TeamsLog = "$LogTemp\MSTeams.log"
             $InstallMSI = "$PSScriptRoot\$Product\$TeamsInstaller"
@@ -5249,7 +5286,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $Teams"
-            If ($Teams -ne $Version) {
+            If ($Teams -lt $Version) {
                 DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 #Uninstalling MS Teams
@@ -5258,6 +5295,9 @@ If ($download -eq $False) {
                     DS_WriteLog "I" "Uninstall $Product" $LogFile
                     Try {
                         $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                        If (!$UninstallTeams) {
+                            $UninstallTeams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                        }
                         $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
                         Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
                         Start-Sleep 20
@@ -5342,13 +5382,16 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion
+            $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If (!$Teams) {
+                $Teams = (Get-ItemProperty HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
             $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".exe"
             $TeamsProcess = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
             Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $Teams"
-            If ($Teams -ne $Version) {
+            If ($Teams -lt $Version) {
                 DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Options = @(
@@ -5397,14 +5440,14 @@ If ($download -eq $False) {
         $Product = "Microsoft Visual Studio 2019"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion
+        $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSVisualStudioV) {
-            $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion
+            $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioEditionClear Edition"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSVisualStudioV"
-        If ($MSVisualStudioV -ne $Version) {
+        If ($MSVisualStudioV -lt $Version) {
             $MSVisualStudioEditionInstall = "Microsoft.VisualStudio.Product." + "$MSVisualStudioEditionClear"
             If ($MSVisualStudioV) {
                 $Options = @(
@@ -5450,19 +5493,19 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+        $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSVisualStudioCodeV) {
-            $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+            $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$MSVisualStudioCodeV) {
-            $MSVisualStudioCodeV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion
+            $MSVisualStudioCodeV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "exe"
         $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSVisualStudioCodeV"
-        If ($MSVisualStudioCodeV -ne $Version) {
+        If ($MSVisualStudioCodeV -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear" $LogFile
             $Options = @(
@@ -5494,17 +5537,17 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $FirefoxV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+        $FirefoxV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $FirefoxLog = "$LogTemp\Firefox.log"
         If (!$FirefoxV) {
-            $FirefoxV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion
+            $FirefoxV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$FirefoxInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $FirefoxV"
-        If ($FirefoxV -ne $Version) {
+        If ($FirefoxV -lt $Version) {
             $Arguments = @(
                 "/i"
                 "`"$InstallMSI`""
@@ -5540,14 +5583,17 @@ If ($download -eq $False) {
         $Product = "mRemoteNG"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $mRemoteNGV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion
+        $mRemoteNGV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$mRemoteNGV) {
+            $mRemoteNGV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
         $mRemoteLog = "$LogTemp\mRemote.log"
         If ($mRemoteNGV) {$mRemoteNGV = $mRemoteNGV -replace ".{6}$"}
         $InstallMSI = "$PSScriptRoot\$Product\mRemoteNG.msi"
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $mRemoteNGV"
-        If ($mRemoteNGV -ne $Version) {
+        If ($mRemoteNGV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5581,15 +5627,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
+        $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Notepad) {
-            $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion
+            $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $NotepadPlusPlusInstaller = "NotePadPlusPlus_" + "$ArchitectureClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Notepad"
-        If ($Notepad -ne $Version) {
+        If ($Notepad -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
@@ -5620,10 +5666,10 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+        $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $openJDKLog = "$LogTemp\OpenJDK.log"
         If (!$OpenJDKV) {
-            $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion
+            $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $OpenJDKInstaller = "OpenJDK" + "$ArchitectureClear" + ".msi"
         If ($Version) {$Version = $Version -replace ".-"}
@@ -5631,7 +5677,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $OpenJDKV"
-        If ($OpenJDKV -ne $Version) {
+        If ($OpenJDKV -lt $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5667,20 +5713,19 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        If ($Version) {$Version = $Version -replace "^.{2}"}
-        If ($Version) {$Version = $Version -replace "\."}
-        If ($Version) {$Version = $Version -replace "_"}
-        If ($Version) {$Version = $Version -replace "-b"}
-        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
+        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$OracleJava) {
-            $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion
+            $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        If ($OracleJava) {$OracleJava = $OracleJava -replace "\."}
+        If ($OracleJava) {
+            $OracleJavaSplit = $OracleJava.split(".")
+            $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit[2] + "-b" + $OracleJavaSplit[3]
+        }
         $OracleJavaInstaller = "OracleJava8_" + "$ArchitectureClear" +".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $OracleJava"
-        If ($OracleJava -ne $Version) {
+        If ($OracleJava -lt $Version) {
             DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -5719,14 +5764,14 @@ If ($download -eq $False) {
             $VersionSplit2 = $VersionSplit[1] -split("",3)
             $Version = $VersionSplit[0] + "." + $VersionSplit2[1] + "." + $VersionSplit2[2]
         }
-        $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion
+        $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$PaintDotNetV) {
-            $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion
+            $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $PaintDotNetV"
-        If ($PaintDotNetV -ne $Version) {
+        If ($PaintDotNetV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -5760,10 +5805,10 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $PuTTYV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion
+        $PuTTYV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $PuTTYLog = "$LogTemp\PuTTY.log"
         If (!$PuTTYV) {
-            $PuTTYV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion
+            $PuTTYV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $PuTTYInstaller = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$PuTTYInstaller"
@@ -5774,7 +5819,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $PuTTYV"
-        If ($PuTTYV -ne $Version) {
+        If ($PuTTYV -lt $Version) {
             DS_WriteLog "I" "Installing $Product $PuttyChannelClear $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5811,13 +5856,13 @@ If ($download -eq $False) {
                 $Product = "RemoteDesktopManager Free"
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-                $RemoteDesktopManagerFree = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion
+                $RemoteDesktopManagerFree = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
                 $InstallMSI = "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerFree.msi"
                 Write-Host -ForegroundColor Magenta "Install $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $RemoteDesktopManagerFree"
-                If ($RemoteDesktopManagerFree -ne $Version) {
+                If ($RemoteDesktopManagerFree -lt $Version) {
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     $Arguments = @(
@@ -5847,13 +5892,13 @@ If ($download -eq $False) {
                 $Product = "RemoteDesktopManager Enterprise"
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-                $RemoteDesktopManagerEnterprise = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion
+                $RemoteDesktopManagerEnterprise = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
                 $InstallMSI = "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerEnterprise.msi"
                 Write-Host -ForegroundColor Magenta "Install $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $RemoteDesktopManagerEnterprise"
-                If ($RemoteDesktopManagerEnterprise -ne $Version) {
+                If ($RemoteDesktopManagerEnterprise -lt $Version) {
                     DS_WriteLog "I" "Installing $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     $Arguments = @(
@@ -5888,15 +5933,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $ShareXV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
+        $ShareXV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$ShareXV) {
-            $ShareXV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion
+            $ShareXV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $ShareXInstaller = "ShareX-setup" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $ShareXV"
-        If ($ShareXV -ne $Version) {
+        If ($ShareXV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -5931,12 +5976,12 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$SlackPlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion
+            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
         $SlackLog = "$LogTemp\Slack.log"
@@ -5945,7 +5990,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $SlackPlatformClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $SlackV"
-        If ($SlackV -ne $Version) {
+        If ($SlackV -lt $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear $SlackPlatformClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5980,12 +6025,12 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $TeamViewerV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TeamViewer*"}).DisplayVersion
+        $TeamViewerV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TeamViewer*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $TeamViewerInstaller = "TeamViewer-setup" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $TeamViewerV"
-        If ($TeamViewerV -ne $Version) {
+        If ($TeamViewerV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -6022,11 +6067,11 @@ If ($download -eq $False) {
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
                 $Version = $Version.Insert(3,'.')
-                $TreeSizeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
+                $TreeSizeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 Write-Host -ForegroundColor Magenta "Install $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $TreeSizeV"
-                If ($TreeSizeV -ne $Version) {
+                If ($TreeSizeV -lt $Version) {
                     DS_WriteLog "I" "Install $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     Try {
@@ -6055,11 +6100,11 @@ If ($download -eq $False) {
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
                 $Version = $Version.Insert(3,'.')
-                $TreeSizeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion
+                $TreeSizeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 Write-Host -ForegroundColor Magenta "Install $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version: $TreeSizeV"
-                If ($TreeSizeV -ne $Version) {
+                If ($TreeSizeV -lt $Version) {
                     DS_WriteLog "I" "Install $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     Try {
@@ -6092,10 +6137,10 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
+        $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $VLCLog = "$LogTemp\VLC.log"
         If (!$VLC) {
-            $VLC = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion
+            $VLC = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($VLC) {$VLC = $VLC -replace ".{2}$"}
         $VLCInstaller = "VLC-Player_" + "$ArchitectureClear" +".msi"
@@ -6103,7 +6148,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $VLC"
-        If ($VLC -ne $Version) {
+        If ($VLC -lt $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -6137,16 +6182,16 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
+        $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$VMWT) {
-            $VMWT = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion
+            $VMWT = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($VMWT) {$VMWT = $VMWT -replace ".{9}$"}
         $VMWareToolsInstaller = "VMWareTools_" + "$ArchitectureClear" +".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $VMWT"
-        If ($VMWT -ne $Version) {
+        If ($VMWT -lt $Version) {
             $Options = @(
                 "/s"
                 "/v"
@@ -6181,11 +6226,11 @@ If ($download -eq $False) {
         $Product = "WinSCP"
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
-        $WSCP = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*WinSCP*"}).DisplayVersion
+        $WSCP = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*WinSCP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $WSCP"
-        If ($WSCP -ne $Version) {
+        If ($WSCP -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -6222,15 +6267,15 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $WiresharkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion
+        $WiresharkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$WiresharkV) {
-            $WiresharkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion
+            $WiresharkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $WiresharkInstaller = "Wireshark-" + "$ArchitectureClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $WiresharkV"
-        If ($WiresharkV -ne $Version) {
+        If ($WiresharkV -lt $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -6266,7 +6311,7 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomLog = "$LogTemp\Zoom.log"
             $ZoomInstaller = "ZoomInstaller" + ".msi"
@@ -6274,7 +6319,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $ZoomV"
-            If ($ZoomV -ne $Version) {
+            If ($ZoomV -lt $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
@@ -6308,7 +6353,7 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom*"}).DisplayVersion
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomLog = "$LogTemp\Zoom.log"
             $ZoomInstaller = "ZoomInstaller" + ".msi"
@@ -6316,7 +6361,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $ZoomV"
-            If ($ZoomV -ne $Version) {
+            If ($ZoomV -lt $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
@@ -6352,7 +6397,7 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Plugin*"}).DisplayVersion
+            $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Plugin*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomInstaller = "ZoomCitrixHDXMediaPlugin" + ".msi"
             $ZoomLog = "$LogTemp\Zoom.log"
@@ -6360,7 +6405,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $ZoomV"
-            If ($ZoomV -ne $Version) {
+            If ($ZoomV -lt $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
