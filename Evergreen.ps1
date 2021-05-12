@@ -435,14 +435,14 @@ Function Get-PuTTY() {
         else {
             $PSObjectx86Pre = [PSCustomObject] @{
             Version      = $appVersion
-            Channel      = "Stable"
+            Channel      = "Pre-Release"
             Architecture = "x86"
             URI          = $appx86URL
             }
 
             $PSObjectx64Pre = [PSCustomObject] @{
                 Version      = $appVersion
-                Channel      = "Stable"
+                Channel      = "Pre-Release"
                 Architecture = "x64"
                 URI          = $appx64URL
             }
