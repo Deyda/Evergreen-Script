@@ -61,7 +61,7 @@ the script checks the version number and will update the package.
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
   2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
   2021-05-07        Version formatting customized / Change Oracle Java Version format
-  2021-05-12        Implement new languages in Adobe Acrobat Reader DC
+  2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease
 
 .PARAMETER list
 
@@ -399,10 +399,11 @@ Function Get-PuTTY() {
         $appx86URL = "https://the.earth.li/~sgtatham/putty/latest/w32/putty-$appVersion-installer.msi"
         $regexAppVersionPre = "of .*"
         $webVersionPre = $webRequestPre.RawContent | Select-String -Pattern $regexAppVersionPre -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersionPre = $webVersionPre.Split()[1].Trim("of ")
-        $appx64URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w64/putty-64bit-installer.msi"
-        $appx86URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w32/putty-installer.msi"
-
+        If ($webVersionPre){
+            $appVersionPre = $webVersionPre.Split()[1].Trim("of ")
+            $appx64URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w64/putty-64bit-installer.msi"
+            $appx86URLPre = "https://tartarus.org/~simon/putty-prerel-snapshots/w32/putty-installer.msi"
+        }
         $PSObjectx86 = [PSCustomObject] @{
             Version      = $appVersion
             Channel      = "Stable"
@@ -416,25 +417,42 @@ Function Get-PuTTY() {
             Architecture = "x64"
             URI          = $appx64URL
         }
+        If ($webVersionPre){
+            $PSObjectx86Pre = [PSCustomObject] @{
+                Version      = $appVersionPre
+                Channel      = "Pre-Release"
+                Architecture = "x86"
+                URI          = $appx86URLPre
+            }
 
-        $PSObjectx86Pre = [PSCustomObject] @{
-            Version      = $appVersionPre
-            Channel      = "Pre-Release"
-            Architecture = "x86"
-            URI          = $appx86URLPre
+            $PSObjectx64Pre = [PSCustomObject] @{
+                Version      = $appVersionPre
+                Channel      = "Pre-Release"
+                Architecture = "x64"
+                URI          = $appx64URLPre
+            }
         }
+        else {
+            $PSObjectx86Pre = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x86"
+            URI          = $appx86URL
+            }
 
-        $PSObjectx64Pre = [PSCustomObject] @{
-            Version      = $appVersionPre
-            Channel      = "Pre-Release"
-            Architecture = "x64"
-            URI          = $appx64URLPre
+            $PSObjectx64Pre = [PSCustomObject] @{
+                Version      = $appVersion
+                Channel      = "Stable"
+                Architecture = "x64"
+                URI          = $appx64URL
+            }
         }
 
         Write-Output -InputObject $PSObjectx86
         Write-Output -InputObject $PSObjectx64
         Write-Output -InputObject $PSObjectx86Pre
         Write-Output -InputObject $PSObjectx64Pre
+        
     }
 }
 
@@ -4174,7 +4192,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $WSA"
-        If ($WSA -lt $Version) {
+        If ($WSA -ne $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # Citrix WSA Uninstallation
@@ -4692,7 +4710,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSDotNetFrameworkChannelClear Channel"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSDotNetFrameworkV"
-        If ($MSDotNetFrameworkV -lt $Version) {
+        If ($MSDotNetFrameworkV -ne $Version) {
             $Options = @(
                 "/install"
                 "/quiet"
@@ -4805,7 +4823,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSAzureDataStudioV"
-        If ($MSAzureDataStudioV -lt $Version) {
+        If ($MSAzureDataStudioV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear" $LogFile
             $Options = @(
@@ -4848,7 +4866,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Edge"
-        If ($Edge -lt $Version) {
+        If ($Edge -ne $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5145,7 +5163,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSOneDriveV"
-        If ($MSOneDriveV -lt $Version) {
+        If ($MSOneDriveV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
             If ($Machine -eq '0') {
@@ -5198,7 +5216,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSPowerShellReleaseClear Release"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSPowerShellV"
-        If ($MSPowerShellV -lt $Version) {
+        If ($MSPowerShellV -ne $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
@@ -5284,7 +5302,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $Teams"
-            If ($Teams -lt $Version) {
+            If ($Teams -ne $Version) {
                 DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 #Uninstalling MS Teams
@@ -5389,7 +5407,7 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version: $Teams"
-            If ($Teams -lt $Version) {
+            If ($Teams -ne $Version) {
                 DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Options = @(
@@ -5445,7 +5463,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioEditionClear Edition"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSVisualStudioV"
-        If ($MSVisualStudioV -lt $Version) {
+        If ($MSVisualStudioV -ne $Version) {
             $MSVisualStudioEditionInstall = "Microsoft.VisualStudio.Product." + "$MSVisualStudioEditionClear"
             If ($MSVisualStudioV) {
                 $Options = @(
@@ -5503,7 +5521,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSVisualStudioCodeV"
-        If ($MSVisualStudioCodeV -lt $Version) {
+        If ($MSVisualStudioCodeV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear" $LogFile
             $Options = @(
@@ -5545,7 +5563,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $FirefoxV"
-        If ($FirefoxV -lt $Version) {
+        If ($FirefoxV -ne $Version) {
             $Arguments = @(
                 "/i"
                 "`"$InstallMSI`""
@@ -5817,7 +5835,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $PuTTYV"
-        If ($PuTTYV -lt $Version) {
+        If ($PuTTYV -ne $Version) {
             DS_WriteLog "I" "Installing $Product $PuttyChannelClear $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
