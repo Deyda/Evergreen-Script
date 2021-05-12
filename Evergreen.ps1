@@ -61,7 +61,7 @@ the script checks the version number and will update the package.
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
   2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
   2021-05-07        Version formatting customized / Change Oracle Java Version format
-  2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease
+  2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
 
 .PARAMETER list
 
@@ -4922,7 +4922,7 @@ If ($download -eq $False) {
                 }
                 Write-Host "Customize Scheduled Task"
                 Start-Sleep -s 5
-                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* | Disable-ScheduledTask | Out-Null
+                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* -erroraction 'silentlycontinue' | Disable-ScheduledTask | Out-Null
                 Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize $Product finished!"
             } Catch {
@@ -5735,7 +5735,8 @@ If ($download -eq $False) {
         }
         If ($OracleJava) {
             $OracleJavaSplit = $OracleJava.split(".")
-            $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit[2] + "-b" + $OracleJavaSplit[3]
+            $OracleJavaSplit2 = $OracleJavaSplit[2].split("0")
+            $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit2[0] + "-b" + $OracleJavaSplit[3]
         }
         $OracleJavaInstaller = "OracleJava8_" + "$ArchitectureClear" +".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
