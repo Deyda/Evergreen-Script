@@ -61,6 +61,7 @@ the script checks the version number and will update the package.
   2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
   2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
   2021-05-07        Version formatting customized / Change Oracle Java Version format
+  2021-05-12        Implement new languages in Adobe Acrobat Reader DC
 
 .PARAMETER list
 
@@ -1719,10 +1720,7 @@ Switch ($Language) {
 
 $AdobeLanguageClear = $LanguageClear
 Switch ($LanguageClear) {
-    Polish { $AdobeLanguageClear = 'English'}
     Portuguese { $AdobeLanguageClear = 'English'}
-    Russian { $AdobeLanguageClear = 'English'}
-    Swedish { $AdobeLanguageClear = 'English'}
 }
 
 $AdobeArchitectureClear = 'x86'
