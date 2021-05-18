@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.47
+  Version:          1.48
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -62,6 +62,7 @@ the script checks the version number and will update the package.
   2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
   2021-05-07        Version formatting customized / Change Oracle Java Version format
   2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
+  2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
 
 .PARAMETER list
 
@@ -249,18 +250,13 @@ Function Get-IrfanView {
     }
 }
 
-# Function Microsoft Teams Download Developer Version
+# Function Microsoft Teams Download Developer & Beta Version
 #========================================================================================================================================
-Function Get-MicrosoftTeamsDev() {
-    <#
-    .NOTES
-    Author: Jonathan Pitre
-    Twitter: @PitreJonathan
-    #>
+Function Get-MicrosoftTeamsDevBeta() {
     [OutputType([System.Management.Automation.PSObject])]
     [CmdletBinding()]
     Param ()
-    $appURLVersion = "https://whatpulse.org/app/microsoft-teams#versions"
+    $appURLVersion = "https://github.com/ItzLevvie/MicrosoftTeams-msinternal/blob/master/defconfig"
     Try {
         $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
     }
@@ -269,27 +265,58 @@ Function Get-MicrosoftTeamsDev() {
         Break
     }
     Finally {
-        $regexAppVersion = "\<td\>\d.\d.\d{2}.\d+<\/td\>\n.+windows"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split()[0].Trim("</td>")
-        $appx64URL = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersion/Teams_windows_x64.msi"
-        $appx86URL = "https://statics.teams.cdn.office.net/production-windows-x86/$appVersion/Teams_windows_x86.msi"
+        $regexAppVersionx64dev = '\<td id="LC2".+<\/td\>'
+        $webVersionx64dev = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx64dev -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx64dev = $webVersionx64dev.Split("/")
+        $appVersionx64dev = $webSplitx64dev[4]
+        $regexAppVersionx86dev = '\<td id="LC5".+<\/td\>'
+        $webVersionx86dev = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx86dev -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx86dev = $webVersionx86dev.Split("/")
+        $appVersionx86dev = $webSplitx86dev[4]
+        $regexAppVersionx64beta = '\<td id="LC12".+<\/td\>'
+        $webVersionx64beta = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx64beta -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx64beta = $webVersionx64beta.Split("/")
+        $appVersionx64beta = $webSplitx64beta[4]
+        $regexAppVersionx86beta = '\<td id="LC14".+<\/td\>'
+        $webVersionx86beta = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx86beta -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx86beta = $webVersionx86beta.Split("/")
+        $appVersionx86beta = $webSplitx86beta[4]
+        $appx64URLdev = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersionx64dev/Teams_windows_x64.msi"
+        $appx86URLdev = "https://statics.teams.cdn.office.net/production-windows/$appVersionx86dev/Teams_windows.msi"
+        $appx64URLbeta = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersionx64beta/Teams_windows_x64.msi"
+        $appx86URLbeta = "https://statics.teams.cdn.office.net/production-windows/$appVersionx86beta/Teams_windows.msi"
 
-        $PSObjectx86 = [PSCustomObject] @{
-            Version      = $appVersion
+        $PSObjectx86dev = [PSCustomObject] @{
+            Version      = $appVersionx86dev
             Ring         = "Developer"
             Architecture = "x86"
-            URI          = $appx86URL
+            URI          = $appx86URLdev
         }
 
-        $PSObjectx64 = [PSCustomObject] @{
-            Version      = $appVersion
+        $PSObjectx64dev = [PSCustomObject] @{
+            Version      = $appVersionx64dev
             Ring         = "Developer"
             Architecture = "x64"
-            URI          = $appx64URL
+            URI          = $appx64URLdev
         }
-        Write-Output -InputObject $PSObjectx86
-        Write-Output -InputObject $PSObjectx64
+
+        $PSObjectx86beta = [PSCustomObject] @{
+            Version      = $appVersionx86beta
+            Ring         = "Exploration"
+            Architecture = "x86"
+            URI          = $appx86URLbeta
+        }
+
+        $PSObjectx64beta = [PSCustomObject] @{
+            Version      = $appVersionx64beta
+            Ring         = "Exploration"
+            Architecture = "x64"
+            URI          = $appx64URLbeta
+        }
+        Write-Output -InputObject $PSObjectx86dev
+        Write-Output -InputObject $PSObjectx64dev
+        Write-Output -InputObject $PSObjectx86beta
+        Write-Output -InputObject $PSObjectx64beta
     }
 }
 
@@ -299,7 +326,7 @@ Function Get-MicrosoftTeamsUser() {
     [OutputType([System.Management.Automation.PSObject])]
     [CmdletBinding()]
     Param ()
-    $appURLVersion = "https://whatpulse.org/app/microsoft-teams#versions"
+    $appURLVersion = "https://github.com/ItzLevvie/MicrosoftTeams-msinternal/blob/master/defconfig"
     Try {
         $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
         $TeamsUserVersionGeneral = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "General"}
@@ -312,15 +339,30 @@ Function Get-MicrosoftTeamsUser() {
         Break
     }
     Finally {
-        $regexAppVersion = "\<td\>\d.\d.\d{2}.\d+<\/td\>\n.+windows"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split()[0].Trim("</td>")
-        $appx64URL = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersion/Teams_windows_x64.exe"
-        $appx86URL = "https://statics.teams.cdn.office.net/production-windows-x86/$appVersion/Teams_windows_x86.exe"
+        $regexAppVersionx64dev = '\<td id="LC3".+<\/td\>'
+        $webVersionx64dev = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx64dev -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx64dev = $webVersionx64dev.Split("/")
+        $appVersionx64dev = $webSplitx64dev[4]
+        $regexAppVersionx86dev = '\<td id="LC4".+<\/td\>'
+        $webVersionx86dev = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx86dev -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx86dev = $webVersionx86dev.Split("/")
+        $appVersionx86dev = $webSplitx86dev[4]
+        $regexAppVersionx64beta = '\<td id="LC11".+<\/td\>'
+        $webVersionx64beta = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx64beta -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx64beta = $webVersionx64beta.Split("/")
+        $appVersionx64beta = $webSplitx64beta[4]
+        $regexAppVersionx86beta = '\<td id="LC13".+<\/td\>'
+        $webVersionx86beta = $webRequest.RawContent | Select-String -Pattern $regexAppVersionx86beta -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitx86beta = $webVersionx86beta.Split("/")
+        $appVersionx86beta = $webSplitx86beta[4]
+        $appx64URLdev = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersionx64dev/Teams_windows_x64.exe"
+        $appx86URLdev = "https://statics.teams.cdn.office.net/production-windows/$appVersionx86dev/Teams_windows.exe"
+        $appx64URLbeta = "https://statics.teams.cdn.office.net/production-windows-x64/$appVersionx64beta/Teams_windows_x64.exe"
+        $appx86URLbeta = "https://statics.teams.cdn.office.net/production-windows/$appVersionx86beta/Teams_windows.exe"
         $appx64URLG = "https://statics.teams.cdn.office.net/production-windows-x64/$VersionGeneral/Teams_windows_x64.exe"
-        $appx86URLG = "https://statics.teams.cdn.office.net/production-windows-x86/$VersionGeneral/Teams_windows_x86.exe"
+        $appx86URLG = "https://statics.teams.cdn.office.net/production-windows/$VersionGeneral/Teams_windows.exe"
         $appx64URLP = "https://statics.teams.cdn.office.net/production-windows-x64/$VersionPreview/Teams_windows_x64.exe"
-        $appx86URLP = "https://statics.teams.cdn.office.net/production-windows-x86/$VersionPreview/Teams_windows_x86.exe"
+        $appx86URLP = "https://statics.teams.cdn.office.net/production-windows/$VersionPreview/Teams_windows.exe"
 
         $PSObjectx86G = [PSCustomObject] @{
             Version      = $VersionGeneral
@@ -350,25 +392,42 @@ Function Get-MicrosoftTeamsUser() {
             URI          = $appx64URLP
         }
 
-        $PSObjectx86 = [PSCustomObject] @{
-            Version      = $appVersion
+        $PSObjectx86dev = [PSCustomObject] @{
+            Version      = $appVersionx86dev
             Ring         = "Developer"
             Architecture = "x86"
-            URI          = $appx86URL
+            URI          = $appx86URLdev
         }
 
-        $PSObjectx64 = [PSCustomObject] @{
-            Version      = $appVersion
+        $PSObjectx64dev = [PSCustomObject] @{
+            Version      = $appVersionx64dev
             Ring         = "Developer"
             Architecture = "x64"
-            URI          = $appx64URL
+            URI          = $appx64URLdev
         }
+
+        $PSObjectx86beta = [PSCustomObject] @{
+            Version      = $appVersionx86beta
+            Ring         = "Exploration"
+            Architecture = "x86"
+            URI          = $appx86URLbeta
+        }
+
+        $PSObjectx64beta = [PSCustomObject] @{
+            Version      = $appVersionx64beta
+            Ring         = "Exploration"
+            Architecture = "x64"
+            URI          = $appx64URLbeta
+        }
+
         Write-Output -InputObject $PSObjectx86G
         Write-Output -InputObject $PSObjectx64G
         Write-Output -InputObject $PSObjectx86P
         Write-Output -InputObject $PSObjectx64P
-        Write-Output -InputObject $PSObjectx86
-        Write-Output -InputObject $PSObjectx64
+        Write-Output -InputObject $PSObjectx86beta
+        Write-Output -InputObject $PSObjectx64beta
+        Write-Output -InputObject $PSObjectx86dev
+        Write-Output -InputObject $PSObjectx64dev
     }
 }
 
@@ -556,7 +615,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.47"
+$eVersion = "1.48"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -795,50 +854,52 @@ $inputXML = @"
         <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,339,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="191,374,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_ImageGlass" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,338,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="191,394,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="LTS (Long Term Support)"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="191,395,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="191,415,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Current (Preview)"/>
             <ListBoxItem Content="Current"/>
             <ListBoxItem Content="Monthly Enterprise"/>
             <ListBoxItem Content="Semi-Annual Enterprise (Preview)"/>
             <ListBoxItem Content="Semi-Annual Enterprise"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="191,416,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="191,436,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Insider"/>
             <ListBoxItem Content="Stable"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="191,436,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="191,456,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Developer"/>
             <ListBoxItem Content="Beta"/>
             <ListBoxItem Content="Stable"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="191,492,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="191,512,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Insider Ring"/>
             <ListBoxItem Content="Production Ring"/>
             <ListBoxItem Content="Enterprise Ring"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="191,513,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,538,0,0" VerticalAlignment="Top" Grid.Column="1" />
+        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="191,533,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
             <ListBoxItem Content="Stable"/>
             <ListBoxItem Content="LTS (Long Term Support)"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="153,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
         <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="153,118,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="488,116,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="340,113,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2">
+        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="340,113,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
             <ListBoxItem Content="Developer Ring"/>
+            <ListBoxItem Content="Exploration Ring"/>
             <ListBoxItem Content="Preview Ring"/>
             <ListBoxItem Content="General Ring"/>
         </ComboBox>
@@ -1081,6 +1142,9 @@ $inputXML = @"
         Switch ($LastSetting[63]) {
             1 { $WPFCheckbox_MSAzureDataStudio.IsChecked = "True"}
         }
+        Switch ($LastSetting[65]) {
+            1 { $WPFCheckbox_ImageGlass.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -1129,6 +1193,7 @@ $inputXML = @"
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -1175,6 +1240,7 @@ $inputXML = @"
         $WPFCheckbox_TeamViewer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -1273,6 +1339,8 @@ $inputXML = @"
         Else {$Script:Wireshark = 0}
         If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
         Else {$Script:MSAzureDataStudio = 0}
+        If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
+        Else {$Script:ImageGlass = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1293,7 +1361,7 @@ $inputXML = @"
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -1403,6 +1471,8 @@ $inputXML = @"
         Else {$Script:Wireshark = 0}
         If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
         Else {$Script:MSAzureDataStudio = 0}
+        If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
+        Else {$Script:ImageGlass = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1423,7 +1493,7 @@ $inputXML = @"
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "Save Settings"
     })
 
@@ -1514,6 +1584,7 @@ If ($list -eq $True) {
             $Putty = $FileSetting[58] -as [int]
             $TeamViewer = $FileSetting[59] -as [int]
             $MSAzureDataStudio = $FileSetting[63] -as [int]
+            $ImageGlass = $FileSetting[65] -as [int]
         }
     }
     Else {
@@ -1597,9 +1668,10 @@ If ($list -eq $True) {
 
         # Microsoft Teams
         # 0 = Developer Ring
-        # 1 = Preview Ring
-        # 2 = General Ring
-        $MSTeamsRing = 2
+        # 1 = Exploration Ring
+        # 2 = Preview Ring
+        # 3 = General Ring
+        $MSTeamsRing = 3
 
         # Microsoft Teams AutoStart
         # 0 = AutoStart Microsoft Teams
@@ -1658,6 +1730,7 @@ If ($list -eq $True) {
         $GIMP = 0
         $GoogleChrome = 0
         $Greenshot = 0
+        $ImageGlass = 0
         $IrfanView = 0
         $KeePass = 0
         $mRemoteNG = 0
@@ -1855,8 +1928,9 @@ Switch ($MSPowerShellRelease) {
 
 Switch ($MSTeamsRing) {
     0 { $MSTeamsRingClear = 'Developer'}
-    1 { $MSTeamsRingClear = 'Preview'}
-    2 { $MSTeamsRingClear = 'General'}
+    1 { $MSTeamsRingClear = 'Exploration'}
+    2 { $MSTeamsRingClear = 'Preview'}
+    3 { $MSTeamsRingClear = 'General'}
 }
 
 Switch ($MSVisualStudioEdition) {
@@ -2389,6 +2463,41 @@ If ($install -eq $False) {
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download ImageGlass
+    If ($ImageGlass -eq 1) {
+        $Product = "ImageGlass"
+        $PackageName = "ImageGlass_" + "$ArchitectureClear"
+        $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $Version = $ImageGlassD.Version
+        $URL = $ImageGlassD.uri
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $ArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
@@ -3018,8 +3127,8 @@ If ($install -eq $False) {
         $PackageName = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
         If ($Machine -eq '0') {
             $Product = "Microsoft Teams Machine Based"
-            If ($MSTeamsRingClear -eq 'Developer') {
-                $TeamsD = Get-MicrosoftTeamsDev | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+            If ($MSTeamsRingClear -eq 'Developer' -or $MSTeamsRingClear -eq 'Exploration') {
+                $TeamsD = Get-MicrosoftTeamsDevBeta | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" }
             }
             Else {
                 $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
@@ -4607,6 +4716,51 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install ImageGlass
+    If ($ImageGlass -eq 1) {
+        $Product = "ImageGlass"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $ImageGlassV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ImageGlass"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $ChromeLog = "$LogTemp\ImageGlass.log"
+        If (!$ImageGlassV) {
+            $ImageGlassV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ImageGlass"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $ImageGlassInstaller = "ImageGlass_" + "$ArchitectureClear" + ".msi"
+        $InstallMSI = "$PSScriptRoot\$Product\$ImageGlassInstaller"
+        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $ImageGlassV"
+        If ($ImageGlassV -lt $Version) {
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
+                "/QUIET"
+                "/L* $ChromeLog"
+                "/NORESTART"
+            )
+            Try {
+                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Install-MSI $InstallMSI $Arguments
+                Get-Content $ImageGlassLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $ImageGlassLog
+                If (Test-Path -Path "$env:PUBLIC\Desktop\ImageGlass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\ImageGlass.lnk" -Force}
+            } Catch {
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install IrfanView
     If ($IrfanView -eq 1) {
         $Product = "IrfanView"
@@ -5291,9 +5445,13 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If (Test-Path -Path "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
             If (!$Teams) {
-                $Teams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (Test-Path -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                    $Teams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
             }
             $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
             $TeamsLog = "$LogTemp\MSTeams.log"
@@ -5310,9 +5468,13 @@ If ($download -eq $False) {
                     Write-Host "Uninstall $Product"
                     DS_WriteLog "I" "Uninstall $Product" $LogFile
                     Try {
-                        $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                        If (Test-Path -Path "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                            $UninstallTeams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                        }
                         If (!$UninstallTeams) {
-                            $UninstallTeams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                            If (Test-Path -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                                $UninstallTeams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).UninstallString
+                            }
                         }
                         $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
                         Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
@@ -5398,9 +5560,13 @@ If ($download -eq $False) {
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
-            $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If (Test-Path -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
             If (!$Teams) {
-                $Teams = (Get-ItemProperty HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (Test-Path -Path "HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\") {
+                    $Teams = (Get-ItemProperty HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
             }
             $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".exe"
             $TeamsProcess = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
