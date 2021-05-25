@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.48
+  Version:          1.49
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -63,7 +63,7 @@ the script checks the version number and will update the package.
   2021-05-07        Version formatting customized / Change Oracle Java Version format
   2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
   2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
-  2021-05-25        Correction Install GIMP version comparison
+  2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install
 
 .PARAMETER list
 
@@ -616,7 +616,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.48"
+$eVersion = "1.49"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -5323,8 +5323,7 @@ If ($download -eq $False) {
             DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
             If ($Machine -eq '0') {
                 $Options = @(
-                    "/ALLUSERS=1"
-                    "/ALLUSER=1"
+                    "/allusers"
                     "/SILENT"
                 )
             }
