@@ -5522,7 +5522,7 @@ If ($download -eq $False) {
                 }
                 Try {
                     Write-Host "Customize $Product"
-                    reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
+                    #reg add "HKLM\SOFTWARE\Citrix\CtxHook\AppInit_Dlls\SfrHook" /v Teams.exe /t REG_DWORD /d 204 /f | Out-Null
                     If ($MSTeamsNoAutoStart -eq 1) {
                         #Prevents MS Teams from starting at logon, better do this with WEM or similar
                         Write-Host "Customize $Product Autorun"
