@@ -63,6 +63,7 @@ the script checks the version number and will update the package.
   2021-05-07        Version formatting customized / Change Oracle Java Version format
   2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
   2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
+  2021-05-25        Correction Install GIMP version comparison
 
 .PARAMETER list
 
@@ -4577,7 +4578,7 @@ If ($download -eq $False) {
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $GIMPV"
-        If ($GIMPV -lt $Version) {
+        If ($GIMPV -ne $Version) {
             $Options = @(
                 "/VERYSILENT"
                 "/NORESTART"
