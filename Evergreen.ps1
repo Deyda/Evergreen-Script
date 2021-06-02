@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.49
+  Version:          1.50
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -64,6 +64,7 @@ the script checks the version number and will update the package.
   2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
   2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
   2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install / Correction M365 Install
+  2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen 
 
 .PARAMETER list
 
@@ -616,11 +617,13 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.49"
+$eVersion = "1.50"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
-$WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
+If ($WebVersion) {
+    $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
+}
 If ($WebVersion -gt $eVersion) {
     $NewerVersion = $true
 }
@@ -883,6 +886,10 @@ $inputXML = @"
             <ListBoxItem Content="Stable"/>
         </ComboBox>
         <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
+        <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="191,476,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+            <ListBoxItem Content="Preview"/>
+            <ListBoxItem Content="Production"/>
+        </ComboBox>
         <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="191,512,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
@@ -1005,6 +1012,7 @@ $inputXML = @"
         $WPFBox_MSVisualStudio.SelectedIndex = $LastSetting[61] -as [int]
         $WPFBox_Putty.SelectedIndex = $LastSetting[62] -as [int]
         $WPFBox_MSAzureDataStudio.SelectedIndex = $LastSetting[64] -as [int]
+        $WPFBox_MSFSLogix.SelectedIndex = $LastSetting[66] -as [int]
         Switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -1361,8 +1369,9 @@ $inputXML = @"
         $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
+        $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -1493,8 +1502,9 @@ $inputXML = @"
         $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
         $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
+        $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "Save Settings"
     })
 
@@ -1586,6 +1596,7 @@ If ($list -eq $True) {
             $TeamViewer = $FileSetting[59] -as [int]
             $MSAzureDataStudio = $FileSetting[63] -as [int]
             $ImageGlass = $FileSetting[65] -as [int]
+            $MSFSLogixChannel = $FileSetting[66] -as [int]
         }
     }
     Else {
@@ -1655,6 +1666,11 @@ If ($list -eq $True) {
         # 1 = Beta Channel
         # 2 = Stable Channel
         $MSEdgeChannel = 2
+
+        # Microsoft FSLogix
+        # 0 = Preview Channel
+        # 1 = Production Channel
+        $MSFSLogixChannel = 1
 
         # Microsoft OneDrive
         # 0 = Insider Ring
@@ -1767,7 +1783,7 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel -ErrorAction SilentlyContinue
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
         $WScriptShell = New-Object -ComObject 'WScript.Shell'
@@ -1909,6 +1925,11 @@ Switch ($MSEdgeChannel) {
     0 { $MSEdgeChannelClear = 'Dev'}
     1 { $MSEdgeChannelClear = 'Beta'}
     2 { $MSEdgeChannelClear = 'Stable'}
+}
+
+Switch ($MSFSLogixChannel) {
+    0 { $MSFSLogixChannelClear = 'Preview'}
+    1 { $MSFSLogixChannelClear = 'Production'}
 }
 
 Switch ($MSOneDriveRing) {
@@ -2833,38 +2854,43 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft FSLogix
     If ($MSFSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
-        $PackageName = "FSLogixAppsSetup"
-        $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps
+        $PackageName = "FSLogixAppsSetup_" + "$MSFSLogixChannelCLear"
+        $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps | Where-Object { $_.Channel -eq "$MSFSLogixChannelClear"} 
         $Version = $MSFSLogixD.Version
         $URL = $MSFSLogixD.uri
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        $VersionPath = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Version_"+ "$MSFSLogixChannelClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $MSFSLogixChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
-            If (!(Test-Path -Path "$PSScriptRoot\$Product\Install")) { New-Item -Path "$PSScriptRoot\$Product\Install" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\Install\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\Install\*" -Recurse
+            If (!(Test-Path -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear")) { New-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\$MSFSLogixChannelClear\*" -Recurse
             Start-Transcript $LogPS | Out-Null
-            Set-Content -Path "$PSScriptRoot\$Product\Install\Version.txt" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
-            Get-Download $URL "$PSScriptRoot\$Product\Install" $Source -includeStats
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $MSFSLogixChannelClear $ArchitectureClear $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\$MSFSLogixChannelClear" $Source -includeStats
             #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\Install\" + ($Source))
-            expand-archive -path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -destinationpath "$PSScriptRoot\$Product\Install"
-            Remove-Item -Path "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.zip" -Force
+            expand-archive -path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -destinationpath "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
+            Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -Force
             Switch ($Architecture) {
                 1 {
-                    Move-Item -Path "$PSScriptRoot\$Product\Install\Win32\Release\*" -Destination "$PSScriptRoot\$Product\Install"
+                    Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Win32\Release\*" -Destination "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
                 }
                 0 {
-                    Move-Item -Path "$PSScriptRoot\$Product\Install\x64\Release\*" -Destination "$PSScriptRoot\$Product\Install"
+                    Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\x64\Release\*" -Destination "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
                 }
             }
-            Remove-Item -Path "$PSScriptRoot\$Product\Install\Win32" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\Install\x64" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Win32" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\x64" -Force -Recurse
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product"
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US"
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -5099,7 +5125,8 @@ If ($download -eq $False) {
         $Product = "Microsoft FSLogix"
         $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Install\Version.txt"
+        $VersionPath = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Version_" + "$MSFSLogixChannelClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
         $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSFSLogixV) {
             $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -5110,7 +5137,7 @@ If ($download -eq $False) {
         If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}) {
             $UninstallFSLRE = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}).UninstallString.replace("/uninstall","")
         }
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSFSLogixChannelClear $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $MSFSLogixV"
         If ($MSFSLogixV -lt $Version) {
@@ -5138,15 +5165,15 @@ If ($download -eq $False) {
             }
             # FSLogix Install
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
-                Write-Host -ForegroundColor Green "Install $Product finished!"
-                Write-Host "Starting install of $Product Rule Editor $ArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\Install\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
-                Write-Host -ForegroundColor Green "Install $Product Rule Editor $ArchitectureClear finished!"
+                Write-Host "Starting install of $Product $MSFSLogixChannelClear $ArchitectureClear $Version"
+                Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                Write-Host -ForegroundColor Green "Install $Product $MSFSLogixChannelClear $ArchitectureClear finished!"
+                Write-Host "Starting install of $Product Rule Editor $MSFSLogixChannelClear $ArchitectureClear $Version"
+                Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                Write-Host -ForegroundColor Green "Install $Product Rule Editor $MSFSLogixChannelClear $ArchitectureClear finished!"
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             Try {
@@ -5223,7 +5250,7 @@ If ($download -eq $False) {
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
         }
