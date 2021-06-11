@@ -1,0 +1,1 @@
+& "C:\install\Evergreen-Script\evergreen.ps1" -list -install -file C:\install\Evergreen-Script\LastSetting.txt
