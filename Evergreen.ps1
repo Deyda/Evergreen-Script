@@ -64,7 +64,8 @@ the script checks the version number and will update the package.
   2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
   2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
   2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install / Correction M365 Install
-  2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen 
+  2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen
+  2021-06-11        Correction Notepad++ Download Version
 
 .PARAMETER list
 
@@ -3368,6 +3369,8 @@ If ($install -eq $False) {
         $PackageName = "NotePadPlusPlus_" + "$ArchitectureClear"
         $NotepadD = Get-EvergreenApp -Name NotepadPlusPlus | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $NotepadD.Version
+        $VersionSplit = $Version.split("v")
+        $Version = $VersionSplit[1]
         $URL = $NotepadD.uri
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
