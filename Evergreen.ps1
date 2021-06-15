@@ -66,7 +66,7 @@ the script checks the version number and will update the package.
   2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install / Correction M365 Install
   2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen
   2021-06-11        Correction Notepad++ Download Version
-  2021-06-14        Add uberAgent
+  2021-06-14        Add uberAgent / Correction Foxit Reader Download and Install
 
 .PARAMETER list
 
@@ -2382,7 +2382,7 @@ If ($install -eq $False) {
         $Foxit_ReaderD = Get-EvergreenApp -Name FoxitReader | Where-Object {$_.Language -eq "$FoxitReaderLanguageClear"}
         $Version = $Foxit_ReaderD.Version
         $URL = $Foxit_ReaderD.uri
-        $InstallerType = "exe"
+        $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
@@ -4615,35 +4615,30 @@ If ($download -eq $False) {
         If (!$FReader) {
             $FReader = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $FoxitReaderInstaller = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear" + ".exe"
+        $FoxitLog = "$LogTemp\FoxitReader.log"
+        $FoxitReaderInstaller = "FoxitReader-Setup-" + "$FoxitReaderLanguageClear" + ".msi"
+        $InstallMSI = "$PSScriptRoot\$Product\$FoxitReaderInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $FoxitReaderLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $FReader"
         If ($FReader -lt $Version) {
-            $Options = @(
-                "/FORCEINSTALL"
-                "/VERYSILENT"
-                "/PASSIVE"
-                "/ALLUSERS"
-                "/NORESTART"
-                "/NOCLOSEAPPLICATIONS"
-                "AUTO_UPDATE=0"
-                "LAUNCHCHECKDEFAULT=0"
-                "DESKTOP_SHORTCUT=0"
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
                 "/qn"
+                "/L*V $FoxitLog"
+                "/NORESTART"
+                "AUTO_UPDATE=0 LAUNCHCHECKDEFAULT=0 DESKTOP_SHORTCUT=0"
             )
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $FoxitReaderLanguageClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$FoxitReaderInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
-                If ($inst) {
-                    Wait-Process -InputObject $inst
-                    If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
-                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
-                }
+                Install-MSI $InstallMSI $Arguments
+                Get-Content $FoxitLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $FoxitLog
+                If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $FoxitReaderLanguageClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
