@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.50
+  Version:          1.51
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -66,6 +66,7 @@ the script checks the version number and will update the package.
   2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install / Correction M365 Install
   2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen
   2021-06-11        Correction Notepad++ Download Version
+  2021-06-14        Add uberAgent
 
 .PARAMETER list
 
@@ -518,7 +519,7 @@ Function Get-PuTTY() {
     }
 }
 
-    # Function Wireshark Download Stable Version
+# Function Wireshark Download Stable Version
 #========================================================================================================================================
 Function Get-Wireshark() {
     [OutputType([System.Management.Automation.PSObject])]
@@ -618,7 +619,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.50"
+$eVersion = "1.51"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -792,7 +793,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="618" Width="855">
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="638" Width="855">
     <Grid x:Name="Evergreen_GUI" Margin="0,0,0,1" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="13*"/>
@@ -800,9 +801,9 @@ $inputXML = @"
             <ColumnDefinition Width="586*"/>
         </Grid.ColumnDefinitions>
         <Image x:Name="Image_Logo" Height="100" Margin="472,16,24,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,531,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,542,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,542,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,542,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
         <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
         <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
@@ -951,17 +952,18 @@ $inputXML = @"
             <ListBoxItem Content="Free"/>
             <ListBoxItem Content="Professional"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,458,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="153,478,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="340,495,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+        <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="153,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="153,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="153,458,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="153,478,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="153,498,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="153,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
+        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="340,515,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
             <ListBoxItem Content="Client"/>
             <ListBoxItem Content="Client + Citrix Plugin"/>
         </ComboBox>
-        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="153,533,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,553,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="153,544,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,564,0,-1" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
     </Grid>
 </Window>
 "@
@@ -1155,6 +1157,9 @@ $inputXML = @"
         Switch ($LastSetting[65]) {
             1 { $WPFCheckbox_ImageGlass.IsChecked = "True"}
         }
+        Switch ($LastSetting[67]) {
+            1 { $WPFCheckbox_uberAgent.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -1204,6 +1209,7 @@ $inputXML = @"
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_uberAgent.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
     # Checkbox SelectAll to Uncheck (AddScript)
     $WPFCheckbox_SelectAll.Add_Unchecked({
@@ -1251,6 +1257,7 @@ $inputXML = @"
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_uberAgent.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Start (AddScript)
@@ -1351,6 +1358,8 @@ $inputXML = @"
         Else {$Script:MSAzureDataStudio = 0}
         If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
         Else {$Script:ImageGlass = 0}
+        If ($WPFCheckbox_uberAgent.ischecked -eq $true) {$Script:uberAgent = 1}
+        Else {$Script:uberAgent = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1372,7 +1381,7 @@ $inputXML = @"
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
         $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
@@ -1484,6 +1493,8 @@ $inputXML = @"
         Else {$Script:MSAzureDataStudio = 0}
         If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
         Else {$Script:ImageGlass = 0}
+        If ($WPFCheckbox_uberAgent.ischecked -eq $true) {$Script:uberAgent = 1}
+        Else {$Script:uberAgent = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1505,7 +1516,7 @@ $inputXML = @"
         $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
         $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "Save Settings"
     })
 
@@ -1598,6 +1609,7 @@ If ($list -eq $True) {
             $MSAzureDataStudio = $FileSetting[63] -as [int]
             $ImageGlass = $FileSetting[65] -as [int]
             $MSFSLogixChannel = $FileSetting[66] -as [int]
+            $uberAgent = $FileSetting[67] -as [int]
         }
     }
     Else {
@@ -1774,6 +1786,7 @@ If ($list -eq $True) {
         $ShareX = 0
         $TeamViewer = 0
         $TreeSize = 0
+        $uberAgent = 0
         $VLCPlayer = 0
         $VMWareTools = 0
         $WinSCP = 0
@@ -1784,7 +1797,7 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent -ErrorAction SilentlyContinue
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
         $WScriptShell = New-Object -ComObject 'WScript.Shell'
@@ -2298,6 +2311,7 @@ If ($install -eq $False) {
             Remove-Item -Path "$PSScriptRoot\$Product\deviceTRUST.zip" -Force
             expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
             copy-item -Path "$PSScriptRoot\$Product\ADMX\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force
+            copy-item -Path "$PSScriptRoot\$Product\ADMX\en-US\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST\en-US" -Force
             Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
             Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
             Remove-Item -Path "$PSScriptRoot\$Product\dtreporting-$Version.0.zip" -Force
@@ -2889,8 +2903,10 @@ If ($install -eq $False) {
             Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Win32" -Force -Recurse
             Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\x64" -Force -Recurse
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fslogix.admx"
             Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product"
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml"
             Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US"
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
@@ -3788,6 +3804,51 @@ If ($install -eq $False) {
                     Write-Output ""
                 }
             }
+        }
+    }
+
+    #// Mark: Download uberAgent
+    If ($uberAgent -eq 1) {
+        $Product = "uberAgent"
+        $PackageName = "setup_uberAgent"
+        $uberAgentD = Get-EvergreenApp -Name VastLimitsUberAgent 
+        $Version = $uberAgentD.Version
+        $URL = $uberAgentD.uri
+        $InstallerType = "zip"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude silent-install.cmd
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$VersionPath" -Value "$Version"
+            Write-Host "Starting download of $Product $Version"
+            #Get-Download $URL "$PSScriptRoot\$Product" $Source -includeStats
+            Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+            expand-archive -path "$PSScriptRoot\$Product\$Source" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item -Path "$PSScriptRoot\$Product\$Source" -Force
+            Move-Item -Path "$PSScriptRoot\$Product\uberAgent components\uberAgent_endpoint\bin\uberAgent-32.msi" -Destination "$PSScriptRoot\$Product"
+            Move-Item -Path "$PSScriptRoot\$Product\uberAgent components\uberAgent_endpoint\bin\uberAgent-64.msi" -Destination "$PSScriptRoot\$Product"
+            If (!(Test-Path "$PSScriptRoot\$Product\silent-install.cmd" -PathType leaf)) {
+                Move-Item -Path "$PSScriptRoot\$Product\uberAgent components\uberAgent_endpoint\bin\silent-install.cmd" -Destination "$PSScriptRoot\$Product"
+            }
+            #Remove-Item -Path "$PSScriptRoot\$Product\uberAgent components" -Force -Recurse
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            copy-item -Path "$PSScriptRoot\$Product\uberAgent components\Group Policy\Administrative template (ADMX)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
         }
     }
 
@@ -6341,6 +6402,41 @@ If ($download -eq $False) {
                     Write-Output ""
                 }
             }
+        }
+    }
+
+    #// Mark: Install uberAgent
+    If ($uberAgent -eq 1) {
+        $Product = "uberAgent"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $uberAgentV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*uberAgent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$uberAgentV) {
+            $uberAgentV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*uberAgent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $uberAgentInstaller = "silent-install.cmd"
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version: $uberAgentV"
+        If ($uberAgentV -lt $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                Start-Process "$PSScriptRoot\$Product\$uberAgentInstaller" -NoNewWindow -Wait
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
         }
     }
 
