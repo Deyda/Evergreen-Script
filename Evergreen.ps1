@@ -6584,8 +6584,8 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/S"
-                "/desktopicon=no"
-                "/quicklaunchicon=no"
+                "/esktopicon=no"
+                "/quicklaunchdicon=no"
             )
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
