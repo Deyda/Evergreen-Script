@@ -1,4 +1,4 @@
-﻿#requires -version 3
+#requires -version 3
 <#
 .SYNOPSIS
 Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
@@ -67,6 +67,7 @@ the script checks the version number and will update the package.
   2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen
   2021-06-11        Correction Notepad++ Download Version
   2021-06-14        Add uberAgent / Correction Foxit Reader Download and Install
+  2021-07-02        Minor Update Correction Google Chrome & Microsoft365 Apps
 
 .PARAMETER list
 
@@ -2450,15 +2451,49 @@ If ($install -eq $False) {
         $PackageName = "googlechromestandaloneenterprise_" + "$ArchitectureClear"
         $ChromeD = Get-EvergreenApp -Name GoogleChrome | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $ChromeD.Version
+        $ChromeSplit = $Version.split(".")
+        $ChromeStrings = ([regex]::Matches($Version, "\." )).count
+        $ChromeStringLast = ([regex]::Matches($ChromeSplit[$ChromeStrings], "." )).count
+        If ($ChromeStringLast -lt "3") {
+            $ChromeSplit[$ChromeStrings] = "0" + $ChromeSplit[$ChromeStrings]
+        }
+        Switch ($ChromeStrings) {
+            1 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1]
+            }
+            2 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2]
+            }
+            3 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2] + "." + $ChromeSplit[3]
+            }
+        }
         $URL = $ChromeD.uri
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $CurrentChromeSplit = $CurrentVersion.split(".")
+        $CurrentChromeStrings = ([regex]::Matches($CurrentVersion, "\." )).count
+        $CurrentChromeStringLast = ([regex]::Matches($CurrentChromeSplit[$CurrentChromeStrings], "." )).count
+        If ($CurrentChromeStringLast -lt "3") {
+            $CurrentChromeSplit[$CurrentChromeStrings] = "0" + $CurrentChromeSplit[$CurrentChromeStrings]
+        }
+        Switch ($CurrentChromeStrings) {
+            1 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1]
+            }
+            2 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2]
+            }
+            3 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2] + "." + $CurrentChromeSplit[3]
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
             $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
@@ -2774,20 +2809,20 @@ If ($install -eq $False) {
                     $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
                 Write-Host -ForegroundColor Green "Create install.xml for Physical Machine finished!"
             }
-            If ($CurrentVersion -lt $Version) {
-                Write-Host -ForegroundColor Green "Update available"
-                $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
-                Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
-                Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
-                Write-Host "Starting download of $Product $MS365AppsChannelClear $Version setup file"
-                Get-Download $URL "$PSScriptRoot\$Product\$MS365AppsChannelClear" $Source -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
-                Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
-                Write-Verbose "Stop logging"
-                Stop-Transcript | Out-Null
-                Write-Output ""
-            }
+        }
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
+            Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
+            Start-Transcript $LogPS | Out-Null
+            Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
+            Write-Host "Starting download of $Product $MS365AppsChannelClear $Version setup file"
+            Get-Download $URL "$PSScriptRoot\$Product\$MS365AppsChannelClear" $Source -includeStats
+            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
+            Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -4698,17 +4733,51 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
+        $ChromeSplit = $Version.split(".")
+        $ChromeStrings = ([regex]::Matches($Version, "\." )).count
+        $ChromeStringLast = ([regex]::Matches($ChromeSplit[$ChromeStrings], "." )).count
+        If ($ChromeStringLast -lt "3") {
+            $ChromeSplit[$ChromeStrings] = "0" + $ChromeSplit[$ChromeStrings]
+        }
+        Switch ($ChromeStrings) {
+            1 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1]
+            }
+            2 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2]
+            }
+            3 {
+                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2] + "." + $ChromeSplit[3]
+            }
+        }
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $ChromeLog = "$LogTemp\GoogleChrome.log"
         If (!$Chrome) {
             $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $CurrentChromeSplit = $Chrome.split(".")
+        $CurrentChromeStrings = ([regex]::Matches($Chrome, "\." )).count
+        $CurrentChromeStringLast = ([regex]::Matches($CurrentChromeSplit[$CurrentChromeStrings], "." )).count
+        If ($CurrentChromeStringLast -lt "3") {
+            $CurrentChromeSplit[$CurrentChromeStrings] = "0" + $CurrentChromeSplit[$CurrentChromeStrings]
+        }
+        Switch ($CurrentChromeStrings) {
+            1 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1]
+            }
+            2 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2]
+            }
+            3 {
+                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2] + "." + $CurrentChromeSplit[3]
+            }
         }
         $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ChromeInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $Chrome"
-        If ($Chrome -lt $Version) {
+        If ($NewCurrentVersion -lt $NewVersion) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
