@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.52
+  Version:          1.53
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -74,6 +74,9 @@ the script checks the version number and will update the package.
   2021-07-08        Add MS Power BI Desktop Install / Minor Update Correction Microsoft Teams
   2021-07-17        Error Correction FSLogix Installer search, if no preview version is available / Fix Adobe Reader DC update task disable / Fix Microsoft Edge update registry key
   2021-07-18        Activate Change User /Install in Virtual Machine Type Selection / Change Download Method for SumatraPDF
+  2021-07-22        Correction MS Edge Download and Install
+  2021-07-29        New Log for FW rules (Ray Davis) / Add MS Edge ADMX Download / Correction Citrix Workspace App Download
+  2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
 
 .PARAMETER list
 
@@ -526,42 +529,87 @@ Function Get-PuTTY() {
     }
 }
 
-# Function Wireshark Download Stable Version
+# Function Microsoft Office ADMX Download
 #========================================================================================================================================
-Function Get-SumatraPDFReader() {
-    [OutputType([System.Management.Automation.PSObject])]
-    [CmdletBinding()]
-    Param ()
-    $appURLVersion = "https://www.sumatrapdfreader.org/download-free-pdf-viewer"
-    Try {
-        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
-    }
-    Catch {
-        Throw "Failed to connect to URL: $appURLVersion or $appURLVersionPre with error $_."
-        Break
-    }
-    Finally {
-        $regexAppVersion = "[0123456789]*\.[0123456789]*\.[0123456789]*"
-        $appVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appx64URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-$appVersion-64-install.exe"
-        $appx86URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-$appVersion-install.exe"
-
+function Get-MicrosoftOfficeAdmx {
+    $id = "49030"
+    $urlversion = "https://www.microsoft.com/en-us/download/details.aspx?id=$($id)"
+    $urldownload = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=$($id)"
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        # load page for version scrape
+        $web = Invoke-WebRequest -UseBasicParsing -Uri $urlversion -ErrorAction SilentlyContinue
+        $str = ($web.ToString() -split "[`r`n]" | Select-String "Version:").ToString()
+        # grab version
+        $Version = ($str | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
+        # load page for uri scrape
+        $web = Invoke-WebRequest -UseBasicParsing -Uri $urldownload -ErrorAction SilentlyContinue -MaximumRedirection 0
+        # grab x64 version
+        $hrefx64 = $web.Links | Where-Object { $_.outerHTML -like "*click here to download manually*" -and $_.href -like "*.exe" -and $_.href -like "*x64*" } | Select-Object -First 1
+        # grab x86 version
+        $hrefx86 = $web.Links | Where-Object { $_.outerHTML -like "*click here to download manually*" -and $_.href -like "*.exe" -and $_.href -like "*x86*" } | Select-Object -First 1
+        # return evergreen object
         $PSObjectx86 = [PSCustomObject] @{
-            Version      = $appVersion
-            Channel      = "Stable"
+            Version      = $Version
             Architecture = "x86"
-            URI          = $appx86URL
+            URI          = $hrefx86.href
         }
 
         $PSObjectx64 = [PSCustomObject] @{
-            Version      = $appVersion
-            Channel      = "Stable"
+            Version      = $Version
             Architecture = "x64"
-            URI          = $appx64URL
+            URI          = $hrefx64.href
         }
+    }
+    catch {
+        Throw $_
+    }
+    Write-Output -InputObject $PSObjectx86
+    Write-Output -InputObject $PSObjectx64
+}
 
-        Write-Output -InputObject $PSObjectx86
-        Write-Output -InputObject $PSObjectx64
+# Function Google Chrome ADMX Download
+#========================================================================================================================================
+function Get-GoogleChromeAdmx {
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        $URI = "https://dl.google.com/dl/edgedl/chrome/policy/policy_templates.zip"
+        # download the file
+        Invoke-WebRequest -Uri $URI -OutFile "$($env:TEMP)\policy_templates.zip"
+        # extract the file
+        Expand-Archive -Path "$($env:TEMP)\policy_templates.zip" -DestinationPath "$($env:TEMP)\chromeadmx" -Force
+        # open the version file
+        $versionfile = (Get-Content -Path "$($env:TEMP)\chromeadmx\VERSION").Split('=')
+        $Version = "$($versionfile[1]).$($versionfile[3]).$($versionfile[5]).$($versionfile[7])"
+
+        # return evergreen object
+        return @{ Version = $Version; URI = $URI }
+    }
+    catch {
+        Throw $_
+    }
+}
+
+# Function Mozilla Firefox ADMX Download
+#========================================================================================================================================
+function Get-MozillaFirefoxAdmx {
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        # define github repo
+        $repo = "mozilla/policy-templates"
+        # grab latest release properties
+        $latest = (Invoke-WebRequest -Uri "https://api.github.com/repos/$($repo)/releases" -UseBasicParsing | ConvertFrom-Json)[0]
+
+        # grab version
+        $Version = ($latest.tag_name | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
+        # grab uri
+        $URI = $latest.assets.browser_download_url
+
+        # return evergreen object
+        return @{ Version = $Version; URI = $URI }
+    }
+    catch {
+        Throw $_
     }
 }
 
@@ -625,7 +673,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.52"
+$eVersion = "1.53"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1981,7 +2029,7 @@ Switch ($LanguageClear) {
 $CiscoWebexClientClear = 'Desktop'
 
 Switch ($CitrixWorkspaceAppRelease) {
-    0 { $CitrixWorkspaceAppReleaseClear = 'Current Release'}
+    0 { $CitrixWorkspaceAppReleaseClear = 'Current'}
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
 }
 
@@ -2207,6 +2255,13 @@ Write-Host -ForegroundColor Green "Software selection done."
 Write-Output ""
 
 If ($install -eq $False) {
+    # Logging
+    # Global variables
+    # $StartDir = $PSScriptRoot # the directory path of the script currently being executed
+    $LogDir = "$PSScriptRoot\_Install Logs"
+    $FWFileName = ("Firewall - $Date.log")
+    $FWFile = Join-path $LogDir $FWFileName
+
     #// Mark: Install / Update PowerShell module
     Write-Host -ForegroundColor DarkGray "Install / Update PowerShell module!"
 
@@ -2255,6 +2310,7 @@ If ($install -eq $False) {
         $7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -2290,6 +2346,7 @@ If ($install -eq $False) {
         $AdobeProD = Get-EvergreenApp -Name AdobeAcrobat | Where-Object { $_.Track -eq "DC" -and $_.Language -eq "Multi" }
         $Version = $AdobeProD.Version
         $URL = $AdobeProD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msp"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -2324,6 +2381,7 @@ If ($install -eq $False) {
         $AdobeReaderD = Get-EvergreenApp -Name AdobeAcrobatReaderDC | Where-Object {$_.Architecture -eq "$AdobeArchitectureClear" -and $_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
@@ -2359,6 +2417,7 @@ If ($install -eq $False) {
         $BISFD = Get-EvergreenApp -Name BISF | Where-Object { $_.Type -eq "msi" }
         $Version = $BISFD.Version
         $URL = $BISFD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -2393,6 +2452,7 @@ If ($install -eq $False) {
         $WebexD = Get-EvergreenApp -Name CiscoWebex | Where-Object { $_.Type -eq "$CiscoWebexClientClear" }
         $Version = $WebexD.Version
         $URL = $WebexD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexClientClear" + ".txt"
@@ -2428,6 +2488,7 @@ If ($install -eq $False) {
         $CitrixHypervisor = Get-EvergreenApp -Name CitrixVMTools | Where-Object {$_.Architecture -eq "$ArchitectureClear"} | Select-Object -Last 1
         $Version = $CitrixHypervisor.Version
         $URL = $CitrixHypervisor.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -2460,9 +2521,10 @@ If ($install -eq $False) {
     If ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         $PackageName = "CitrixWorkspaceApp"
-        $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and "*$CitrixWorkspaceAppReleaseClear*" -and $_.Platform -eq "Windows" -and $_.Title -like "*$CitrixWorkspaceAppReleaseClear*" }
+        $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and $_.Stream -like "*$CitrixWorkspaceAppReleaseClear*" }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -EA SilentlyContinue
@@ -2507,6 +2569,7 @@ If ($install -eq $False) {
         $ControlUpAgentD = Get-EvergreenApp -Name ControlUpAgent | Where-Object { $_.Framework -like "*$ControlUpAgentFrameworkClear" -and $_.Architecture -eq "$ArchitectureClear" }
         $Version = $ControlUpAgentD.Version
         $URL = $ControlUpAgentD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ArchitectureClear" + ".txt"
@@ -2542,6 +2605,7 @@ If ($install -eq $False) {
         $ControlUpConsoleD = Get-EvergreenApp -Name ControlUpConsole
         $Version = $ControlUpConsoleD.Version
         $URL = $ControlUpConsoleD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
@@ -2582,6 +2646,7 @@ If ($install -eq $False) {
         $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
         $Version = $webVersion.Trim("</td>").Trim("</td>")
         $URL = "https://storage.devicetrust.com/download/deviceTRUST-$Version.zip"
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -2601,11 +2666,6 @@ If ($install -eq $False) {
             #Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             expand-archive -path "$PSScriptRoot\$Product\deviceTRUST.zip" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\deviceTRUST.zip" -Force
-            expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
-            copy-item -Path "$PSScriptRoot\$Product\ADMX\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force
-            copy-item -Path "$PSScriptRoot\$Product\ADMX\en-US\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST\en-US" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
             Remove-Item -Path "$PSScriptRoot\$Product\dtreporting-$Version.0.zip" -Force
             If (Test-Path -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe") {Remove-Item -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe" -Force}
             Switch ($Architecture) {
@@ -2626,6 +2686,14 @@ If ($install -eq $False) {
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
+            Write-Host "Starting copy of $Product ADMX files $Version"
+            expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
+            If (Test-Path -Path "$PSScriptRoot\ADMX\deviceTRUST") {Remove-Item -Path "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse}
+            copy-item -Path "$PSScriptRoot\$Product\ADMX\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
+            Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -2640,6 +2708,7 @@ If ($install -eq $False) {
         $FilezillaD = Get-EvergreenApp -Name Filezilla | Where-Object { $_.URI -like "*win64*"}
         $Version = $FilezillaD.Version
         $URL = $FilezillaD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -2674,6 +2743,7 @@ If ($install -eq $False) {
         $Foxit_ReaderD = Get-EvergreenApp -Name FoxitReader | Where-Object {$_.Language -eq "$FoxitReaderLanguageClear"}
         $Version = $Foxit_ReaderD.Version
         $URL = $Foxit_ReaderD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
@@ -2709,6 +2779,7 @@ If ($install -eq $False) {
         $GIMPD = Get-EvergreenApp -Name GIMP
         $Version = $GIMPD.Version
         $URL = $GIMPD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -2760,10 +2831,12 @@ If ($install -eq $False) {
             }
         }
         $URL = $ChromeD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $NewCurrentVersion = ""
         If ($CurrentVersion) {
             $CurrentChromeSplit = $CurrentVersion.split(".")
             $CurrentChromeStrings = ([regex]::Matches($CurrentVersion, "\." )).count
@@ -2784,8 +2857,8 @@ If ($install -eq $False) {
             }
         }
         Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version: $CurrentVersion"
+        Write-Host "Download Version: $NewVersion"
+        Write-Host "Current Version: $NewCurrentVersion"
         If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
@@ -2800,6 +2873,24 @@ If ($install -eq $False) {
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
+            $PackageNameP = "Chrome-Templates"
+            $ChromeDP = Get-GoogleChromeAdmx
+            $VersionP = $ChromeDP.version
+            $URL = $ChromeDP.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerTypeP = "zip"
+            $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+            Write-Host "Starting download of $Product ADMX files $VersionP"
+            Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
+            expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
+            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\common" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\chromeos" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -2814,6 +2905,7 @@ If ($install -eq $False) {
         $GreenshotD = Get-EvergreenApp -Name Greenshot | Where-Object { $_.Architecture -eq "x86" -and $_.URI -like "*INSTALLER*" -and $_.Type -like "exe"}
         $Version = $GreenshotD.Version
         $URL = $GreenshotD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -2848,6 +2940,7 @@ If ($install -eq $False) {
         $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $ImageGlassD.Version
         $URL = $ImageGlassD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -2883,6 +2976,7 @@ If ($install -eq $False) {
         $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
         $Version = $IrfanViewD.Version
         $URL = $IrfanViewD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -2918,6 +3012,7 @@ If ($install -eq $False) {
         $KeePassD = Get-EvergreenApp -Name KeePass | Where-Object { $_.Type -eq "msi" }
         $Version = $KeePassD.Version
         $URL = $KeePassD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"-EA SilentlyContinue 
@@ -2952,6 +3047,7 @@ If ($install -eq $False) {
         $MSDotNetFrameworkD = Get-EvergreenApp -Name Microsoft.NET | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear"}
         $Version = $MSDotNetFrameworkD.Version
         $URL = $MSDotNetFrameworkD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
@@ -2987,6 +3083,7 @@ If ($install -eq $False) {
         $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -EA SilentlyContinue
@@ -3116,6 +3213,27 @@ If ($install -eq $False) {
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Output ""
+            $PackageNameP = "admintemplates-office"
+            $MS365AppsPD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+            $Version = $MS365AppsPD.Version
+            $URL = $MS365AppsPD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerTypeP = "exe"
+            $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+            Write-Host "Starting download of $Product ADMX Files $Version"
+            $InstallDir = "$PSScriptRoot\$Product\$SourceP"
+            Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+            Start-Process -FilePath "$InstallDir" -ArgumentList "/extract:$env:TEMP /passive /quiet" -wait
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\office16.admx" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            }
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+            Remove-Item -Path "$InstallDir" -Force
+            Remove-Item -Path "$env:TEMP\ADMX" -Force -Recurse
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3130,6 +3248,7 @@ If ($install -eq $False) {
         $MSAVDRemoteDesktopD = Get-EvergreenApp -Name MicrosoftWVDRemoteDesktop | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSAVDRemoteDesktopChannelClear" }
         $Version = $MSAVDRemoteDesktopD.Version
         $URL = $MSAVDRemoteDesktopD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAVDRemoteDesktopChannelClear" + "$ArchitectureClear" + ".txt"
@@ -3165,6 +3284,7 @@ If ($install -eq $False) {
         $MSAzureDataStudioD = Get-EvergreenApp -Name microsoftazuredatastudio | Where-Object { $_.Channel -eq "$MSAzureDataStudioChannelClear" -and $_.Platform -eq "$MSAzureDataStudioPlatformClear"}
         $Version = $MSAzureDataStudioD.Version
         $URL = $MSAzureDataStudioD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + ".txt"
@@ -3201,6 +3321,7 @@ If ($install -eq $False) {
         #$EdgeURL = $EdgeURL | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $EdgeD.Version
         $URL = $EdgeD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
@@ -3222,6 +3343,25 @@ If ($install -eq $False) {
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
+            $PackageNameP = "MicrosoftEdgePolicy"
+            $EdgeDP = Get-EvergreenApp -name microsoftedge | Where-Object { $_.Channel -eq "Policy" }
+            $URL = $EdgeDP.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerTypeP = "cab"
+            $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+            Write-Host "Starting download of $Product $MSEdgeChannelClear ADMX files $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" | Out-Null
+            expand-archive -path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item -Path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\html" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\examples" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force
+            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\Microsoft Edge" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3236,6 +3376,7 @@ If ($install -eq $False) {
         $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Channel -eq "$MSFSLogixChannelClear"} 
         $Version = $MSFSLogixD.Version
         $URL = $MSFSLogixD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Version_"+ "$MSFSLogixChannelClear" + ".txt"
@@ -3265,19 +3406,22 @@ If ($install -eq $False) {
             }
             Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Win32" -Force -Recurse
             Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\x64" -Force -Recurse
+            Write-Verbose "Stop logging"
+            Stop-Transcript | Out-Null
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+            Write-Host "Starting copy of $Product $MSFSLogixChannelClear ADMX files $Version"
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-            If (!(Test-Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -PathType leaf)) {
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -PathType leaf)) {
                 Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fslogix.admx"
             }
             Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product"
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-            If (!(Test-Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -PathType leaf)) {
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -PathType leaf)) {
                 Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml"
             }
             Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US"
-            Write-Verbose "Stop logging"
-            Stop-Transcript | Out-Null
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
         Else {
@@ -3293,6 +3437,7 @@ If ($install -eq $False) {
         $MSOffice2019D = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "Office 2019 Enterprise"}
         $Version = $MSOffice2019D.Version
         $URL = $MSOffice2019D.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -3421,6 +3566,27 @@ If ($install -eq $False) {
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Output ""
+            $PackageNameP = "admintemplates-office"
+            $MSOffice2019PD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+            $Version = $MSOffice2019PD.Version
+            $URL = $MSOffice2019PD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerTypeP = "exe"
+            $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+            Write-Host "Starting download of $Product ADMX Files $Version"
+            Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+            $InstallDir = "$PSScriptRoot\$Product\$SourceP"
+            Start-Process -FilePath "$InstallDir" -ArgumentList "/extract:$env:TEMP /passive /quiet" -wait
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\office16.admx" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            }
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+            Remove-Item -Path "$InstallDir" -Force
+            Remove-Item -Path "$env:TEMP\ADMX" -Force -Recurse
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3435,6 +3601,7 @@ If ($install -eq $False) {
         $MSOneDriveD = Get-EvergreenApp -Name MicrosoftOneDrive | Where-Object { $_.Ring -eq "$MSOneDriveRingClear" -and $_.Type -eq "Exe" -and $_.Architecture -eq "$MSOneDriveArchitectureClear"} | Sort-Object -Property Version -Descending | Select-Object -Last 1
         $Version = $MSOneDriveD.Version
         $URL = $MSOneDriveD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
@@ -3470,6 +3637,7 @@ If ($install -eq $False) {
         $MSPowerBIDesktopD = Get-NevergreenApp -Name MicrosoftPowerBIDesktop | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
         $Version = $MSPowerBIDesktopD.Version
         $URL = $MSPowerBIDesktopD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -3505,6 +3673,7 @@ If ($install -eq $False) {
         $MSPowershellD = Get-EvergreenApp -Name MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
         $Version = $MSPowershellD.Version
         $URL = $MSPowershellD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
@@ -3540,6 +3709,7 @@ If ($install -eq $False) {
         $MSPowerToysD = Get-EvergreenApp -Name MicrosoftPowerToys
         $Version = $MSPowerToysD.Version
         $URL = $MSPowerToysD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
@@ -3575,6 +3745,7 @@ If ($install -eq $False) {
         $MSSQLServerManagementStudioD = Get-EvergreenApp -Name MicrosoftSsms -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Language -eq "$MSSQLServerManagementStudioLanguageClear" }
         $Version = $MSSQLServerManagementStudioD.Version
         $URL = $MSSQLServerManagementStudioD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSSQLServerManagementStudioLanguageClear" + ".txt"
@@ -3623,6 +3794,7 @@ If ($install -eq $False) {
             }
             $NewVersion = $TeamsSplit[0] + "." + $TeamsSplit[1] + "." + $TeamsSplit[2] + "." + $TeamsSplit[3]
             $URL = $TeamsD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
             $Source = "$PackageName" + "." + "$InstallerType"
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
@@ -3664,6 +3836,7 @@ If ($install -eq $False) {
             $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             $Version = $TeamsD.Version
             $URL = $TeamsD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "exe"
             $Source = "$PackageName" + "." + "$InstallerType"
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
@@ -3700,6 +3873,7 @@ If ($install -eq $False) {
         $MSVisualStudioD = Get-EvergreenApp -Name MicrosoftVisualStudio
         $Version = $MSVisualStudioD.Version
         $URL = $MSVisualStudioD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
@@ -3735,6 +3909,7 @@ If ($install -eq $False) {
         $MSVisualStudioCodeD = Get-EvergreenApp -Name MicrosoftVisualStudioCode | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSVisualStudioCodeChannelClear" -and $_.Platform -eq "$MSVisualStudioCodePlatformClear"}
         $Version = $MSVisualStudioCodeD.Version
         $URL = $MSVisualStudioCodeD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
@@ -3770,6 +3945,7 @@ If ($install -eq $False) {
         $FirefoxD = Get-EvergreenApp -Name MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
         $Version = $FirefoxD.Version
         $URL = $FirefoxD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
@@ -3791,6 +3967,24 @@ If ($install -eq $False) {
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
+            $PackageNameP = "Firefox-Templates"
+            $FirefoxDP = Get-MozillaFirefoxAdmx
+            $VersionP = $FirefoxDP.version
+            $URL = $FirefoxDP.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerTypeP = "zip"
+            $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+            Write-Host "Starting download of $Product ADMX files $VersionP"
+            Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
+            expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
+            copy-item -Path "$PSScriptRoot\$Product\windows\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\README.md" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3805,6 +3999,7 @@ If ($install -eq $False) {
         $mRemoteNGD = Get-EvergreenApp -Name mRemoteNG | Where-Object { $_.Type -eq "msi" }
         $Version = $mRemoteNGD.Version
         $URL = $mRemoteNGD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -3841,6 +4036,7 @@ If ($install -eq $False) {
         #$VersionSplit = $Version.split("v")
         #$Version = $VersionSplit[1]
         $URL = $NotepadD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -3876,6 +4072,7 @@ If ($install -eq $False) {
         $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $OpenJDKD.Version
         $URL = $OpenJDKD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -3911,6 +4108,7 @@ If ($install -eq $False) {
         $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $OracleJava8D.Version
         $URL = $OracleJava8D.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -3946,6 +4144,7 @@ If ($install -eq $False) {
         $PaintDotNetD = Get-EvergreenApp -Name PaintDotNet | Where-Object { $_.URI -like "*files*" }
         $Version = $PaintDotNetD.Version
         $URL = $PaintDotNetD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -3983,6 +4182,7 @@ If ($install -eq $False) {
         $PuTTYD = Get-Putty | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$PuttyChannelClear"}
         $Version = $PuTTYD.Version
         $URL = $PuTTYD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
@@ -4023,6 +4223,7 @@ If ($install -eq $False) {
                 $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersion.Trim("</td>").Trim("</td>")
                 $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManagerFree.$Version.msi"
+                Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "msi"
                 $Source = "$PackageName" + "." + "$InstallerType"
                 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4058,6 +4259,7 @@ If ($install -eq $False) {
                 $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersion.Trim("</td>").Trim("</td>")
                 $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManager.$Version.msi"
+                Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "msi"
                 $Source = "$PackageName" + "." + "$InstallerType"
                 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4094,6 +4296,7 @@ If ($install -eq $False) {
         $RDAnalyzerD = Get-EvergreenApp -Name RDAnalyzer | Where-Object {$_.Type -eq "exe"}
         $Version = $RDAnalyzerD.Version
         $URL = $RDAnalyzerD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4128,6 +4331,7 @@ If ($install -eq $False) {
         $ShareXD = Get-EvergreenApp -Name ShareX | Where-Object {$_.Type -eq "exe"}
         $Version = $ShareXD.Version
         $URL = $ShareXD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4162,6 +4366,7 @@ If ($install -eq $False) {
         $SlackD = Get-EvergreenApp -Name Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
         $Version = $SlackD.Version
         $URL = $SlackD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SlackArchitectureClear" + "_$SlackPlatformClear" + ".txt"
@@ -4197,6 +4402,7 @@ If ($install -eq $False) {
         $SumatraPDFD = Get-SumatraPDFReader | Where-Object {$_.Architecture -eq "$ArchitectureClear" }
         $Version = $SumatraPDFD.Version
         $URL = $SumatraPDFD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -4232,6 +4438,7 @@ If ($install -eq $False) {
         $TeamViewerD = Get-EvergreenApp -Name TeamViewer
         $Version = $TeamViewerD.Version
         $URL = $TeamViewerD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4268,6 +4475,7 @@ If ($install -eq $False) {
                 $TreeSizeFreeD = Get-EvergreenApp -Name JamTreeSizeFree
                 $Version = $TreeSizeFreeD.Version
                 $URL = $TreeSizeFreeD.uri
+                Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "exe"
                 $Source = "$PackageName" + "." + "$InstallerType"
                 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4300,6 +4508,7 @@ If ($install -eq $False) {
                 $TreeSizeProfD = Get-EvergreenApp -Name JamTreeSizeProfessional
                 $Version = $TreeSizeProfD.Version
                 $URL = $TreeSizeProfD.uri
+                Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "exe"
                 $Source = "$PackageName" + "." + "$InstallerType"
                 $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4336,6 +4545,7 @@ If ($install -eq $False) {
         $uberAgentD = Get-EvergreenApp -Name VastLimitsUberAgent 
         $Version = $uberAgentD.Version
         $URL = $uberAgentD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
@@ -4361,11 +4571,17 @@ If ($install -eq $False) {
                 Move-Item -Path "$PSScriptRoot\$Product\uberAgent components\uberAgent_endpoint\bin\silent-install.cmd" -Destination "$PSScriptRoot\$Product"
             }
             #Remove-Item -Path "$PSScriptRoot\$Product\uberAgent components" -Force -Recurse
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-            copy-item -Path "$PSScriptRoot\$Product\uberAgent components\Group Policy\Administrative template (ADMX)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+            Write-Host "Starting copy of $Product ADMX files $Version"
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\uberAgent.admx" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            }
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            copy-item -Path "$PSScriptRoot\$Product\uberAgent components\Group Policy\Administrative template (ADMX)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+            Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
         Else {
@@ -4381,6 +4597,7 @@ If ($install -eq $False) {
         $VLCD = Get-EvergreenApp -Name VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "MSI" }
         $Version = $VLCD.Version
         $URL = $VLCD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -4416,6 +4633,7 @@ If ($install -eq $False) {
         $VMWareToolsD = Get-EvergreenApp -Name VMwareTools | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
         $Version = $VMWareToolsD.Version
         $URL = $VMWareToolsD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -4451,6 +4669,7 @@ If ($install -eq $False) {
         $WinSCPD = Get-EvergreenApp -Name WinSCP | Where-Object {$_.URI -like "*Setup*"}
         $Version = $WinSCPD.Version
         $URL = $WinSCPD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4485,6 +4704,7 @@ If ($install -eq $False) {
         $WiresharkD = Get-EvergreenApp -Name Wireshark | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe"}
         $Version = $WiresharkD.Version
         $URL = $WiresharkD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
@@ -4524,6 +4744,7 @@ If ($install -eq $False) {
             $regexAppVersion = "(\d\.\d\.\d)"
             $Version = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Sort-Object -Descending | Select-Object -First 1
             $URL = $ZoomD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
             $Source = "$PackageName" + "." + "$InstallerType"
             $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4556,6 +4777,7 @@ If ($install -eq $False) {
             $ZoomD = Get-EvergreenApp -Name Zoom | Where-Object {$_.Type -eq "Msi"}
             $Version = $ZoomD.version
             $URL = $ZoomD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
             $Source = "$PackageName" + "." + "$InstallerType"
             $CurrentVersion = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -EA SilentlyContinue
@@ -4587,6 +4809,7 @@ If ($install -eq $False) {
             $PackageName2 = "ZoomCitrixHDXMediaPlugin"
             $ZoomCitrix = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "Citrix"}
             $URL = $ZoomCitrix.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
             $Source2 = "$PackageName2" + "." + "$InstallerType"
             $CurrentVersion2 = Get-Content -Path "$PSScriptRoot\$Product2\Version.txt" -EA SilentlyContinue
             Write-Host -ForegroundColor Magenta "Download $Product2" -Verbose
@@ -4632,6 +4855,8 @@ If ($download -eq $False) {
     $LogDir = "$PSScriptRoot\_Install Logs"
     $LogFileName = ("$ENV:COMPUTERNAME - $Date.log")
     $LogFile = Join-path $LogDir $LogFileName
+    $FWFileName = ("Firewall - $Date.log")
+    $FWFile = Join-path $LogDir $FWFileName
     $LogTemp = "$env:windir\Logs\Evergreen"
 
     # Create the log directories if they don't exist
@@ -4858,6 +5083,14 @@ If ($download -eq $False) {
                 }
             }
             DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+            Write-Host "Starting copy of $Product ADMX files $Version"
+            $BISFInstallFolder = "${env:ProgramFiles(x86)}\Base Image Script Framework (BIS-F)\ADMX"
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\BaseImageScriptFramework.admx" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            }
+            Copy-Item -Path "$($BISFInstallFolder)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
         # Stop, if no new version is available
@@ -6126,6 +6359,22 @@ If ($download -eq $False) {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+            Write-Host "Starting copy of $Product $MSOneDriveRingClear ADMX files $Version"
+            $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+            If (!$OneDriveUninstall) {
+                $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+            }
+            If (!$OneDriveUninstall) {
+                $OneDriveUninstall = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+            }
+            $OneDriveInstallFolder = $OneDriveUninstall.DisplayIcon.Substring(0, $OneDriveUninstall.DisplayIcon.IndexOf("\OneDriveSetup.exe"))
+            $sourceadmx = "$($OneDriveInstallFolder)\adm"
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            }
+            Copy-Item -Path "$($sourceadmx)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
         # Stop, if no new version is available
