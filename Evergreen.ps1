@@ -77,6 +77,7 @@ the script checks the version number and will update the package.
   2021-07-22        Correction MS Edge Download and Install
   2021-07-29        New Log for FW rules (Ray Davis) / Add MS Edge ADMX Download / Correction Citrix Workspace App Download
   2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
+  2021-08-03        Add Error Action to clean the output
 
 .PARAMETER list
 
@@ -2884,12 +2885,12 @@ If ($install -eq $False) {
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
             expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
-            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
-            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\common" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\chromeos" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
+            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\common" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\chromeos" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
         }
         Else {
@@ -3353,14 +3354,14 @@ If ($install -eq $False) {
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
             expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -destinationpath "$PSScriptRoot\$Product"
-            Remove-Item -Path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\html" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\examples" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force
-            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\Microsoft Edge" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\html" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\examples" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
+            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\Microsoft Edge" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
         }
         Else {
@@ -3413,14 +3414,14 @@ If ($install -eq $False) {
             Write-Host "Starting copy of $Product $MSFSLogixChannelClear ADMX files $Version"
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fslogix.admx"
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -ErrorAction SilentlyContinue
             }
-            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product"
+            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml"
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -ErrorAction SilentlyContinue
             }
-            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US"
+            Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -3978,12 +3979,12 @@ If ($install -eq $False) {
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
             expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
-            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force
-            copy-item -Path "$PSScriptRoot\$Product\windows\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\README.md" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse
+            Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
+            copy-item -Path "$PSScriptRoot\$Product\windows\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\README.md" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
         }
         Else {
@@ -4948,7 +4949,7 @@ If ($download -eq $False) {
                 $ScheduledTask = Get-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue
                 If ($ScheduledTask.Length -gt 0) {
                     Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
+                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue | Out-Null
                     Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 }
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
@@ -5017,7 +5018,7 @@ If ($download -eq $False) {
                 $ScheduledTask = Get-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue
                 If ($ScheduledTask.Length -gt 0) {
                     Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" | Out-Null
+                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue | Out-Null
                     Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 }
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
@@ -5073,9 +5074,9 @@ If ($download -eq $False) {
             If (Test-Path -Path "$BISFDir") {
                 Try {
                     Write-Host "Customize scripts $Product"
-                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace "DisableTaskOffload' -Value '1'","DisableTaskOffload' -Value '0'") | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
-                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'nx AlwaysOff','nx OptOut') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
-                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw) -replace 'rss=disable','rss=enable') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1"
+                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw -ErrorAction SilentlyContinue) -replace "DisableTaskOffload' -Value '1'","DisableTaskOffload' -Value '0'") | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -ErrorAction SilentlyContinue
+                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw -ErrorAction SilentlyContinue) -replace 'nx AlwaysOff','nx OptOut') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -ErrorAction SilentlyContinue
+                    ((Get-Content "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -Raw -ErrorAction SilentlyContinue) -replace 'rss=disable','rss=enable') | Set-Content -Path "$BISFDir\Preparation\97_PrepBISF_PRE_BaseImage.ps1" -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
                 } Catch {
                     Write-Host -ForegroundColor Red "Error when customizing scripts (Error: $($Error[0]))"
@@ -5087,9 +5088,9 @@ If ($download -eq $False) {
             Write-Host "Starting copy of $Product ADMX files $Version"
             $BISFInstallFolder = "${env:ProgramFiles(x86)}\Base Image Script Framework (BIS-F)\ADMX"
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\BaseImageScriptFramework.admx" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             }
-            Copy-Item -Path "$($BISFInstallFolder)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Copy-Item -Path "$($BISFInstallFolder)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -5626,9 +5627,9 @@ If ($download -eq $False) {
                 $ScheduledTask = Get-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" -ErrorAction SilentlyContinue
                 If ($ScheduledTask.Length -gt 0) {
                     Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" | Out-Null
-                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA" | Out-Null
-                    #Disable-ScheduledTask -TaskName "GPUpdate on Startup" | Out-Null
+                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" -ErrorAction SilentlyContinue | Out-Null
+                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA" -ErrorAction SilentlyContinue | Out-Null
+                    Disable-ScheduledTask -TaskName "GPUpdate on Startup" -ErrorAction SilentlyContinue | Out-Null
                     Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 }
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
@@ -6060,8 +6061,8 @@ If ($download -eq $False) {
                 # Disable Microsoft Edge auto update
                 Write-Host "Customize $Product registry"
                 If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
-                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate | Out-Null
-                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD | Out-Null
+                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -ErrorAction SilentlyContinue | Out-Null
+                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
                 }
                 Else {
                     $EdgeUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate" | Select-Object -Expandproperty "UpdateDefault"
@@ -6074,9 +6075,9 @@ If ($download -eq $False) {
                         $RegName = "UviProcessExcludes"
                         $EdgeRegvalue = "msedge.exe"
                         # Get current values in UviProcessExcludes
-                        $CurrentValues = Get-ItemProperty -Path $RegPath | Select-Object -ExpandProperty $RegName
+                        $CurrentValues = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $RegName
                         # Add the msedge.exe value to existing values in UviProcessExcludes
-                        Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;"
+                        Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;" -ErrorAction SilentlyContinue
                     }
                 ) | Out-Null
                 Write-Host -ForegroundColor Green "Customize $Product registry finished!"
@@ -6091,7 +6092,7 @@ If ($download -eq $False) {
                 }
                 Write-Host "Customize Scheduled Task"
                 Start-Sleep -s 5
-                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* -erroraction 'silentlycontinue' | Disable-ScheduledTask | Out-Null
+                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
                 Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize $Product finished!"
             } Catch {
@@ -6172,40 +6173,40 @@ If ($download -eq $False) {
                 If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops") {
                     If ((Test-RegistryValue2 -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD | Out-Null
+                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                     If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "0") {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD
+                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                 }
                 If ($OS -Like "*Windows 10*" -and $OS -ne "Microsoft Windows 10 Enterprise for Virtual Desktops") {
                     If ((Test-RegistryValue2 -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD | Out-Null
+                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                     If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "1") {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD
+                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                 }
                 Write-Host -ForegroundColor Green "Post setup customizations for $OS finished!"
                 # Implement user based group policy processing fix
                 If (!(Test-Path -Path HKLM:SOFTWARE\FSLogix\Profiles)) {
-                    New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles | Out-Null
+                    New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles -ErrorAction SilentlyContinue | Out-Null
                 }
                 If ((Test-RegistryValue -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Value "GroupPolicyState") -ne $true) {
                     Write-Host "Deactivate FSLogix GroupPolicy"
-                    New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD | Out-Null
+                    New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
                 If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -ExpandProperty "GroupPolicyState") -ne "0") {
                     Write-Host "Deactivate FSLogix GroupPolicy"
-                    Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD
+                    Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
                 If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2")) {
@@ -6231,7 +6232,7 @@ If ($download -eq $False) {
                         Settings    = $S
                         Trigger     = $Trigger
                     }
-                    Register-ScheduledTask @RegSchTaskParameters
+                    Register-ScheduledTask @RegSchTaskParameters -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Implement scheduled task to restart Windows Search service on Event ID 2 finished!"
                 }
                 Write-Host -ForegroundColor Green "Applying $Product post setup customizations finished!"
@@ -6371,9 +6372,9 @@ If ($download -eq $False) {
             $OneDriveInstallFolder = $OneDriveUninstall.DisplayIcon.Substring(0, $OneDriveUninstall.DisplayIcon.IndexOf("\OneDriveSetup.exe"))
             $sourceadmx = "$($OneDriveInstallFolder)\adm"
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             }
-            Copy-Item -Path "$($sourceadmx)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+            Copy-Item -Path "$($sourceadmx)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -6665,8 +6666,8 @@ If ($download -eq $False) {
                     $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
                     $appX64DLL = $appDLLs[0]
                     $appX86DLL = $appDLLs[1]
-                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`""
-                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`""
+                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`"" -ErrorAction SilentlyContinue
+                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`"" -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Register $Product Add-In for Outlook finished!"
                     Write-Host -ForegroundColor Green "Customize $Product finished!"
                 } Catch {
@@ -7355,13 +7356,16 @@ If ($download -eq $False) {
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$SumatraPDFInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 If ($inst) {
                     Wait-Process -InputObject $inst
+                    If (Test-Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk") {
+                        Remove-Item -Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk" -Force
+                    }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
                 If (Test-Path -Path "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt") {
                     # Disable auto update
                     Write-Host "Disable auto update"
                     Try {
-                        (Get-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt") | ForEach-Object { $_ -replace "CheckForUpdates = true" , "CheckForUpdates = false" } | Set-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt"
+                        (Get-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt" -ErrorAction SilentlyContinue) | ForEach-Object { $_ -replace "CheckForUpdates = true" , "CheckForUpdates = false" } | Set-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt"
                         Write-Host -ForegroundColor Green "Disable auto update $Product finished!"
                     } Catch {
                         Write-Host -ForegroundColor Red "Error disable auto update (Error: $($Error[0]))"
