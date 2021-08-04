@@ -2892,6 +2892,7 @@ If ($install -eq $False) {
             Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3363,6 +3364,7 @@ If ($install -eq $False) {
             copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\Microsoft Edge" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
@@ -3986,6 +3988,7 @@ If ($install -eq $False) {
             Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
+            Write-Output ""
         }
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
