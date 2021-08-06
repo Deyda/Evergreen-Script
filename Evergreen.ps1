@@ -78,6 +78,7 @@ the script checks the version number and will update the package.
   2021-07-29        New Log for FW rules (Ray Davis) / Add MS Edge ADMX Download / Correction Citrix Workspace App Download
   2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
   2021-08-03        Add Error Action to clean the output
+  2021-08-06        Change IrfanView Download to Nevergreen
 
 .PARAMETER list
 
@@ -2975,7 +2976,7 @@ If ($install -eq $False) {
     If ($IrfanView -eq 1) {
         $Product = "IrfanView"
         $PackageName = "IrfanView" + "$ArchitectureClear"
-        $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+        $IrfanViewD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Name -eq "IrfanView" -and $_.Architecture -eq "$ArchitectureClear"}
         $Version = $IrfanViewD.Version
         $URL = $IrfanViewD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
