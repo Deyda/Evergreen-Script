@@ -78,7 +78,7 @@ the script checks the version number and will update the package.
   2021-07-29        New Log for FW rules (Ray Davis) / Add MS Edge ADMX Download / Correction Citrix Workspace App Download
   2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
   2021-08-03        Add Error Action to clean the output
-  2021-08-06        Change IrfanView Download to Nevergreen
+  2021-08-16        Correction Microsoft FSLogix Install and IrfanView Download / Correction FW Log
 
 .PARAMETER list
 
@@ -2261,8 +2261,21 @@ If ($install -eq $False) {
     # Global variables
     # $StartDir = $PSScriptRoot # the directory path of the script currently being executed
     $LogDir = "$PSScriptRoot\_Install Logs"
+    $LogFileName = ("$ENV:COMPUTERNAME - $Date.log")
+    $LogFile = Join-path $LogDir $LogFileName
     $FWFileName = ("Firewall - $Date.log")
     $FWFile = Join-path $LogDir $FWFileName
+    $LogTemp = "$env:windir\Logs\Evergreen"
+
+    # Create the log directories if they don't exist
+    If (!(Test-Path $LogDir)) { New-Item -Path $LogDir -ItemType directory | Out-Null }
+    If (!(Test-Path $LogTemp)) { New-Item -Path $LogTemp -ItemType directory | Out-Null }
+
+    # Create new log file (overwrite existing one)
+    New-Item $FWFile -ItemType "file" -force | Out-Null
+    DS_WriteLog "I" "START SCRIPT - " $FWFile
+    DS_WriteLog "-" "" $FWFile
+
 
     #// Mark: Install / Update PowerShell module
     Write-Host -ForegroundColor DarkGray "Install / Update PowerShell module!"
@@ -2976,7 +2989,7 @@ If ($install -eq $False) {
     If ($IrfanView -eq 1) {
         $Product = "IrfanView"
         $PackageName = "IrfanView" + "$ArchitectureClear"
-        $IrfanViewD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Name -eq "IrfanView" -and $_.Architecture -eq "$ArchitectureClear"}
+        $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
         $Version = $IrfanViewD.Version
         $URL = $IrfanViewD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -6180,7 +6193,7 @@ If ($download -eq $False) {
                         New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
-                    If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "0") {
+                    If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch" -ErrorAction SilentlyContinue) -ne "0") {
                         Write-Host "Deactivate FSLogix RoamSearch"
                         Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
@@ -6192,7 +6205,7 @@ If ($download -eq $False) {
                         New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
-                    If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch") -ne "1") {
+                    If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch" -ErrorAction SilentlyContinue) -ne "1") {
                         Write-Host "Deactivate FSLogix RoamSearch"
                         Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
@@ -6208,12 +6221,12 @@ If ($download -eq $False) {
                     New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
-                If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -ExpandProperty "GroupPolicyState") -ne "0") {
+                If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -ExpandProperty "GroupPolicyState" -ErrorAction SilentlyContinue) -ne "0") {
                     Write-Host "Deactivate FSLogix GroupPolicy"
                     Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
-                If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2")) {
+                If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2" -ErrorAction SilentlyContinue)) {
                     Write-Host "Implement scheduled task to restart Windows Search service on Event ID 2"
                     # Implement scheduled task to restart Windows Search service on Event ID 2
                     # Define CIM object variables
@@ -7298,14 +7311,18 @@ If ($download -eq $False) {
         If (!$SlackV) {
             $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
+        If (!$SlackV) {
+        }
+        Else {
+            If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
+        }
         $SlackLog = "$LogTemp\Slack.log"
         $SlackInstaller = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$SlackInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $SlackPlatformClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version: $SlackV"
-        If ($SlackV -lt $Version) {
+        If ($SlackV -ne $Version) {
             DS_WriteLog "I" "Installing $Product $ArchitectureClear $SlackPlatformClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
