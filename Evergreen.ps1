@@ -79,6 +79,7 @@ the script checks the version number and will update the package.
   2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
   2021-08-03        Add Error Action to clean the output
   2021-08-16        Correction Microsoft FSLogix Install and IrfanView Download / Correction FW Log
+  2021-08-17        Correction Sumatra PDF Download / ADMX Copy
 
 .PARAMETER list
 
@@ -2704,9 +2705,9 @@ If ($install -eq $False) {
             Write-Host "Starting copy of $Product ADMX files $Version"
             expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
             If (Test-Path -Path "$PSScriptRoot\ADMX\deviceTRUST") {Remove-Item -Path "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse}
-            copy-item -Path "$PSScriptRoot\$Product\ADMX\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse
-            Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
+            copy-item -Path "$PSScriptRoot\$Product\Admx\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -2897,7 +2898,7 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product ADMX files $VersionP"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" -wait | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
             copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
@@ -3367,7 +3368,7 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product $MSEdgeChannelClear ADMX files $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" | Out-Null
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -wait | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -Force -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
@@ -3993,7 +3994,7 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product ADMX files $VersionP"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" | Out-Null
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" -wait | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
             copy-item -Path "$PSScriptRoot\$Product\windows\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
@@ -4417,7 +4418,7 @@ If ($install -eq $False) {
     If ($SumatraPDF -eq 1) {
         $Product = "Sumatra PDF"
         $PackageName = "SumatraPDF-Install-" + "$ArchitectureClear"
-        $SumatraPDFD = Get-SumatraPDFReader | Where-Object {$_.Architecture -eq "$ArchitectureClear" }
+        $SumatraPDFD = Get-EvergreenApp -Name SumatraPDFReader | Where-Object {$_.Architecture -eq "$ArchitectureClear" }
         $Version = $SumatraPDFD.Version
         $URL = $SumatraPDFD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
