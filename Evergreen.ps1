@@ -79,7 +79,8 @@ the script checks the version number and will update the package.
   2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
   2021-08-03        Add Error Action to clean the output
   2021-08-16        Correction Microsoft FSLogix Install and IrfanView Download / Correction FW Log
-  2021-08-17        Correction Sumatra PDF Download / ADMX Copy
+  2021-08-17        Correction Sumatra PDF Download
+  2021-08-18        Correction ADMX Copy MS Edge, Google Chrome, Mozilla Firefox, MS OneDrive and BIS-F
 
 .PARAMETER list
 
@@ -2088,7 +2089,7 @@ Switch ($Language) {
     2 { $MS365AppsLanguageClear = 'en-US'}
     3 { $MS365AppsLanguageClear = 'fi-FI'}
     4 { $MS365AppsLanguageClear = 'fr-FR'}
-    5 { $MS365AppsLanguageClear = 'de-DE'}
+    5 { $MS365AppsLanguageClear = 'fr-FR'}
     6 { $MS365AppsLanguageClear = 'it-IT'}
     7 { $MS365AppsLanguageClear = 'ja-JP'}
     8 { $MS365AppsLanguageClear = 'ko-KR'}
@@ -2296,10 +2297,23 @@ If ($install -eq $False) {
         Write-Output ""
     }
     Else {
-        Write-Host "Update Evergreen module."
-        Update-Module Evergreen -force
-        Write-Host -ForegroundColor Green "Update Evergreen module done."
-        Write-Output ""
+        Write-Host "Check Evergreen module version."
+        $version = (Get-Module -ListAvailable Evergreen) | Sort-Object Version -Descending  | Select-Object Version -First 1
+        $psgalleryversion = Find-Module -Name Evergreen | Sort-Object Version -Descending | Select-Object Version -First 1
+        $stringver = $version | Select-Object @{n='ModuleVersion'; e={$_.Version -as [string]}}
+        $a = $stringver | Select-Object Moduleversion -ExpandProperty Moduleversion
+        $onlinever = $psgalleryversion | select-object @{n='OnlineVersion'; e={$_.Version -as [string]}}
+        $b = $onlinever | Select-Object OnlineVersion -ExpandProperty OnlineVersion
+        if ([version]"$a" -ge [version]"$b") {
+            Write-Host -ForegroundColor Green "Installed Evergreen module version is up to date."
+            Write-Output ""
+        }
+        else {
+            Write-Host "Update Evergreen module."
+            Update-Module Evergreen -force
+            Write-Host -ForegroundColor Green "Update Evergreen module done."
+            Write-Output ""
+      }
     }
 
     If (!(Get-Module -ListAvailable -Name Nevergreen)) {
@@ -2309,10 +2323,23 @@ If ($install -eq $False) {
         Write-Output ""
     }
     Else {
-        Write-Host "Update Nevergreen module."
-        Update-Module Nevergreen -force
-        Write-Host -ForegroundColor Green "Update Nevergreen module done."
-        Write-Output ""
+        Write-Host "Check Nevergreen module version."
+        $version = (Get-Module -ListAvailable Nevergreen) | Sort-Object Version -Descending  | Select-Object Version -First 1
+        $psgalleryversion = Find-Module -Name Nevergreen | Sort-Object Version -Descending | Select-Object Version -First 1
+        $stringver = $version | Select-Object @{n='ModuleVersion'; e={$_.Version -as [string]}}
+        $a = $stringver | Select-Object Moduleversion -ExpandProperty Moduleversion
+        $onlinever = $psgalleryversion | select-object @{n='OnlineVersion'; e={$_.Version -as [string]}}
+        $b = $onlinever | Select-Object OnlineVersion -ExpandProperty OnlineVersion
+        if ([version]"$a" -ge [version]"$b") {
+            Write-Host -ForegroundColor Green "Installed Nevergreen module version is up to date."
+            Write-Output ""
+        }
+        else {
+            Write-Host "Update Nevergreen module."
+            Update-Module Nevergreen -force
+            Write-Host -ForegroundColor Green "Update Nevergreen module done."
+            Write-Output ""
+      }
     }
 
     Write-Host -ForegroundColor DarkGray "Starting downloads..."
@@ -2704,8 +2731,14 @@ If ($install -eq $False) {
             Write-Output ""
             Write-Host "Starting copy of $Product ADMX files $Version"
             expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
-            If (Test-Path -Path "$PSScriptRoot\ADMX\deviceTRUST") {Remove-Item -Path "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse}
-            copy-item -Path "$PSScriptRoot\$Product\Admx\*" -Destination "$PSScriptRoot\ADMX\deviceTRUST" -Force -Recurse -ErrorAction SilentlyContinue
+            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\ADMX\deviceTRUST.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\deviceTRUST.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\deviceTRUST.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\ADMX\en-US\deviceTRUST.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
             Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
@@ -2898,10 +2931,89 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product ADMX files $VersionP"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" -wait | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\google.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\chrome.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\chrome.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\google.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\chrome.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\common" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\chromeos" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
@@ -3368,7 +3480,7 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product $MSEdgeChannelClear ADMX files $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -wait | Out-Null
+            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" -Force -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
@@ -3376,7 +3488,164 @@ If ($install -eq $False) {
             Remove-Item -Path "$PSScriptRoot\$Product\html" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\examples" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
-            copy-item -Path "$PSScriptRoot\$Product\windows\admx\*" -Destination "$PSScriptRoot\ADMX\Microsoft Edge" -Force -Recurse -ErrorAction SilentlyContinue
+            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedge.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgeupdate.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgewebview2.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\da-DK")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\da-DK\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fi-FI")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nb-NO")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedge.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedge.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedgewebview2.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -3994,10 +4263,61 @@ If ($install -eq $False) {
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
             Write-Host "Starting download of $Product ADMX files $VersionP"
             Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
-            expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\$SourceP" -wait | Out-Null
             expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-            copy-item -Path "$PSScriptRoot\$Product\windows\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\firefox.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\mozilla.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\firefox.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\mozilla.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\firefox.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\mozilla.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\mozilla.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\firefox.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\mozilla.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\firefox.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\mozilla.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\firefox.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\mozilla.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\firefox.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\firefox.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\mozilla.adml" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\firefox.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+            Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\README.md" -Force -ErrorAction SilentlyContinue
             Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force -ErrorAction SilentlyContinue
@@ -5108,7 +5428,13 @@ If ($download -eq $False) {
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\BaseImageScriptFramework.admx" -PathType leaf)) {
                 Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             }
-            Copy-Item -Path "$($BISFInstallFolder)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$BISFInstallFolder\BaseImageScriptFramework.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\BaseImageScriptFramework.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\BaseImageScriptFramework.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$BISFInstallFolder\en-US\BaseImageScriptFramework.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -6392,7 +6718,79 @@ If ($download -eq $False) {
             If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
                 Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
             }
-            Copy-Item -Path "$($sourceadmx)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+            Move-Item -Path "$sourceadmx\OneDrive.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\de\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\es\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\fr\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\it\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\ja\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\ko\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\nl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\pl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\pt-BR\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\pt-PT\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\ru\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\sv\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+            If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -PathType leaf)) {
+                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -ErrorAction SilentlyContinue
+            }
+            Move-Item -Path "$sourceadmx\zh-CN\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
