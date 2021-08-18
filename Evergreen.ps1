@@ -80,7 +80,7 @@ the script checks the version number and will update the package.
   2021-08-03        Add Error Action to clean the output
   2021-08-16        Correction Microsoft FSLogix Install and IrfanView Download / Correction FW Log
   2021-08-17        Correction Sumatra PDF Download
-  2021-08-18        Correction ADMX Copy MS Edge, Google Chrome, Mozilla Firefox, MS OneDrive and BIS-F
+  2021-08-18        Correction ADMX Copy MS Edge, Google Chrome, Mozilla Firefox, MS OneDrive and BIS-F / Add ADMX Download Zoom
 
 .PARAMETER list
 
@@ -608,6 +608,92 @@ function Get-MozillaFirefoxAdmx {
         $Version = ($latest.tag_name | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
         # grab uri
         $URI = $latest.assets.browser_download_url
+
+        # return evergreen object
+        return @{ Version = $Version; URI = $URI }
+    }
+    catch {
+        Throw $_
+    }
+}
+
+# Function Adobe Acrobat Reader DC ADMX Download
+#========================================================================================================================================
+function Get-AdobeAcrobatReaderDCAdmx {
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        $file = "ReaderADMTemplate.zip"
+        $url = "ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/misc/"
+
+        # grab ftp response from $url
+        Write-Verbose "FTP $($url)"
+        $listRequest = [Net.WebRequest]::Create($url)
+        $listRequest.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectoryDetails
+        $lines = New-Object System.Collections.ArrayList
+
+        # process response
+        $listResponse = $listRequest.GetResponse()
+        $listStream = $listResponse.GetResponseStream()
+        $listReader = New-Object System.IO.StreamReader($listStream)
+        while (!$listReader.EndOfStream)
+        {
+            $line = $listReader.ReadLine()
+            if ($line.Contains($file)) { $lines.Add($line) | Out-Null }
+        }
+        $listReader.Dispose()
+        $listStream.Dispose()
+        $listResponse.Dispose()
+
+        Write-Verbose "received $($line.Length) characters response"
+        
+        # parse response to get Version
+        $tokens = $lines[0].Split(" ", 9, [StringSplitOptions]::RemoveEmptyEntries)
+        $Version = Get-Date -Date "$($tokens[6])/$($tokens[5])/$($tokens[7])" -Format "yy.M.d"
+
+        # return evergreen object
+        return @{ Version = $Version; URI = "$($url)$($file)" }
+    }
+    catch {
+        Throw $_
+    }
+}
+
+# Function Citrix Workspace App ADMX Download
+#========================================================================================================================================
+function Get-CitrixWorkspaceAppAdmx {
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        $url = "https://www.citrix.com/downloads/workspace-app/windows/workspace-app-for-windows-latest.html"
+        # grab content
+        $web = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Ignore
+        # find line with ADMX download
+        $str = ($web.Content -split "`r`n" | Select-String -Pattern "_ADMX_")[0].ToString().Trim()
+        # extract url from ADMX download string
+        $URI = "https:$(((Select-String '(\/\/)([^\s,]+)(?=")' -Input $str).Matches.Value))"
+        # grab version
+        $filename = $URI.Split("/")[-1].Split('?')[0].Split('_')[-1]
+        $Version = $filename.Replace(".zip", "") #($filename | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
+        if ($Version -notcontains '.') { $Version += ".0" }
+        # return evergreen object
+        return @{ Version = $Version; URI = $URI }
+    }
+    catch {
+        Throw $_
+    }
+}
+
+# Function Zoom ADMX Download
+#========================================================================================================================================
+function Get-ZoomAdmx {
+    try {
+        $ProgressPreference = 'SilentlyContinue'
+        $url = "https://support.zoom.us/hc/en-us/articles/360039100051"
+        # grab content
+        $web = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Ignore
+        # find ADMX download
+        $URI = (($web.Links | Where-Object {$_.href -like "*msi-templates*.zip"})[-1]).href
+        # grab version
+        $Version = ($URI.Split("/")[-1] | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
 
         # return evergreen object
         return @{ Version = $Version; URI = $URI }
@@ -5104,6 +5190,33 @@ If ($install -eq $False) {
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
                 Write-Output ""
+                $PackageNameP = "ZoomADMX"
+                $ZoomDP = Get-ZoomAdmx
+                $VersionP = $ZoomDP.version
+                $URL = $ZoomDP.uri
+                Add-Content -Path "$FWFile" -Value "$URL"
+                $InstallerTypeP = "zip"
+                $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+                $FolderP = "Zoom_" + + "$VersionP"
+                Write-Host "Starting download of $Product ADMX files $VersionP"
+                Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+                expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
+                Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\$Product\$FolderP" -Force -Recurse -ErrorAction SilentlyContinue
+                Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
+                Write-Output ""
             }
             Else {
                 Write-Host -ForegroundColor Cyan "No new version available"
@@ -5136,6 +5249,33 @@ If ($install -eq $False) {
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+                $PackageNameP = "ZoomADMX"
+                $ZoomDP = Get-ZoomAdmx
+                $VersionP = $ZoomDP.version
+                $URL = $ZoomDP.uri
+                Add-Content -Path "$FWFile" -Value "$URL"
+                $InstallerTypeP = "zip"
+                $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
+                $FolderP = "Zoom_" + + "$VersionP"
+                Write-Host "Starting download of $Product ADMX files $VersionP"
+                Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
+                expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
+                Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Remove-Item -Path "$PSScriptRoot\$Product\$FolderP" -Force -Recurse -ErrorAction SilentlyContinue
+                Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
                 Write-Output ""
             }
             Else {
