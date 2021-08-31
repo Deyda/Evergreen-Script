@@ -841,7 +841,18 @@ Else {
         Write-Host -Foregroundcolor Red "List: $List und File: $file."
         If ($install -eq $False -and $download -eq $True) {
             Write-Host -Foregroundcolor Red "Install"
-            $update = @'
+            If ($file) {
+                $update = @'
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list -download file $file
+'@
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
+            }
+            else {
+                $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list -download
@@ -849,10 +860,22 @@ Else {
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
+            }
         }
         ElseIf ($install -eq $True -and $download -eq $False) {
             Write-Host -Foregroundcolor Red "Download."
-            $update = @'
+            If ($file) {
+                $update = @'
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list -install -file $file
+'@
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
+            }
+            else {
+                $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list -install
@@ -860,10 +883,22 @@ Else {
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
+            }
         }
         Else {
             Write-Host -Foregroundcolor Red "Install & Download."
-            $update = @'
+            If ($file) {
+                $update = @'
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list -file $file
+'@
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
+            }
+            else {
+                $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list
@@ -871,6 +906,7 @@ Else {
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
+            }
         }
     }
     Else {
