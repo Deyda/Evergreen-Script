@@ -760,7 +760,7 @@ $ProgressPreference = 'SilentlyContinue'
 $eVersion = "1.54"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
+$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1"
 If (!$WebVersion) {
     $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 }
@@ -824,7 +824,7 @@ Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "               Ma
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                     Version $eVersion                          "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
-    Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
+    #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
 }
 Write-Output ""
 Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
@@ -838,10 +838,12 @@ Else {
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
     If ($list -eq $True -and $file) {
+        Write-Host -Foregroundcolor Red "List: $List und File: $file."
         If ($install -eq $False -and $download -eq $True) {
+            Write-Host -Foregroundcolor Red "Install"
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list -download
 '@
             $update > $PSScriptRoot\update.ps1
@@ -849,9 +851,10 @@ Else {
             Break
         }
         ElseIf ($install -eq $True -and $download -eq $False) {
+            Write-Host -Foregroundcolor Red "Download."
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list -install
 '@
             $update > $PSScriptRoot\update.ps1
@@ -859,9 +862,10 @@ Else {
             Break
         }
         Else {
+            Write-Host -Foregroundcolor Red "Install & Download."
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
             & "$PSScriptRoot\evergreen.ps1" -list
 '@
             $update > $PSScriptRoot\update.ps1
@@ -876,7 +880,7 @@ Else {
             Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
             $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
                 & "$PSScriptRoot\evergreen.ps1"
 '@
             $update > $PSScriptRoot\update.ps1
