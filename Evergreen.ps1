@@ -840,7 +840,6 @@ Else {
     If ($list -eq $True -and $file) {
         Write-Host -Foregroundcolor Red "List: $List und File: $file."
         If ($install -eq $False -and $download -eq $True) {
-            Write-Host -Foregroundcolor Red "Install"
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
@@ -863,7 +862,6 @@ Else {
             }
         }
         ElseIf ($install -eq $True -and $download -eq $False) {
-            Write-Host -Foregroundcolor Red "Download."
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
@@ -886,7 +884,6 @@ Else {
             }
         }
         Else {
-            Write-Host -Foregroundcolor Red "Install & Download."
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
