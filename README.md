@@ -58,6 +58,51 @@ So let me hear your feedback, I will try to include everything as much as I can.
     2021-03-26        Add Pending Reboot Check / Add Install RemoteDesktopManager / Icon Delete Public Desktop for KeePass, mRemoteNG, WinSCP and VLC Player
     2021-03-29        Correction Microsoft FSLogix registry entries / Correction Microsoft OneDrive Installer / Add Install Microsoft .Net Framework, ShareX, Slack and Microsoft PowerShell / Correction Zoom and deviceTRUST Download
     2021-03-30        Add Install Zoom + Zoom Plugin for Citrix Receiver and deviceTRUST (Client, Host and Console)
+    2021-04-06        Change to new Evergreen Commands
+    2021-04-07        Change to faster download method
+    2021-04-08        Change color scheme of the messages in Download section / New central MSI Install Function
+    2021-04-09        Change color scheme of the messages in Install section
+    2021-04-11        Implement new MSI Install Function
+    2021-04-12        Correction eng dash
+    2021-04-13        Change encoding to UTF-8withBOM / Correction displayed Current Version Install Adobe Reader DC
+    2021-04-15        Add Microsoft Edge Dev and Beta Channel / Add Microsoft OneDrive ADM64
+    2021-04-16        Script cleanup using the PSScriptAnalyzer suggestions / Add new version check with auto download
+    2021-04-21        Customize Auto Update (TLS12 Error) / Teams AutoStart Kill registry query / Correction Teams Outlook Addin registration
+    2021-04-22        Little customize to the auto update (Error with IE first launch error)
+    2021-04-29        Correction Pending Reboot and AutoUpdate Script with List Parameter
+    2021-04-30        Add PuTTY Download Function / Add Paint.Net, GIMP, Microsoft PowerToys, Microsoft Visual Studio 2019, Microsoft Visual Studio Code, PuTTY & TeamViewer
+    2021-05-01        Adding the new parameter file to extend the parameter execution with a possibility of software selection. / Add auto update for parameter start (-list) with -file parameter / Add Machine Type Selection
+    2021-05-02        Add Microsoft Teams User Based Download and Install / Add Visual Studio Code Per User Installer / Connect the Selection Machine Type Physical to Microsoft Teams User Based, Slack Per User and Visual Studio Code Per User
+    2021-05-03        GUI Correction deviceTRUST / Add Zoom Full Client Install and Download / Connect the Selection Machine Type Physical to Zoom Full Client, OneDrive User Based and new install.xml file configuration for Microsoft365 Apps and Office 2019 without SharedComputerLicensing / Change download setting for Microsoft365 Apps and Office 2019 install files to Install section (Automated creation of the install.xml is still in the download area and can therefore be adjusted before downloading the install files) / Add Wireshark Download Function / Add Wireshark
+    2021-05-05        Add Microsoft Azure Data Studio / Add Save Button
+    2021-05-06        Add new LOG and NORESTART Parameter to deviceTRUST Client Install / Auto Create Shortcut on Desktop with ExecutioPolicy ByPass and Noexit Parameter
+    2021-05-07        Version formatting customized / Change Oracle Java Version format
+    2021-05-12        Implement new languages in Adobe Acrobat Reader DC / Debug No Putty PreRelease / Debug Oracle Java Version Output
+    2021-05-18        Implement new Version request for Teams Developer Version / Add new Teams Exploration Version / Add ImageGlass
+    2021-05-25        Correction Install GIMP version comparison / Correction OneDrive Machine Based Install / Correction M365 Install
+    2021-06-02        Add FSLogix Channel Selection / Move FSLogix ADMX Files to the ADMX folder in Evergreen
+    2021-06-11        Correction Notepad++ Download Version
+    2021-06-14        Add uberAgent / Correction Foxit Reader Download and Install
+    2021-07-02        Minor Update Correction Google Chrome & Microsoft365 Apps
+    2021-07-05        Add Cisco Webex Meetings, ControlUp Agent & Console, MS SQL Server Management, MS AVD Remote Desktop, MS Power BI Desktop, Sumatra PDF Reader and RDAnalyzer Download
+    2021-07-06        Wireshark download method changed from own to Evergreen / Add Cisco Webex Meetings, ControlUp Agent, MS SQL Server Management Studio Install
+    2021-07-07        Correction Notepad++ Version / Add MS AVD Remote Desktop Install / Add Nevergreen PowerShell module
+    2021-07-08        Add MS Power BI Desktop Install / Minor Update Correction Microsoft Teams
+    2021-07-17        Error Correction FSLogix Installer search, if no preview version is available / Fix Adobe Reader DC update task disable / Fix Microsoft Edge update registry key
+    2021-07-18        Activate Change User /Install in Virtual Machine Type Selection / Change Download Method for SumatraPDF
+    2021-07-22        Correction MS Edge Download and Install
+    2021-07-29        New Log for FW rules (Ray Davis) / Add MS Edge ADMX Download / Correction Citrix Workspace App Download
+    2021-07-30        Add MS Office / MS 365 Apps / OneDrive / BISF / Google Chrome / Mozilla Firefox ADMX Download
+    2021-08-03        Add Error Action to clean the output
+    2021-08-16        Correction Microsoft FSLogix Install and IrfanView Download / Correction FW Log
+    2021-08-17        Correction Sumatra PDF Download
+    2021-08-18        Correction ADMX Copy MS Edge, Google Chrome, Mozilla Firefox, MS OneDrive and BIS-F / Add ADMX Download Zoom
+    2021-08-19        Add ADMX Download Citrix Workspace App Current and LTSR / Add ADMX Download Adobe Acrobat Reader DC / Activate 64 Bit Download Acrobat Reader DC
+    2021-08-20        Add Citrix Files, Microsoft Azure CLI, Microsoft Sysinternals, Nmap, TechSmith Snagit, TechSmith Camtasia, LogMeIn GoToMeeting, Git for Windows and Cisco Webex Teams Download
+    2021-08-23        Changing the deviceTRUST download from own to Evergreen method / Delete Cisco Webex Meetings / Add WinMerge, PeaZip, Foxit PDF Editor and Microsoft Power BI Report Builder Download / Change Microsoft365 Apps Channels
+    2021-08-24        Add 1Password Download / Add 1Password, Citrix Files, Microsoft Azure CLI, Nmap, TechSmith Camtasia, TechSmith SnagIt and Cisco Webex Teams Install
+    2021-08-25        Change LogMeIn GoToMeeting to Xen and Local / Add LogMeIn GoToMeeting Xen and Local and Git for Windows Install
+    2021-08-26        Add Foxit PDF Editor, WinMerge, Microsoft Power BI Report Builder and PeaZip Install
 ## Parameter
 
 ### -list
@@ -88,12 +133,22 @@ If neither parameter -Download or -Install is also used, both processes will be 
     # 0 = x64
     # 1 = x86
     $Architecture = 0
+    
+    # Select Machine Type (If this is selectable at install or download)
+    # 0 = Virtual
+    # 1 = Physical
+    $Machine = 0
 
     # Software Release / Ring / Channel / Type ?!
     # Citrix Workspace App
     # 0 = Current Release
     # 1 = Long Term Service Release
     $CitrixWorkspaceAppRelease = 1
+
+    # ControlUp Agent
+    # 0 = .Net 3.5 Framework
+    # 1 = .Net 4.5 Framework
+    $ControlUpAgentFramework = 1
 
     # deviceTRUST
     # 0 = Client
@@ -116,6 +171,22 @@ If neither parameter -Download or -Install is also used, both processes will be 
     # 4 = Semi-Annual Enterprise Channel
     $MS365AppsChannel = 4
 
+    # Microsoft Azure Data Studio
+    # 0 = Insider Channel
+    # 1 = Stable Channel
+    $MSAzureDataStudioChannel = 1
+
+    # Microsoft Edge
+    # 0 = Developer Channel
+    # 1 = Beta Channel
+    # 2 = Stable Channel
+    $MSEdgeChannel = 2
+
+    # Microsoft FSLogix
+    # 0 = Preview Channel
+    # 1 = Production Channel
+    $MSFSLogixChannel = 1
+
     # Microsoft OneDrive
     # 0 = Insider Ring
     # 1 = Production Ring
@@ -129,29 +200,46 @@ If neither parameter -Download or -Install is also used, both processes will be 
 
     # Microsoft Teams
     # 0 = Developer Ring
-    # 1 = Preview Ring
-    # 2 = General Ring
-    $MSTeamsRing = 2
-    
+    # 1 = Exploration Ring
+    # 2 = Preview Ring
+    # 3 = General Ring
+    $MSTeamsRing = 3
+
     # Microsoft Teams AutoStart
     # 0 = AutoStart Microsoft Teams
     # 1 = No AutoStart (Delete HKLM Registry Entry)
     $MSTeamsNoAutoStart = 0
+
+    # Microsoft Visual Studio
+    # 0 = Enterprise Edition
+    # 1 = Professional Edition
+    # 2 = Community Edition
+    $MSVisualStudioEdition = 1
+
+    # Microsoft Visual Studio Code
+    # 0 = Insider Channel
+    # 1 = Stable Channel
+    $MSVisualStudioCodeChannel = 1
+
+    # Microsoft AVD Remote Desktop
+    # 0 = Insider Channel
+    # 1 = Public Channel
+    $MSAVDRemoteDesktopChannel = 1
 
     # Mozilla Firefox
     # 0 = Current
     # 1 = ESR
     $FirefoxChannel = 0
 
+    # PuTTY
+    # 0 = Pre-Release
+    # 1 = Stable
+    $PuttyChannel = 1
+
     # Remote Desktop Manager
     # 0 = Free
     # 1 = Enterprise
     $RemoteDesktopManagerType = 0
-
-    # Slack
-    # 0 = Per Machine
-    # 1 = Per User
-    $SlackPlatform = 0
 
     # TreeSize
     # 0 = Free
@@ -159,46 +247,75 @@ If neither parameter -Download or -Install is also used, both processes will be 
     $TreeSizeType = 0
 
     # Zoom
-    # 0 = VDI Installer
-    # 1 = VDI Installer + Citrix Plugin
+    # 0 = Installer
+    # 1 = Installer + Citrix Plugin
     $ZoomCitrixClient = 1
 
-    # Select software
+    # Select Software
     # 0 = Not selected
     # 1 = Selected
+    $1Password = 0
     $7ZIP = 0
     $AdobeProDC = 0 # Only Update @ the moment
     $AdobeReaderDC = 0
     $BISF = 0
+    $CiscoWebexTeams = 0
+    $CitrixFiles = 0
     $Citrix_Hypervisor_Tools = 0
     $Citrix_WorkspaceApp = 0
+    $ControlUpAgent = 0
+    $ControlUpConsole = 0
     $deviceTRUST = 0
     $Filezilla = 0
     $Firefox = 0
+    $FoxitPDFEditor = 0
     $Foxit_Reader = 0
-    $FSLogix = 0
+    $GIMP = 0
+    $GitForWindows = 0
     $GoogleChrome = 0
     $Greenshot = 0
+    $ImageGlass = 0
     $IrfanView = 0
     $KeePass = 0
+    $LogMeInGoToMeeting = 0
     $mRemoteNG = 0
     $MSDotNetFramework = 0
     $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+    $MSAVDRemoteDesktop = 0
+    $MSAzureCLI = 0
+    $MSAzureDataStudio = 0
     $MSEdge = 0
+    $MSFSLogix = 0
     $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
     $MSOneDrive = 0
+    $MSPowerBIDesktop = 0
     $MSPowerShell = 0
+    $MSPowerToys = 0
+    $MSSQLServerManagementStudio = 0
+    $MSSysinternals = 0
     $MSTeams = 0
+    $MSVisualStudio = 0
+    $MSVisualStudioCode = 0
+    $NMap = 0
     $NotePadPlusPlus = 0
     $OpenJDK = 0
     $OracleJava8 = 0
+    $PaintDotNet = 0
+    $Putty = 0
+    $RDAnalyzer = 0
     $RemoteDesktopManager = 0
-    $Slack = 0
     $ShareX = 0
+    $Slack = 0
+    $SumatraPDF = 0
+    $TeamViewer = 0
+    $TechSmithCamtasia = 0
+    $TechSmithSnagit = 0
     $TreeSize = 0
+    $uberAgent = 0
     $VLCPlayer = 0
     $VMWareTools = 0
     $WinSCP = 0
+    $Wireshark = 0
     $Zoom = 0
 For example, to automate the process via Scheduled Task or to integrate this into [BIS-F](https://eucweb.com/download-bis-f) (Thx Matthias Schlimm for your work).
 
@@ -210,6 +327,9 @@ Only download the selected software packages in list Mode (-list).
 
 Only install the selected software packages in list Mode (-list).
 
+### -file
+
+Path to GUI file (LastSettings.txt) for software selection in list Mode.
 
 ## Example
 
@@ -228,340 +348,16 @@ Install the selected Software out of the list.
 Download and install the selected Software out of the list.
 
 
+.\Evergreen.ps1 -list -file LastSetting.txt
+
+Download and install the selected Software out of the file LastSettings.txt.
+
+
 .\Evergreen.ps1
 
 Starts the GUI to select the mode (Install and/or Download) and the software (Release, Update Ring, Language, etc.).
 
 ![GUI-Mode](/img/GUI.png)
-
-## Notes
-
-### Evergreen PowerShell Module
-If Download is selected, the module is checked each time the script is run and reinstalled if a new version is available.
-
-### 7-ZIP
-Line 856 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For 7-ZIP this is an exe file.
-
-### Adobe Pro DC
-Line 890 defines which package is downloaded (You can change the version).   
-
-For Adobe Pro DC this is the update package (msp file).
-
-Only update @ the moment, no installer!
-
-After the update, the Adobe service and scheduled task will be stopped and disabled.
-
-### Adobe Reader DC
-Line 923 defines which package is downloaded (You can change the architecture in line 633 and the language in line 628 for non GUI start).
-
-        English
-        Danish
-        Dutch
-        French
-        Finnish
-        German
-        Italian
-        Japanese
-        Korean
-        Norwegian
-        Spanish
-The architecture can only be changed to x64 for the English package at the moment.
-
-After the installation, the Adobe service and scheduled task will be stopped and disabled.
-
-### BIS-F
-Line 956 defines which package is downloaded.
-
-For BIS-F this is the msi file.
-
-After the installation, the scripts will be adjusted regarding task offload, RSS activation and DEP deactivation.
-
-### Citrix Hypervisor Tools
-Line 989 defines which package is downloaded (You can change the architecture in line 633 for non-GUI startup).
-
-For Citrix Hypervisor Tools this is the x64 msi file (LTSR Path).
-
-For Windows 7, Windows Server 2008 SP2 and Windows Server 2008 R2 SP1, you can change to version 7.2.0.1555 in line 989.
-
-### Citrix WorkspaceApp
-Line 1023 defines which package is downloaded (You can change the release on line 639 for non GUI start).
-
-Before the installation of the new receiver, the old one is uninstalled via Receiver CleanUp Tool.
-
-The installation is executed with the following parameters (from line 2335):
-        /forceinstall
-        /silent
-        /EnableCEIP=false
-        /FORCE_LAA=1
-        /AutoUpdateCheck=disabled
-        /ALLOWADDSTORE=S
-        /ALLOWSAVEPWD=S
-        /includeSSON
-        /ENABLE_SSON=Yes
-After the installation, various registry keys are set (from line 2354).
-
-As always, after installing the new WorkspaceApp, the system should be rebooted.
-
-### deviceTRUST
-Line 819 define which package are installed in the non-GUI start.
-
-For deviceTRUST Client this is an exe file and for the Console / Host this is a msi file.
-
-### Filezilla
-Line 1064 defines which package is downloaded.
-
-For Filezilla this is the exe file.
-
-Filezilla is installed with the parameter /user=all for all users.
-
-### Foxit Reader
-Line 1097 defines which package is downloaded (You can change the language in line 628 for non GUI start).
-
-        Danish
-        Dutch
-        English
-        Finnish
-        French
-        German
-        Italian
-        Korean
-        Norwegian
-        Polish
-        Portuguese
-        Russian
-        Spanish
-        Swedish
-For Foxit Reader this is an exe file.
-
-### GoogleChrome
-Line 1131 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For Google Chrome this is the msi file.
-
-After the installation the Chrome services and scheduled tasks will be stopped and disabled.
-
-### Greenshot
-Line 1165 defines which package is downloaded.
-
-For Greenshot this is an exe file.
-
-### IrfanView
-Line 1242 defines which package is downloaded (You can change the architecture in line 633 for a non-GUI start).
-
-For IrfanView this is an exe file. 
-
-### KeePass
-Line 1276 defines which package is downloaded.
-
-For KeePass this is the msi file.
-
-### Microsoft .Net Framework
-Line 1608 defines which package is downloaded (You can change the architecture in line 805 and the Channel in line 824 for a non-GUI start).
-
-For Microsoft .Net Framework this is an exe file.
-
-### Microsoft 365 Apps
-Line 1309 defines which package is downloaded (You can change the channel in line 647 for non GUI start).
-
-For Microsoft 365 Apps this is the exe setup file.
-
-During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
-
-remove.xml (from line 1321)
-
-install.xml (from line 1346)
-
-Afterwards the install.xml is used to download the required install files.
-
-Before installing the new Microsoft 365 Apps version, the previous installation is removed (remove.xml).
-
-After that the reinstall of the software starts (install.xml).
-
-An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages, App Exclusion or Inclusion (Visio & Project)).
-
-By default, the following is defined in install.xml (64Bit / Match OS Language / Semi Annual Channel):
-
-    <Configuration>
-      <Add Channel="SemiAnnual" OfficeClientEdition="64" SourcePath="<Path to Evergreen Folder>\MS 365 Apps (Semi Annual Channel)">
-        <Product ID="O365ProPlusRetail">
-          <Language ID="MatchOS" Fallback="en-us"/>
-          <ExcludeApp ID="Teams"/>
-          <ExcludeApp ID="Lync"/>
-          <ExcludeApp ID="Groove"/>
-          <ExcludeApp ID="OneDrive"/>
-        </Product>
-      </Add>
-      <Display AcceptEULA="TRUE" Level="None"/>
-      <Logging Level="Standard" Path="%temp%"/>
-      <Property Value="1" Name="SharedComputerLicensing"/>
-      <Property Value="TRUE" Name="FORCEAPPSHUTDOWN"/>
-      <Updates Enabled="FALSE"/>
-    </Configuration>
-
-### Microsoft Edge
-Line 1418 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For Microsoft Edge this is the msi file.
-
-Microsoft Edge is installed with the parameter that don't create icons (Desktop and Quickstart).
-
-After the installation, the scheduled tasks of Microsoft Edge are disabled and the Citrix API Hooks are set in the registry.
-
-### Microsoft FSLogix
-Line 1453 defines which package is downloaded.
-
-For FSLogix this is the zip package.
-
-With FSLogix installation, the old installation, if present, is uninstalled first and a restart is requested. 
-
-Then the script must be started again, so that the new version is installed cleanly.
-
-Not only the FSLogix Agent is installed, but also the FSLogix AppRule Editor.
-
-### Microsoft Office 2019
-Line 1493 defines which package is downloaded.
-
-For Microsoft Office 2019 this is the exe setup file for Office 2019 Enterprise.
-
-During the download not only the setup.exe is downloaded, but also the following xml files are created, if they are not already present in the folder:
-
-remove.xml (from line 1505)
-
-install.xml (from line 1530)
-
-Afterwards the install.xml is used to download the required install files.
-
-Before installing the new Microsoft Office 2019 version, the previous installation is removed (remove.xml).
-
-After that the reinstall of the software starts (install.xml).
-
-An install.xml with the special features of the own installation can be stored and used in advance (e.g. Languages or architecture).
-
-By default, the following is defined in install.xml (64Bit / Match OS Language):
-
-    <Configuration>
-      <Add Channel="PerpetualVL2019" OfficeClientEdition="64" SourcePath="<Path to Evergreen Folder>\MS2019">
-        <Product ID="ProPlus2019Volume">
-          <Language ID="MatchOS" Fallback="en-us"/>
-          <ExcludeApp ID="Teams"/>
-          <ExcludeApp ID="Lync"/>
-          <ExcludeApp ID="Groove"/>
-          <ExcludeApp ID="OneDrive"/>
-        </Product>
-      </Add>
-      <Display AcceptEULA="TRUE" Level="None"/>
-      <Logging Level="Standard" Path="%temp%"/>
-      <Property Value="1" Name="SharedComputerLicensing"/>
-      <Property Value="TRUE" Name="FORCEAPPSHUTDOWN"/>
-      <Updates Enabled="FALSE"/>
-    </Configuration>
-    
-### Microsoft OneDrive
-Line 1602 defines which package is downloaded (You can change the update ring in line 653 for non GUI start).
-
-For Microsoft OneDrive this is the Production Ring exe file.
-
-Microsoft OneDrive is installed with the Machine Based Install parameter.
-
-### Microsoft PowerShell
-Line 1974 defines which package is downloaded (You can change the architecture in line 805 and the Release in line 843 for a non-GUI start).
-
-For Microsoft PowerShell this is a msi file.
-
-### Microsoft Teams
-Line 1637 and 1640 define which package is downloaded (You can change the architecture in line 633 and update ring in line 659 for non GUI start).
- 
-For Microsoft Teams this is the x64 msi file (General Ring).
-
-Microsoft Teams is installed with the Machine Based Install parameters.
-
-### Mozilla Firefox
-Line 1675 defines which package is downloaded (You can change the architecture in line 633, language in line 628 and the channel in line 669 for non GUI start).
-
-       Danish
-       Dutch
-       English
-       Finnish
-       French
-       German
-       Italian
-       Japanese
-       Korean
-       Norwegian
-       Polish
-       Portuguese
-       Russian
-       Spanish
-       Swedish
-
-For Firefox this is the english x64 msi file (Latest Firefox Version).
-
-Firefox is installed with the parameter that disables the creation of the icons and the the maintenance service.
-### mRemoteNG
-Line 1709 defines which package is downloaded.
-
-For mRemoteNG this is the msi file.
-
-### NotePad++
-Line 1742 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For Notepad++ this is the x64 exe file.
-
-### OpenJDK
-Line 1776 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For OpenJDK this is the x64 msi file.
-
-### Oracle Java 8
-Line 1810 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For Oracle Java 8 this is the x64 msi file.
-
-### Remote Desktop Manager
-Line 2223 and 2257 define which package is downloaded (You can change the version in line 864 for a non-GUI start).
-
-For Remote Desktop Manager this is a msi file.
-
-### ShareX
-Line 2290 define which package is downloaded.
-
-For ShareX this is an exe file.
-
-### Slack
-Line 2323 define which package is downloaded (You can change the architecture in line 633 and the version in line 869 for a non-GUI start).
-
-For Slack this is a msi file.
-
-### TreeSize
-Line 1846 and 1877 define which package is downloaded (You can change the version in line 674 for non GUI start).
-
-For TreeSize this is the exe file.
-
-### VLC Player
-Line 1912 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For VLC Player this is the x64 msi file.
-
-### VMWare Tools
-Line 1946 defines which package is downloaded (You can change the architecture in line 633 for non GUI start).
-
-For VMWare Tools this is the x64 exe file.
-
-With VMWare Tools installation, the old installation, if present, is uninstalled first and a restart is requested. 
-
-Then the script must be started again, so that the new version is installed cleanly.
-    
-### WinSCP
-Line 1980 defines which package is downloaded.
-
-For WinSCP this is the exe file.
-
-### Zoom
-Line 2526 defines which package is downloaded.
-
-For Zoom this is the exe file.
 
 ## Shortcut
 In GitHub I have placed a sample lnk file under [shortcut](https://github.com/Deyda/Evergreen/tree/main/shortcut), as well as the Evergreen Script logo as an icon file.
