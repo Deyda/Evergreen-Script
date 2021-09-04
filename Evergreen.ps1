@@ -88,6 +88,7 @@ the script checks the version number and will update the package.
   2021-08-25        Change LogMeIn GoToMeeting to Xen and Local / Add LogMeIn GoToMeeting Xen and Local and Git for Windows Install
   2021-08-26        Add Foxit PDF Editor, WinMerge, Microsoft Power BI Report Builder and PeaZip Install
   2021-08-31        Correction Auto Update List File Parameter
+  2021-09-04        Correction Language Parameter M365 Apps
 
 .PARAMETER list
 
