@@ -2364,7 +2364,7 @@ Switch ($Language) {
     2 { $MS365AppsLanguageClear = 'en-US'}
     3 { $MS365AppsLanguageClear = 'fi-FI'}
     4 { $MS365AppsLanguageClear = 'fr-FR'}
-    5 { $MS365AppsLanguageClear = 'fr-FR'}
+    5 { $MS365AppsLanguageClear = 'de-DE'}
     6 { $MS365AppsLanguageClear = 'it-IT'}
     7 { $MS365AppsLanguageClear = 'ja-JP'}
     8 { $MS365AppsLanguageClear = 'ko-KR'}
@@ -3864,7 +3864,7 @@ If ($install -eq $False) {
     If ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         $PackageName = "setup_" + "$MS365AppsChannelClear"
-        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
+        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClear"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -3909,7 +3909,7 @@ If ($install -eq $False) {
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
                     $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClearDL")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","O365ProPlusRetail")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -3950,7 +3950,7 @@ If ($install -eq $False) {
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
                     $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClearDL")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","O365ProPlusRetail")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
