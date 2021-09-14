@@ -89,6 +89,7 @@ the script checks the version number and will update the package.
   2021-08-26        Add Foxit PDF Editor, WinMerge, Microsoft Power BI Report Builder and PeaZip Install
   2021-08-31        Correction Auto Update List File Parameter
   2021-09-04        Correction Language Parameter M365 Apps
+  2021-09-14        Correction Install Parameter Adobe Acrobat Reader
 
 .PARAMETER list
 
@@ -6343,9 +6344,9 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Adobe) {
-            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $AdobeArchitectureClear $AdobeLanguageClear"
