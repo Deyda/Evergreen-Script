@@ -90,6 +90,7 @@ the script checks the version number and will update the package.
   2021-08-31        Correction Auto Update List File Parameter
   2021-09-04        Correction Language Parameter M365 Apps
   2021-09-14        Correction Install Parameter Adobe Acrobat Reader
+  2021-09-17        Add KeePass Language Function / Add KeePass Language Download and Install / Add IrfanView Language Download and Install
 
 .PARAMETER list
 
@@ -539,6 +540,165 @@ Function Get-PuTTY() {
         Write-Output -InputObject $PSObjectx86Pre
         Write-Output -InputObject $PSObjectx64Pre
         
+    }
+}
+
+# Function KeePass Language
+#========================================================================================================================================
+Function Get-KeePassLanguage() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://keepass.info/translations.html"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexLanguageGerman = 'https:\/\/.*German.zip'
+        $URLGerman = $webRequest.RawContent | Select-String -Pattern $regexLanguageGerman -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionGerman = $URLGerman.Split("-")[1]
+        $regexLanguageDutch = 'https:\/\/.*Dutch.zip'
+        $URLDutch = $webRequest.RawContent | Select-String -Pattern $regexLanguageDutch -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionDutch = $URLDutch.Split("-")[1]
+        $regexLanguageDanish = 'https:\/\/.*Danish.zip'
+        $URLDanish = $webRequest.RawContent | Select-String -Pattern $regexLanguageDanish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionDanish = $URLDanish.Split("-")[1]
+        $regexLanguageFinnish = 'https:\/\/.*Finnish.zip'
+        $URLFinnish = $webRequest.RawContent | Select-String -Pattern $regexLanguageFinnish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionFinnish = $URLFinnish.Split("-")[1]
+        $regexLanguageFrench = 'https:\/\/.*French.zip'
+        $URLFrench = $webRequest.RawContent | Select-String -Pattern $regexLanguageFrench -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionFrench = $URLFrench.Split("-")[1]
+        $regexLanguageItalian = 'https:\/\/.*Italian-b.zip'
+        $URLItalian = $webRequest.RawContent | Select-String -Pattern $regexLanguageItalian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionItalian = $URLItalian.Split("-")[1]
+        $regexLanguageJapanese = 'https:\/\/.*Japanese.zip'
+        $URLJapanese = $webRequest.RawContent | Select-String -Pattern $regexLanguageJapanese -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionJapanese = $URLJapanese.Split("-")[1]
+        $regexLanguageKorean = 'https:\/\/.*Korean.zip'
+        $URLKorean = $webRequest.RawContent | Select-String -Pattern $regexLanguageKorean -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionKorean = $URLKorean.Split("-")[1]
+        $regexLanguageNorwegian = 'https:\/\/.*Norwegian_NB.zip'
+        $URLNorwegian = $webRequest.RawContent | Select-String -Pattern $regexLanguageNorwegian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionNorwegian = $URLNorwegian.Split("-")[1]
+        $regexLanguagePolish = 'https:\/\/.*Polish.zip'
+        $URLPolish = $webRequest.RawContent | Select-String -Pattern $regexLanguagePolish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionPolish = $URLPolish.Split("-")[1]
+        $regexLanguagePortuguese = 'https:\/\/.*Portuguese_PT.zip'
+        $URLPortuguese = $webRequest.RawContent | Select-String -Pattern $regexLanguagePortuguese -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionPortuguese = $URLPortuguese.Split("-")[1]
+        $regexLanguageRussian = 'https:\/\/.*Russian.zip'
+        $URLRussian = $webRequest.RawContent | Select-String -Pattern $regexLanguageRussian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionRussian = $URLRussian.Split("-")[1]
+        $regexLanguageSpanish = 'https:\/\/.*Spanish.zip'
+        $URLSpanish = $webRequest.RawContent | Select-String -Pattern $regexLanguageSpanish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSpanish = $URLSpanish.Split("-")[1]
+        $regexLanguageSwedish = 'https:\/\/.*Swedish.zip'
+        $URLSwedish = $webRequest.RawContent | Select-String -Pattern $regexLanguageSwedish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSwedish = $URLSwedish.Split("-")[1]
+
+        $PSObjectGerman = [PSCustomObject] @{
+            Language     = "German"
+            Version      = $VersionGerman
+            URI          = $URLGerman
+        }
+
+        $PSObjectDutch = [PSCustomObject] @{
+            Language     = "Dutch"
+            Version      = $VersionDutch
+            URI          = $URLDutch
+        }
+
+        $PSObjectDanish = [PSCustomObject] @{
+            Language     = "Danish"
+            Version      = $VersionDanish
+            URI          = $URLDanish
+        }
+
+        $PSObjectFinnish = [PSCustomObject] @{
+            Language     = "Finnish"
+            Version      = $VersionFinnish
+            URI          = $URLFinnish
+        }
+
+        $PSObjectFrench = [PSCustomObject] @{
+            Language     = "French"
+            Version      = $VersionFrench
+            URI          = $URLFrench
+        }
+
+        $PSObjectItalian = [PSCustomObject] @{
+            Language     = "Italian"
+            Version      = $VersionItalian
+            URI          = $URLItalian
+        }
+
+        $PSObjectJapanese = [PSCustomObject] @{
+            Language     = "Japanese"
+            Version      = $VersionJapanese
+            URI          = $URLJapanese
+        }
+
+        $PSObjectKorean = [PSCustomObject] @{
+            Language     = "Korean"
+            Version      = $VersionKorean
+            URI          = $URLKorean
+        }
+
+        $PSObjectNorwegian = [PSCustomObject] @{
+            Language     = "Norwegian"
+            Version      = $VersionNorwegian
+            URI          = $URLNorwegian
+        }
+
+        $PSObjectPolish = [PSCustomObject] @{
+            Language     = "Polish"
+            Version      = $VersionPolish
+            URI          = $URLPolish
+        }
+
+        $PSObjectPortuguese = [PSCustomObject] @{
+            Language     = "Portuguese"
+            Version      = $VersionPortuguese
+            URI          = $URLPortuguese
+        }
+
+        $PSObjectRussian = [PSCustomObject] @{
+            Language     = "Russian"
+            Version      = $VersionRussian
+            URI          = $URLRussian
+        }
+
+        $PSObjectSpanish = [PSCustomObject] @{
+            Language     = "Spanish"
+            Version      = $VersionSpanish
+            URI          = $URLSpanish
+        }
+
+        $PSObjectSwedish = [PSCustomObject] @{
+            Language     = "Swedish"
+            Version      = $VersionSwedish
+            URI          = $URLSwedish
+        }
+
+        Write-Output -InputObject $PSObjectGerman
+        Write-Output -InputObject $PSObjectDutch
+        Write-Output -InputObject $PSObjectDanish
+        Write-Output -InputObject $PSObjectFinnish
+        Write-Output -InputObject $PSObjectFrench
+        Write-Output -InputObject $PSObjectJapanese
+        Write-Output -InputObject $PSObjectKorean
+        Write-Output -InputObject $PSObjectItalian
+        Write-Output -InputObject $PSObjectNorwegian
+        Write-Output -InputObject $PSObjectPolish
+        Write-Output -InputObject $PSObjectPortuguese
+        Write-Output -InputObject $PSObjectRussian
+        Write-Output -InputObject $PSObjectSpanish
+        Write-Output -InputObject $PSObjectSwedish
     }
 }
 
@@ -2332,6 +2492,22 @@ Switch ($LanguageClear) {
     Korean { $FoxitReaderLanguageClear = 'English'}
 }
 
+Switch ($Language) {
+    0 { $IrfanViewLanguageClear = 'da'}
+    1 { $IrfanViewLanguageClear = 'nl-NL'}
+    3 { $IrfanViewLanguageClear = 'fi'}
+    4 { $IrfanViewLanguageClear = 'fr'}
+    5 { $IrfanViewLanguageClear = 'de'}
+    6 { $IrfanViewLanguageClear = 'it'}
+    7 { $IrfanViewLanguageClear = 'ja'}
+    8 { $IrfanViewLanguageClear = 'ko'}
+    10 { $IrfanViewLanguageClear = 'pl'}
+    11 { $IrfanViewLanguageClear = 'pt-PT'}
+    12 { $IrfanViewLanguageClear = 'ru'}
+    13 { $IrfanViewLanguageClear = 'es'}
+    14 { $IrfanViewLanguageClear = 'sv'}
+}
+
 Switch ($MSDotNetFrameworkChannel) {
     0 { $MSDotNetFrameworkChannelClear = 'Current'}
     1 { $MSDotNetFrameworkChannelClear = 'LTS'}
@@ -3713,6 +3889,20 @@ If ($install -eq $False) {
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            If ($LanguageClear -ne "English") {
+                If ($LanguageClear -ne "Norwegian") {
+                    $IrfanViewLD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Language -eq "$IrfanViewLanguageClear" -and $_.Type -eq "Zip"}
+                    $VersionL = $IrfanViewLD.Version
+                    $URLL = $IrfanViewLD.uri
+                    $PackageNameL = "IrfanView_lang_" + "$LanguageClear"
+                    $SourceL = "$PackageNameL" + ".zip"
+                    Write-Host "Starting download of $Product $LanguageClear language pack version $VersionL"
+                    Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
+                    expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product\$LanguageClear"
+                    Remove-Item "$PSScriptRoot\$Product\$SourceL"
+                    Write-Host -ForegroundColor Green "Download of the $LanguageClear language pack version $VersionL finished!"
+                }
+            }
             Write-Output ""
         }
         Else {
@@ -3744,10 +3934,19 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            $KeePassLD = Get-KeePassLanguage | Where-Object {$_.Language -eq "$LanguageClear"}
+            $VersionL = $KeePassLD.Version
+            $URLL = $KeePassLD.uri
+            $PackageNameL = "KeePass-" + "$LanguageClear"
+            $SourceL = "$PackageNameL" + ".zip"
+            Write-Host "Starting download of $Product $LanguageClear language pack version $VersionL"
+            Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
+            expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item "$PSScriptRoot\$Product\$SourceL"
+            Write-Host -ForegroundColor Green "Download of the $LanguageClear language pack version $VersionL finished!"
             Write-Output ""
         }
         Else {
@@ -7323,6 +7522,31 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
+            If ($LanguageClear -ne "English") {
+                If ($LanguageClear -ne "Norwegian") {
+                    Write-Host "Copy $Product language pack $LanguageClear"
+                    Switch ($ArchitectureClear) {
+                        x64 { 
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                        }
+                        x86 {
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\$LanguageClear"
+                    Write-Host -ForegroundColor Green "Copy $Product language pack $LanguageClear finished!"
+                }
+            }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
@@ -7365,6 +7589,9 @@ If ($download -eq $False) {
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
+            Write-Host "Copy $Product language pack $LanguageClear"
+            Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear.lngx" -Destination "${Env:ProgramFiles(x86)}\KeePass2x\Languages" -ErrorAction SilentlyContinue
+            Write-Host -ForegroundColor Green "Copy $Product language pack $LanguageClear finished!"
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
