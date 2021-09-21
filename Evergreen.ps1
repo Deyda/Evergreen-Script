@@ -90,7 +90,8 @@ the script checks the version number and will update the package.
   2021-08-31        Correction Auto Update List File Parameter
   2021-09-04        Correction Language Parameter M365 Apps
   2021-09-14        Correction Install Parameter Adobe Acrobat Reader
-  2021-09-17        Add KeePass Language Function / Add KeePass Language Download and Install / Add IrfanView Language Download and Install
+  2021-09-17        Add KeePass Language Function / Add KeePass Language Download and Install / Add IrfanView Language Download and 
+  2021-09-21        Add new GUI with second page
 
 .PARAMETER list
 
@@ -1131,208 +1132,642 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="850" Width="900">
-    <Grid x:Name="Evergreen_GUI" Margin="0,0,0,1" VerticalAlignment="Stretch">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="13*"/>
-            <ColumnDefinition Width="234*"/>
-            <ColumnDefinition Width="586*"/>
-        </Grid.ColumnDefinitions>
-        <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-        <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-        <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
-        <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="15,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="9,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="25,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
-            <ListBoxItem Content="Danish"/>
-            <ListBoxItem Content="Dutch"/>
-            <ListBoxItem Content="English"/>
-            <ListBoxItem Content="Finnish"/>
-            <ListBoxItem Content="French"/>
-            <ListBoxItem Content="German"/>
-            <ListBoxItem Content="Italian"/>
-            <ListBoxItem Content="Japanese"/>
-            <ListBoxItem Content="Korean"/>
-            <ListBoxItem Content="Norwegian"/>
-            <ListBoxItem Content="Polish"/>
-            <ListBoxItem Content="Portuguese"/>
-            <ListBoxItem Content="Russian"/>
-            <ListBoxItem Content="Spanish"/>
-            <ListBoxItem Content="Swedish"/>
-        </ComboBox>
-        <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="164,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="198,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is selectable at download!">
-            <ListBoxItem Content="x64"/>
-            <ListBoxItem Content="x86"/>
-        </ComboBox>
-        <Label x:Name="Label_SelectMachine" Content="Select Machine Type" HorizontalAlignment="Left" Margin="319,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Machine" HorizontalAlignment="Left" Margin="349,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
-            <ListBoxItem Content="Virtual"/>
-            <ListBoxItem Content="Physical"/>
-        </ComboBox>
-        <Label x:Name="Label_Explanation" Content="When software download / install can be filtered on language, architecture or machine type" HorizontalAlignment="Left" Margin="13,49,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2" />
-        <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="15,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_1Password" Content="1Password" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,138,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
-        <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_CiscoWebexTeams" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_CitrixFiles" Content="Citrix Files" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,258,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,254,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
-            <ListBoxItem Content="Current Release"/>
-            <ListBoxItem Content="Long Term Service Release"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,275,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
-            <ListBoxItem Content=".Net 3.5"/>
-            <ListBoxItem Content=".Net 4.5"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_ControlUpConsole" Content="ControlUp Console" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Only Download"/>
-        <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="215,315,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Client"/>
-            <ListBoxItem Content="Host"/>
-            <ListBoxItem Content="Console"/>
-            <ListBoxItem Content="Client + Host"/>
-            <ListBoxItem Content="Host + Console"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,338,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GitForWindows" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_ImageGlass" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_LogMeInGoToMeeting" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="15,538,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,558,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="215,553,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Current"/>
-            <ListBoxItem Content="LTS (Long Term Support)"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,578,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="215,574,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Insiders / First Release Current"/>
-            <ListBoxItem Content="Monthly / Current"/>
-            <ListBoxItem Content="Monthly Enterprise"/>
-            <ListBoxItem Content="Deferred"/>
-            <ListBoxItem Content="Targeted / First Release Deferred"/>
-            <ListBoxItem Content="Broad"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,598,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <ComboBox x:Name="Box_MSAVDRemoteDesktop" HorizontalAlignment="Left" Margin="215,595,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Insider"/>
-            <ListBoxItem Content="Public"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSAzureCLI" Content="Microsoft Azure CLI" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,638,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="215,636,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Insider"/>
-            <ListBoxItem Content="Stable"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,658,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="215,656,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Developer"/>
-            <ListBoxItem Content="Beta"/>
-            <ListBoxItem Content="Stable"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,676,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Preview"/>
-            <ListBoxItem Content="Production"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top"  RenderTransformOrigin="0.517,1.133" Grid.Column="1"/>
-        <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,712,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
-            <ListBoxItem Content="Insider Ring"/>
-            <ListBoxItem Content="Production Ring"/>
-            <ListBoxItem Content="Enterprise Ring"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1" />
-        <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="374,94,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-            <ListBoxItem Content="Stable"/>
-            <ListBoxItem Content="LTS (Long Term Support)"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="170,138,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-        <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="170,158,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-        <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,178,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
-        <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,175,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
-            <ListBoxItem Content="Developer Ring"/>
-            <ListBoxItem Content="Exploration Ring"/>
-            <ListBoxItem Content="Preview Ring"/>
-            <ListBoxItem Content="General Ring"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="170,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="374,196,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-            <ListBoxItem Content="Enterprise Edition"/>
-            <ListBoxItem Content="Professional Edition"/>
-            <ListBoxItem Content="Community Edition"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="374,217,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-            <ListBoxItem Content="Insider"/>
-            <ListBoxItem Content="Stable"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="374,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Current"/>
-            <ListBoxItem Content="ESR"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="170,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="170,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
-        <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="170,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="170,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="170,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="374,394,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Pre-Release"/>
-            <ListBoxItem Content="Stable"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="374,415,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Free"/>
-            <ListBoxItem Content="Enterprise"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="170,438,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
-        <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="170,458,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="170,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="170,538,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="170,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="374,575,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Free"/>
-            <ListBoxItem Content="Professional"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="170,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="170,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="170,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="170,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="170,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="170,718,0,0" VerticalAlignment="Top" Grid.Column="2" />
-        <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="374,715,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-            <ListBoxItem Content="Client"/>
-            <ListBoxItem Content="Client + Citrix Plugin"/>
-        </ComboBox>
-        <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,756,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-    </Grid>
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="880" Width="900">
+    <TabControl Grid.Column="1">
+        <TabItem Header="General">
+            <Grid x:Name="General_Grid" Margin="0,0,0,1" VerticalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="13*"/>
+                    <ColumnDefinition Width="234*"/>
+                    <ColumnDefinition Width="586*"/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="124,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="140,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="227,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="261,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" ToolTip="If this is selectable at download!">
+                    <ListBoxItem Content="x64"/>
+                    <ListBoxItem Content="x86"/>
+                </ComboBox>
+                <Label x:Name="Label_SelectMachine" Content="Select Machine Type" HorizontalAlignment="Left" Margin="343,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Machine" HorizontalAlignment="Left" Margin="373,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+                    <ListBoxItem Content="Virtual"/>
+                    <ListBoxItem Content="Physical"/>
+                </ComboBox>
+                <Label x:Name="Label_Explanation" Content="Selected globally, can be defined individually via Detail tab." HorizontalAlignment="Left" Margin="153,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2" />
+                <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_1Password" Content="1Password" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,138,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
+                <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_CiscoWebexTeams" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_CitrixFiles" Content="Citrix Files" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,258,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,254,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+                    <ListBoxItem Content="Current Release"/>
+                    <ListBoxItem Content="Long Term Service Release"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,275,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+                    <ListBoxItem Content=".Net 3.5"/>
+                    <ListBoxItem Content=".Net 4.5"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_ControlUpConsole" Content="ControlUp Console" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Only Download"/>
+                <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="215,315,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Client"/>
+                    <ListBoxItem Content="Host"/>
+                    <ListBoxItem Content="Console"/>
+                    <ListBoxItem Content="Client + Host"/>
+                    <ListBoxItem Content="Host + Console"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,338,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_GitForWindows" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_ImageGlass" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_LogMeInGoToMeeting" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="15,538,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,558,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="215,553,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Current"/>
+                    <ListBoxItem Content="LTS (Long Term Support)"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,578,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="215,574,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Insiders / First Release Current"/>
+                    <ListBoxItem Content="Monthly / Current"/>
+                    <ListBoxItem Content="Monthly Enterprise"/>
+                    <ListBoxItem Content="Deferred"/>
+                    <ListBoxItem Content="Targeted / First Release Deferred"/>
+                    <ListBoxItem Content="Broad"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,598,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSAVDRemoteDesktop" HorizontalAlignment="Left" Margin="215,595,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Insider"/>
+                    <ListBoxItem Content="Public"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSAzureCLI" Content="Microsoft Azure CLI" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,638,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="215,636,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Insider"/>
+                    <ListBoxItem Content="Stable"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,658,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="215,656,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Developer"/>
+                    <ListBoxItem Content="Beta"/>
+                    <ListBoxItem Content="Stable"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,676,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Preview"/>
+                    <ListBoxItem Content="Production"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,712,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="Insider Ring"/>
+                    <ListBoxItem Content="Production Ring"/>
+                    <ListBoxItem Content="Enterprise Ring"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="374,94,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <ListBoxItem Content="Stable"/>
+                    <ListBoxItem Content="LTS (Long Term Support)"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="170,138,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="170,158,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,178,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+                <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,175,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
+                    <ListBoxItem Content="Developer Ring"/>
+                    <ListBoxItem Content="Exploration Ring"/>
+                    <ListBoxItem Content="Preview Ring"/>
+                    <ListBoxItem Content="General Ring"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="170,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="374,196,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <ListBoxItem Content="Enterprise Edition"/>
+                    <ListBoxItem Content="Professional Edition"/>
+                    <ListBoxItem Content="Community Edition"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="374,217,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <ListBoxItem Content="Insider"/>
+                    <ListBoxItem Content="Stable"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="374,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="Current"/>
+                    <ListBoxItem Content="ESR"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="170,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="170,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
+                <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="170,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="170,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="170,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="374,394,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="Pre-Release"/>
+                    <ListBoxItem Content="Stable"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="374,415,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="Free"/>
+                    <ListBoxItem Content="Enterprise"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="170,438,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
+                <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="170,458,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="170,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="170,538,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="170,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="374,575,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="Free"/>
+                    <ListBoxItem Content="Professional"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="170,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="170,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="170,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="170,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="170,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="170,718,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="374,715,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="Client"/>
+                    <ListBoxItem Content="Client + Citrix Plugin"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,756,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Detail">
+            <Grid x:Name="Detail_Grid" Margin="0,0,0,1" VerticalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="13*"/>
+                    <ColumnDefinition Width="234*"/>
+                    <ColumnDefinition Width="586*"/>
+                </Grid.ColumnDefinitions>
+                <Image x:Name="Image_Logo_Detail" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_CleanUp" Content="CleanUp" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+                <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                <Label x:Name="Label_Software_Detail" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <Label x:Name="Label_Architecture1_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="187,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="64" FontSize="10"/>
+                <Label x:Name="Label_Language1_Detail" Content="Language" HorizontalAlignment="Left" Margin="8,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
+                <CheckBox x:Name="Checkbox_7Zip_Detail" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_7Zip_Architecture" HorizontalAlignment="Left" Margin="215,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_AdobeReaderDC_Detail" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,143,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_AdobeReaderDC_Architecture" HorizontalAlignment="Left" Margin="215,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_AdobeReaderDC_Language" HorizontalAlignment="Left" Margin="265,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_CiscoWebexTeams_Detail" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,168,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_CiscoWebexTeams_Architecture" HorizontalAlignment="Left" Margin="215,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_CitrixHypervisorTools_Detail" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,193,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_CitrixHypervisorTools_Architecture" HorizontalAlignment="Left" Margin="215,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_ControlUpAgent_Detail" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_ControlUpAgent_Architecture" HorizontalAlignment="Left" Margin="215,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_deviceTRUST_Detail" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,243,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_deviceTRUST_Architecture" HorizontalAlignment="Left" Margin="215,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_FoxitPDFEditor_Detail" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,268,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_FoxitPDFEditor_Language" HorizontalAlignment="Left" Margin="265,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_FoxitReader_Detail" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,293,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_FoxitReader_Language" HorizontalAlignment="Left" Margin="265,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_GitForWindows_Detail" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_GitForWindows_Architecture" HorizontalAlignment="Left" Margin="215,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_GoogleChrome_Detail" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,343,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_GoogleChrome_Architecture" HorizontalAlignment="Left" Margin="215,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_ImageGlass_Detail" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,368,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_ImageGlass_Architecture" HorizontalAlignment="Left" Margin="215,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_IrfanView_Detail" Content="IrfanView" HorizontalAlignment="Left" Margin="15,393,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_IrfanView_Architecture" HorizontalAlignment="Left" Margin="215,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_IrfanView_Language" HorizontalAlignment="Left" Margin="265,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_KeePass_Detail" Content="KeePass" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_KeePass_Language" HorizontalAlignment="Left" Margin="265,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSDotNetFramework_Detail" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,443,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSDotNetFramework_Architecture" HorizontalAlignment="Left" Margin="215,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MS365Apps_Detail" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,468,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MS365Apps_Architecture" HorizontalAlignment="Left" Margin="215,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="265,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,493,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="265,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="265,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="14,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <Label x:Name="Label_Architecture2_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="442,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="64" FontSize="10"/>
+                <Label x:Name="Label_Language2_Detail" Content="Language" HorizontalAlignment="Left" Margin="514,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
+                <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="170,143,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,168,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Firefox_Detail" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Firefox_Architecture" HorizontalAlignment="Left" Margin="470,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="Danish"/>
+                    <ListBoxItem Content="Dutch"/>
+                    <ListBoxItem Content="English"/>
+                    <ListBoxItem Content="Finnish"/>
+                    <ListBoxItem Content="French"/>
+                    <ListBoxItem Content="German"/>
+                    <ListBoxItem Content="Italian"/>
+                    <ListBoxItem Content="Japanese"/>
+                    <ListBoxItem Content="Korean"/>
+                    <ListBoxItem Content="Norwegian"/>
+                    <ListBoxItem Content="Polish"/>
+                    <ListBoxItem Content="Portuguese"/>
+                    <ListBoxItem Content="Russian"/>
+                    <ListBoxItem Content="Spanish"/>
+                    <ListBoxItem Content="Swedish"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_NotepadPlusPlus_Detail" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_NotepadPlusPlus_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_OpenJDK_Detail" Content="Open JDK" HorizontalAlignment="Left" Margin="170,268,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_OpenJDK_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,293,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="470,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_PeaZip_Detail" Content="PeaZip" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_PeaZip_Architecture" HorizontalAlignment="Left" Margin="470,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Putty_Detail" Content="PuTTY" HorizontalAlignment="Left" Margin="170,343,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Putty_Architecture" HorizontalAlignment="Left" Margin="470,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Slack_Detail" Content="Slack" HorizontalAlignment="Left" Margin="170,368,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_Slack_Architecture" HorizontalAlignment="Left" Margin="470,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_SumatraPDF_Detail" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,393,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                <ComboBox x:Name="Box_SumatraPDF_Architecture" HorizontalAlignment="Left" Margin="470,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_TechSmithSnagIt_Detail" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_TechSmithSnagIt_Architecture" HorizontalAlignment="Left" Margin="470,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_VLCPlayer_Detail" Content="VLC Player" HorizontalAlignment="Left" Margin="170,443,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_VLCPlayer_Architecture" HorizontalAlignment="Left" Margin="470,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_VMWareTools_Detail" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,468,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_VMWareTools_Architecture" HorizontalAlignment="Left" Margin="470,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_WinMerge_Detail" Content="WinMerge" HorizontalAlignment="Left" Margin="170,493,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_WinMerge_Architecture" HorizontalAlignment="Left" Margin="470,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="470,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>
 "@
 
@@ -1386,6 +1821,49 @@ $inputXML = @"
         $WPFBox_MSFSLogix.SelectedIndex = $LastSetting[66] -as [int]
         $WPFBox_ControlUpAgent.SelectedIndex = $LastSetting[71] -as [int]
         $WPFBox_MSAVDRemoteDesktop.SelectedIndex = $LastSetting[75] -as [int]
+        $WPFBox_7Zip_Architecture.SelectedIndex = $LastSetting[93] -as [int]
+        $WPFBox_AdobeReaderDC_Architecture.SelectedIndex = $LastSetting[94] -as [int]
+        $WPFBox_AdobeReaderDC_Language.SelectedIndex = $LastSetting[95] -as [int]
+        $WPFBox_CiscoWebexTeams_Architecture.SelectedIndex = $LastSetting[96] -as [int]
+        $WPFBox_CitrixHypervisorTools_Architecture.SelectedIndex = $LastSetting[97] -as [int]
+        $WPFBox_ControlUpAgent_Architecture.SelectedIndex = $LastSetting[98] -as [int]
+        $WPFBox_deviceTRUST_Architecture.SelectedIndex = $LastSetting[99] -as [int]
+        $WPFBox_FoxitPDFEditor_Language.SelectedIndex = $LastSetting[100] -as [int]
+        $WPFBox_FoxitReader_Language.SelectedIndex = $LastSetting[101] -as [int]
+        $WPFBox_GitForWindows_Architecture.SelectedIndex = $LastSetting[102] -as [int]
+        $WPFBox_GoogleChrome_Architecture.SelectedIndex = $LastSetting[103] -as [int]
+        $WPFBox_ImageGlass_Architecture.SelectedIndex = $LastSetting[104] -as [int]
+        $WPFBox_IrfanView_Architecture.SelectedIndex = $LastSetting[105] -as [int]
+        $WPFBox_KeePass_Language.SelectedIndex = $LastSetting[106] -as [int]
+        $WPFBox_MSDotNetFramework_Architecture.SelectedIndex = $LastSetting[107] -as [int]
+        $WPFBox_MS365Apps_Architecture.SelectedIndex = $LastSetting[108] -as [int]
+        $WPFBox_MS365Apps_Language.SelectedIndex = $LastSetting[109] -as [int]
+        $WPFBox_MS365Apps_Visio_Language.SelectedIndex = $LastSetting[111] -as [int]
+        $WPFBox_MS365Apps_Project_Language.SelectedIndex = $LastSetting[113] -as [int]
+        $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex = $LastSetting[114] -as [int]
+        $WPFBox_MSEdge_Architecture.SelectedIndex = $LastSetting[115] -as [int]
+        $WPFBox_MSFSLogix_Architecture.SelectedIndex = $LastSetting[116] -as [int]
+        $WPFBox_MSOffice2019_Architecture.SelectedIndex = $LastSetting[117] -as [int]
+        $WPFBox_MSOneDrive_Architecture.SelectedIndex = $LastSetting[118] -as [int]
+        $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex = $LastSetting[119] -as [int]
+        $WPFBox_MSPowerShell_Architecture.SelectedIndex = $LastSetting[120] -as [int]
+        $WPFBox_MSSQLServerManagementStudio_Language.SelectedIndex = $LastSetting[121] -as [int]
+        $WPFBox_MSTeams_Architecture.SelectedIndex = $LastSetting[122] -as [int]
+        $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex = $LastSetting[123] -as [int]
+        $WPFBox_Firefox_Architecture.SelectedIndex = $LastSetting[124] -as [int]
+        $WPFBox_Firefox_Language.SelectedIndex = $LastSetting[125] -as [int]
+        $WPFBox_NotepadPlusPlus_Architecture.SelectedIndex = $LastSetting[126] -as [int]
+        $WPFBox_OpenJDK_Architecture.SelectedIndex = $LastSetting[127] -as [int]
+        $WPFBox_OracleJava8_Architecture.SelectedIndex = $LastSetting[128] -as [int]
+        $WPFBox_PeaZip_Architecture.SelectedIndex = $LastSetting[129] -as [int]
+        $WPFBox_Putty_Architecture.SelectedIndex = $LastSetting[130] -as [int]
+        $WPFBox_Slack_Architecture.SelectedIndex = $LastSetting[131] -as [int]
+        $WPFBox_SumatraPDF_Architecture.SelectedIndex = $LastSetting[132] -as [int]
+        $WPFBox_TechSmithSnagIT_Architecture.SelectedIndex = $LastSetting[133] -as [int]
+        $WPFBox_VLCPlayer_Architecture.SelectedIndex = $LastSetting[134] -as [int]
+        $WPFBox_VMWareTools_Architecture.SelectedIndex = $LastSetting[135] -as [int]
+        $WPFBox_WinMerge_Architecture.SelectedIndex = $LastSetting[136] -as [int]
+        $WPFBox_Wireshark_Architecture.SelectedIndex = $LastSetting[137] -as [int]
         Switch ($LastSetting[8]) {
             1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
         }
@@ -1593,9 +2071,478 @@ $inputXML = @"
         Switch ($LastSetting[90]) {
             1 { $WPFCheckbox_WinMerge.IsChecked = "True"}
         }
+        Switch ($LastSetting[91]) {
+            1 { $WPFCheckbox_WhatIf.IsChecked = "True"}
+        }
+        Switch ($LastSetting[92]) {
+            1 { $WPFCheckbox_CleanUp.IsChecked = "True"}
+        }
+        Switch ($LastSetting[110]) {
+            1 { $WPFCheckbox_MS365Apps_Visio_Detail.IsChecked = "True"}
+        }
+        Switch ($LastSetting[112]) {
+            1 { $WPFCheckbox_MS365Apps_Project_Detail.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
+    # Checkbox Detail (AddScript)
+    $WPFCheckbox_7ZIP.Add_Checked({
+        $WPFCheckbox_7Zip_Detail.IsChecked = $WPFCheckbox_7ZIP.IsChecked
+    })
+    $WPFCheckbox_7ZIP.Add_Unchecked({
+        $WPFCheckbox_7Zip_Detail.IsChecked = $WPFCheckbox_7Zip.IsChecked
+    })
+    $WPFCheckbox_7ZIP_Detail.Add_Checked({
+        $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_7ZIP_Detail.IsChecked
+    })
+    $WPFCheckbox_7ZIP_Detail.Add_Unchecked({
+        $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_7Zip_Detail.IsChecked
+    })
+    $WPFCheckbox_AdobeReaderDC.Add_Checked({
+        $WPFCheckbox_AdobeReaderDC_Detail.IsChecked = $WPFCheckbox_AdobeReaderDC.IsChecked
+    })
+    $WPFCheckbox_AdobeReaderDC.Add_Unchecked({
+        $WPFCheckbox_AdobeReaderDC_Detail.IsChecked = $WPFCheckbox_AdobeReaderDC.IsChecked
+    })
+    $WPFCheckbox_AdobeReaderDC_Detail.Add_Checked({
+        $WPFCheckbox_AdobeReaderDC.IsChecked = $WPFCheckbox_AdobeReaderDC_Detail.IsChecked
+    })
+    $WPFCheckbox_AdobeReaderDC_Detail.Add_Unchecked({
+        $WPFCheckbox_AdobeReaderDC.IsChecked = $WPFCheckbox_AdobeReaderDC_Detail.IsChecked
+    })
+    $WPFCheckbox_CiscoWebexTeams.Add_Checked({
+        $WPFCheckbox_CiscoWebexTeams_Detail.IsChecked = $WPFCheckbox_CiscoWebexTeams.IsChecked
+    })
+    $WPFCheckbox_CiscoWebexTeams.Add_Unchecked({
+        $WPFCheckbox_CiscoWebexTeams_Detail.IsChecked = $WPFCheckbox_CiscoWebexTeams.IsChecked
+    })
+    $WPFCheckbox_CiscoWebexTeams_Detail.Add_Checked({
+        $WPFCheckbox_CiscoWebexTeams.IsChecked = $WPFCheckbox_CiscoWebexTeams_Detail.IsChecked
+    })
+    $WPFCheckbox_CiscoWebexTeams_Detail.Add_Unchecked({
+        $WPFCheckbox_CiscoWebexTeams.IsChecked = $WPFCheckbox_CiscoWebexTeams_Detail.IsChecked
+    })
+    $WPFCheckbox_CitrixHypervisorTools.Add_Checked({
+        $WPFCheckbox_CitrixHypervisorTools_Detail.IsChecked = $WPFCheckbox_CitrixHypervisorTools.IsChecked
+    })
+    $WPFCheckbox_CitrixHypervisorTools.Add_Unchecked({
+        $WPFCheckbox_CitrixHypervisorTools_Detail.IsChecked = $WPFCheckbox_CitrixHypervisorTools.IsChecked
+    })
+    $WPFCheckbox_CitrixHypervisorTools_Detail.Add_Checked({
+        $WPFCheckbox_CitrixHypervisorTools.IsChecked = $WPFCheckbox_CitrixHypervisorTools_Detail.IsChecked
+    })
+    $WPFCheckbox_CitrixHypervisorTools_Detail.Add_Unchecked({
+        $WPFCheckbox_CitrixHypervisorTools.IsChecked = $WPFCheckbox_CitrixHypervisorTools_Detail.IsChecked
+    })
+    $WPFCheckbox_deviceTRUST.Add_Checked({
+        $WPFCheckbox_deviceTRUST_Detail.IsChecked = $WPFCheckbox_deviceTRUST.IsChecked
+    })
+    $WPFCheckbox_deviceTRUST.Add_Unchecked({
+        $WPFCheckbox_deviceTRUST_Detail.IsChecked = $WPFCheckbox_deviceTRUST.IsChecked
+    })
+    $WPFCheckbox_deviceTRUST_Detail.Add_Checked({
+        $WPFCheckbox_deviceTRUST.IsChecked = $WPFCheckbox_deviceTRUST_Detail.IsChecked
+    })
+    $WPFCheckbox_deviceTRUST_Detail.Add_Unchecked({
+        $WPFCheckbox_deviceTRUST.IsChecked = $WPFCheckbox_deviceTRUST_Detail.IsChecked
+    })
+    $WPFCheckbox_ControlUpAgent.Add_Checked({
+        $WPFCheckbox_ControlUpAgent_Detail.IsChecked = $WPFCheckbox_ControlUpAgent.IsChecked
+    })
+    $WPFCheckbox_ControlUpAgent.Add_Unchecked({
+        $WPFCheckbox_ControlUpAgent_Detail.IsChecked = $WPFCheckbox_ControlUpAgent.IsChecked
+    })
+    $WPFCheckbox_ControlUpAgent_Detail.Add_Checked({
+        $WPFCheckbox_ControlUpAgent.IsChecked = $WPFCheckbox_ControlUpAgent_Detail.IsChecked
+    })
+    $WPFCheckbox_ControlUpAgent_Detail.Add_Unchecked({
+        $WPFCheckbox_ControlUpAgent.IsChecked = $WPFCheckbox_ControlUpAgent_Detail.IsChecked
+    })
+    $WPFCheckbox_FoxitPDFEditor.Add_Checked({
+        $WPFCheckbox_FoxitPDFEditor_Detail.IsChecked = $WPFCheckbox_FoxitPDFEditor.IsChecked
+    })
+    $WPFCheckbox_FoxitPDFEditor.Add_Unchecked({
+        $WPFCheckbox_FoxitPDFEditor_Detail.IsChecked = $WPFCheckbox_FoxitPDFEditor.IsChecked
+    })
+    $WPFCheckbox_FoxitPDFEditor_Detail.Add_Checked({
+        $WPFCheckbox_FoxitPDFEditor.IsChecked = $WPFCheckbox_FoxitPDFEditor_Detail.IsChecked
+    })
+    $WPFCheckbox_FoxitPDFEditor_Detail.Add_Unchecked({
+        $WPFCheckbox_FoxitPDFEditor.IsChecked = $WPFCheckbox_FoxitPDFEditor_Detail.IsChecked
+    })
+    $WPFCheckbox_FoxitReader.Add_Checked({
+        $WPFCheckbox_FoxitReader_Detail.IsChecked = $WPFCheckbox_FoxitReader.IsChecked
+    })
+    $WPFCheckbox_FoxitReader.Add_Unchecked({
+        $WPFCheckbox_FoxitReader_Detail.IsChecked = $WPFCheckbox_FoxitReader.IsChecked
+    })
+    $WPFCheckbox_FoxitReader_Detail.Add_Checked({
+        $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_FoxitReader_Detail.IsChecked
+    })
+    $WPFCheckbox_FoxitReader_Detail.Add_Unchecked({
+        $WPFCheckbox_FoxitReader.IsChecked = $WPFCheckbox_FoxitReader_Detail.IsChecked
+    })
+    $WPFCheckbox_GitForWindows.Add_Checked({
+        $WPFCheckbox_GitForWindows_Detail.IsChecked = $WPFCheckbox_GitForWindows.IsChecked
+    })
+    $WPFCheckbox_GitForWindows.Add_Unchecked({
+        $WPFCheckbox_GitForWindows_Detail.IsChecked = $WPFCheckbox_GitForWindows.IsChecked
+    })
+    $WPFCheckbox_GitForWindows_Detail.Add_Checked({
+        $WPFCheckbox_GitForWindows.IsChecked = $WPFCheckbox_GitForWindows_Detail.IsChecked
+    })
+    $WPFCheckbox_GitForWindows_Detail.Add_Unchecked({
+        $WPFCheckbox_GitForWindows.IsChecked = $WPFCheckbox_GitForWindows_Detail.IsChecked
+    })
+    $WPFCheckbox_GoogleChrome.Add_Checked({
+        $WPFCheckbox_GoogleChrome_Detail.IsChecked = $WPFCheckbox_GoogleChrome.IsChecked
+    })
+    $WPFCheckbox_GoogleChrome.Add_Unchecked({
+        $WPFCheckbox_GoogleChrome_Detail.IsChecked = $WPFCheckbox_GoogleChrome.IsChecked
+    })
+    $WPFCheckbox_GoogleChrome_Detail.Add_Checked({
+        $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_GoogleChrome_Detail.IsChecked
+    })
+    $WPFCheckbox_GoogleChrome_Detail.Add_Unchecked({
+        $WPFCheckbox_GoogleChrome.IsChecked = $WPFCheckbox_GoogleChrome_Detail.IsChecked
+    })
+    $WPFCheckbox_ImageGlass.Add_Checked({
+        $WPFCheckbox_ImageGlass_Detail.IsChecked = $WPFCheckbox_ImageGlass.IsChecked
+    })
+    $WPFCheckbox_ImageGlass.Add_Unchecked({
+        $WPFCheckbox_ImageGlass_Detail.IsChecked = $WPFCheckbox_ImageGlass.IsChecked
+    })
+    $WPFCheckbox_ImageGlass_Detail.Add_Checked({
+        $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_ImageGlass_Detail.IsChecked
+    })
+    $WPFCheckbox_ImageGlass_Detail.Add_Unchecked({
+        $WPFCheckbox_ImageGlass.IsChecked = $WPFCheckbox_ImageGlass_Detail.IsChecked
+    })
+    $WPFCheckbox_IrfanView.Add_Checked({
+        $WPFCheckbox_IrfanView_Detail.IsChecked = $WPFCheckbox_IrfanView.IsChecked
+    })
+    $WPFCheckbox_IrfanView.Add_Unchecked({
+        $WPFCheckbox_IrfanView_Detail.IsChecked = $WPFCheckbox_IrfanView.IsChecked
+    })
+    $WPFCheckbox_IrfanView_Detail.Add_Checked({
+        $WPFCheckbox_IrfanView.IsChecked = $WPFCheckbox_IrfanView_Detail.IsChecked
+    })
+    $WPFCheckbox_IrfanView_Detail.Add_Unchecked({
+        $WPFCheckbox_IrfanView.IsChecked = $WPFCheckbox_IrfanView_Detail.IsChecked
+    })
+    $WPFCheckbox_KeePass.Add_Checked({
+        $WPFCheckbox_KeePass_Detail.IsChecked = $WPFCheckbox_KeePass.IsChecked
+    })
+    $WPFCheckbox_KeePass.Add_Unchecked({
+        $WPFCheckbox_KeePass_Detail.IsChecked = $WPFCheckbox_KeePass.IsChecked
+    })
+    $WPFCheckbox_KeePass_Detail.Add_Checked({
+        $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_KeePass_Detail.IsChecked
+    })
+    $WPFCheckbox_KeePass_Detail.Add_Unchecked({
+        $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_KeePass_Detail.IsChecked
+    })
+    $WPFCheckbox_MSDotNetFramework.Add_Checked({
+        $WPFCheckbox_MSDotNetFramework_Detail.IsChecked = $WPFCheckbox_MSDotNetFramework.IsChecked
+    })
+    $WPFCheckbox_MSDotNetFramework.Add_Unchecked({
+        $WPFCheckbox_MSDotNetFramework_Detail.IsChecked = $WPFCheckbox_MSDotNetFramework.IsChecked
+    })
+    $WPFCheckbox_MSDotNetFramework_Detail.Add_Checked({
+        $WPFCheckbox_MSDotNetFramework.IsChecked = $WPFCheckbox_MSDotNetFramework_Detail.IsChecked
+    })
+    $WPFCheckbox_MSDotNetFramework_Detail.Add_Unchecked({
+        $WPFCheckbox_MSDotNetFramework.IsChecked = $WPFCheckbox_MSDotNetFramework_Detail.IsChecked
+    })
+    $WPFCheckbox_MS365Apps.Add_Checked({
+        $WPFCheckbox_MS365Apps_Detail.IsChecked = $WPFCheckbox_MS365Apps.IsChecked
+    })
+    $WPFCheckbox_MS365Apps.Add_Unchecked({
+        $WPFCheckbox_MS365Apps_Detail.IsChecked = $WPFCheckbox_MS365Apps.IsChecked
+    })
+    $WPFCheckbox_MS365Apps_Detail.Add_Checked({
+        $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_MS365Apps_Detail.IsChecked
+    })
+    $WPFCheckbox_MS365Apps_Detail.Add_Unchecked({
+        $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_MS365Apps_Detail.IsChecked
+    })
+    $WPFCheckbox_MSAVDRemoteDesktop.Add_Checked({
+        $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked = $WPFCheckbox_MSAVDRemoteDesktop.IsChecked
+    })
+    $WPFCheckbox_MSAVDRemoteDesktop.Add_Unchecked({
+        $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked = $WPFCheckbox_MSAVDRemoteDesktop.IsChecked
+    })
+    $WPFCheckbox_MSAVDRemoteDesktop_Detail.Add_Checked({
+        $WPFCheckbox_MSAVDRemoteDesktop.IsChecked = $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked
+    })
+    $WPFCheckbox_MSAVDRemoteDesktop_Detail.Add_Unchecked({
+        $WPFCheckbox_MSAVDRemoteDesktop.IsChecked = $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked
+    })
+    $WPFCheckbox_MSEdge.Add_Checked({
+        $WPFCheckbox_MSEdge_Detail.IsChecked = $WPFCheckbox_MSEdge.IsChecked
+    })
+    $WPFCheckbox_MSEdge.Add_Unchecked({
+        $WPFCheckbox_MSEdge_Detail.IsChecked = $WPFCheckbox_MSEdge.IsChecked
+    })
+    $WPFCheckbox_MSEdge_Detail.Add_Checked({
+        $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_MSEdge_Detail.IsChecked
+    })
+    $WPFCheckbox_MSEdge_Detail.Add_Unchecked({
+        $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_MSEdge_Detail.IsChecked
+    })
+    $WPFCheckbox_MSFSLogix.Add_Checked({
+        $WPFCheckbox_MSFSLogix_Detail.IsChecked = $WPFCheckbox_MSFSLogix.IsChecked
+    })
+    $WPFCheckbox_MSFSLogix.Add_Unchecked({
+        $WPFCheckbox_MSFSLogix_Detail.IsChecked = $WPFCheckbox_MSFSLogix.IsChecked
+    })
+    $WPFCheckbox_MSFSLogix_Detail.Add_Checked({
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_MSFSLogix_Detail.IsChecked
+    })
+    $WPFCheckbox_MSFSLogix_Detail.Add_Unchecked({
+        $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_MSFSLogix_Detail.IsChecked
+    })
+    $WPFCheckbox_MSOffice2019.Add_Checked({
+        $WPFCheckbox_MSOffice2019_Detail.IsChecked = $WPFCheckbox_MSOffice2019.IsChecked
+    })
+    $WPFCheckbox_MSOffice2019.Add_Unchecked({
+        $WPFCheckbox_MSOffice2019_Detail.IsChecked = $WPFCheckbox_MSOffice2019.IsChecked
+    })
+    $WPFCheckbox_MSOffice2019_Detail.Add_Checked({
+        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_MSOffice2019_Detail.IsChecked
+    })
+    $WPFCheckbox_MSOffice2019_Detail.Add_Unchecked({
+        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_MSOffice2019_Detail.IsChecked
+    })
+    $WPFCheckbox_MSOneDrive.Add_Checked({
+        $WPFCheckbox_MSOneDrive_Detail.IsChecked = $WPFCheckbox_MSOneDrive.IsChecked
+    })
+    $WPFCheckbox_MSOneDrive.Add_Unchecked({
+        $WPFCheckbox_MSOneDrive_Detail.IsChecked = $WPFCheckbox_MSOneDrive.IsChecked
+    })
+    $WPFCheckbox_MSOneDrive_Detail.Add_Checked({
+        $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_MSOneDrive_Detail.IsChecked
+    })
+    $WPFCheckbox_MSOneDrive_Detail.Add_Unchecked({
+        $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_MSOneDrive_Detail.IsChecked
+    })
+    $WPFCheckbox_MSPowerBIDesktop.Add_Checked({
+        $WPFCheckbox_MSPowerBIDesktop_Detail.IsChecked = $WPFCheckbox_MSPowerBIDesktop.IsChecked
+    })
+    $WPFCheckbox_MSPowerBIDesktop.Add_Unchecked({
+        $WPFCheckbox_MSPowerBIDesktop_Detail.IsChecked = $WPFCheckbox_MSPowerBIDesktop.IsChecked
+    })
+    $WPFCheckbox_MSPowerBIDesktop_Detail.Add_Checked({
+        $WPFCheckbox_MSPowerBIDesktop.IsChecked = $WPFCheckbox_MSPowerBIDesktop_Detail.IsChecked
+    })
+    $WPFCheckbox_MSPowerBIDesktop_Detail.Add_Unchecked({
+        $WPFCheckbox_MSPowerBIDesktop.IsChecked = $WPFCheckbox_MSPowerBIDesktop_Detail.IsChecked
+    })
+    $WPFCheckbox_MSPowerShell.Add_Checked({
+        $WPFCheckbox_MSPowerShell_Detail.IsChecked = $WPFCheckbox_MSPowerShell.IsChecked
+    })
+    $WPFCheckbox_MSPowerShell.Add_Unchecked({
+        $WPFCheckbox_MSPowerShell_Detail.IsChecked = $WPFCheckbox_MSPowerShell.IsChecked
+    })
+    $WPFCheckbox_MSPowerShell_Detail.Add_Checked({
+        $WPFCheckbox_MSPowerShell.IsChecked = $WPFCheckbox_MSPowerShell_Detail.IsChecked
+    })
+    $WPFCheckbox_MSPowerShell_Detail.Add_Unchecked({
+        $WPFCheckbox_MSPowerShell.IsChecked = $WPFCheckbox_MSPowerShell_Detail.IsChecked
+    })
+    $WPFCheckbox_MSSQLServerManagementStudio.Add_Checked({
+        $WPFCheckbox_MSSQLServerManagementStudio_Detail.IsChecked = $WPFCheckbox_MSSQLServerManagementStudio.IsChecked
+    })
+    $WPFCheckbox_MSSQLServerManagementStudio.Add_Unchecked({
+        $WPFCheckbox_MSSQLServerManagementStudio_Detail.IsChecked = $WPFCheckbox_MSSQLServerManagementStudio.IsChecked
+    })
+    $WPFCheckbox_MSSQLServerManagementStudio_Detail.Add_Checked({
+        $WPFCheckbox_MSSQLServerManagementStudio.IsChecked = $WPFCheckbox_MSSQLServerManagementStudio_Detail.IsChecked
+    })
+    $WPFCheckbox_MSSQLServerManagementStudio_Detail.Add_Unchecked({
+        $WPFCheckbox_MSSQLServerManagementStudio.IsChecked = $WPFCheckbox_MSSQLServerManagementStudio_Detail.IsChecked
+    })
+    $WPFCheckbox_MSTeams.Add_Checked({
+        $WPFCheckbox_MSTeams_Detail.IsChecked = $WPFCheckbox_MSTeams.IsChecked
+    })
+    $WPFCheckbox_MSTeams.Add_Unchecked({
+        $WPFCheckbox_MSTeams_Detail.IsChecked = $WPFCheckbox_MSTeams.IsChecked
+    })
+    $WPFCheckbox_MSTeams_Detail.Add_Checked({
+        $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_MSTeams_Detail.IsChecked
+    })
+    $WPFCheckbox_MSTeams_Detail.Add_Unchecked({
+        $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_MSTeams_Detail.IsChecked
+    })
+    $WPFCheckbox_MSVisualStudioCode.Add_Checked({
+        $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked = $WPFCheckbox_MSVisualStudioCode.IsChecked
+    })
+    $WPFCheckbox_MSVisualStudioCode.Add_Unchecked({
+        $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked = $WPFCheckbox_MSVisualStudioCode.IsChecked
+    })
+    $WPFCheckbox_MSVisualStudioCode_Detail.Add_Checked({
+        $WPFCheckbox_MSVisualStudioCode.IsChecked = $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked
+    })
+    $WPFCheckbox_MSVisualStudioCode_Detail.Add_Unchecked({
+        $WPFCheckbox_MSVisualStudioCode.IsChecked = $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked
+    })
+    $WPFCheckbox_Firefox.Add_Checked({
+        $WPFCheckbox_Firefox_Detail.IsChecked = $WPFCheckbox_Firefox.IsChecked
+    })
+    $WPFCheckbox_Firefox.Add_Unchecked({
+        $WPFCheckbox_Firefox_Detail.IsChecked = $WPFCheckbox_Firefox.IsChecked
+    })
+    $WPFCheckbox_Firefox_Detail.Add_Checked({
+        $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_Firefox_Detail.IsChecked
+    })
+    $WPFCheckbox_Firefox_Detail.Add_Unchecked({
+        $WPFCheckbox_Firefox.IsChecked = $WPFCheckbox_Firefox_Detail.IsChecked
+    })
+    $WPFCheckbox_SumatraPDF.Add_Checked({
+        $WPFCheckbox_SumatraPDF_Detail.IsChecked = $WPFCheckbox_SumatraPDF.IsChecked
+    })
+    $WPFCheckbox_SumatraPDF.Add_Unchecked({
+        $WPFCheckbox_SumatraPDF_Detail.IsChecked = $WPFCheckbox_SumatraPDF.IsChecked
+    })
+    $WPFCheckbox_SumatraPDF_Detail.Add_Checked({
+        $WPFCheckbox_SumatraPDF.IsChecked = $WPFCheckbox_SumatraPDF_Detail.IsChecked
+    })
+    $WPFCheckbox_SumatraPDF_Detail.Add_Unchecked({
+        $WPFCheckbox_SumatraPDF.IsChecked = $WPFCheckbox_SumatraPDF_Detail.IsChecked
+    })
+    $WPFCheckbox_TechSmithSnagIt.Add_Checked({
+        $WPFCheckbox_TechSmithSnagIt_Detail.IsChecked = $WPFCheckbox_TechSmithSnagIt.IsChecked
+    })
+    $WPFCheckbox_TechSmithSnagIt.Add_Unchecked({
+        $WPFCheckbox_TechSmithSnagIt_Detail.IsChecked = $WPFCheckbox_TechSmithSnagIt.IsChecked
+    })
+    $WPFCheckbox_TechSmithSnagIt_Detail.Add_Checked({
+        $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_TechSmithSnagIt_Detail.IsChecked
+    })
+    $WPFCheckbox_TechSmithSnagIt_Detail.Add_Unchecked({
+        $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_TechSmithSnagIt_Detail.IsChecked
+    })
+    $WPFCheckbox_NotepadPlusPlus.Add_Checked({
+        $WPFCheckbox_NotepadPlusPlus_Detail.IsChecked = $WPFCheckbox_NotepadPlusPlus.IsChecked
+    })
+    $WPFCheckbox_NotepadPlusPlus.Add_Unchecked({
+        $WPFCheckbox_NotepadPlusPlus_Detail.IsChecked = $WPFCheckbox_NotepadPlusPlus.IsChecked
+    })
+    $WPFCheckbox_NotepadPlusPlus_Detail.Add_Checked({
+        $WPFCheckbox_NotepadPlusPlus.IsChecked = $WPFCheckbox_NotepadPlusPlus_Detail.IsChecked
+    })
+    $WPFCheckbox_NotepadPlusPlus_Detail.Add_Unchecked({
+        $WPFCheckbox_NotepadPlusPlus.IsChecked = $WPFCheckbox_NotepadPlusPlus_Detail.IsChecked
+    })
+    $WPFCheckbox_OpenJDK.Add_Checked({
+        $WPFCheckbox_OpenJDK_Detail.IsChecked = $WPFCheckbox_OpenJDK.IsChecked
+    })
+    $WPFCheckbox_OpenJDK.Add_Unchecked({
+        $WPFCheckbox_OpenJDK_Detail.IsChecked = $WPFCheckbox_OpenJDK.IsChecked
+    })
+    $WPFCheckbox_OpenJDK_Detail.Add_Checked({
+        $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_OpenJDK_Detail.IsChecked
+    })
+    $WPFCheckbox_OpenJDK_Detail.Add_Unchecked({
+        $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_OpenJDK_Detail.IsChecked
+    })
+    $WPFCheckbox_OracleJava8.Add_Checked({
+        $WPFCheckbox_OracleJava8_Detail.IsChecked = $WPFCheckbox_OracleJava8.IsChecked
+    })
+    $WPFCheckbox_OracleJava8.Add_Unchecked({
+        $WPFCheckbox_OracleJava8_Detail.IsChecked = $WPFCheckbox_OracleJava8.IsChecked
+    })
+    $WPFCheckbox_OracleJava8_Detail.Add_Checked({
+        $WPFCheckbox_OracleJava8.IsChecked = $WPFCheckbox_OracleJava8_Detail.IsChecked
+    })
+    $WPFCheckbox_OracleJava8_Detail.Add_Unchecked({
+        $WPFCheckbox_OracleJava8.IsChecked = $WPFCheckbox_OracleJava8_Detail.IsChecked
+    })
+    $WPFCheckbox_PeaZip.Add_Checked({
+        $WPFCheckbox_PeaZip_Detail.IsChecked = $WPFCheckbox_PeaZip.IsChecked
+    })
+    $WPFCheckbox_PeaZip.Add_Unchecked({
+        $WPFCheckbox_PeaZip_Detail.IsChecked = $WPFCheckbox_PeaZip.IsChecked
+    })
+    $WPFCheckbox_PeaZip_Detail.Add_Checked({
+        $WPFCheckbox_PeaZip.IsChecked = $WPFCheckbox_PeaZip_Detail.IsChecked
+    })
+    $WPFCheckbox_PeaZip_Detail.Add_Unchecked({
+        $WPFCheckbox_PeaZip.IsChecked = $WPFCheckbox_PeaZip_Detail.IsChecked
+    })
+    $WPFCheckbox_Putty.Add_Checked({
+        $WPFCheckbox_Putty_Detail.IsChecked = $WPFCheckbox_Putty.IsChecked
+    })
+    $WPFCheckbox_Putty.Add_Unchecked({
+        $WPFCheckbox_Putty_Detail.IsChecked = $WPFCheckbox_Putty.IsChecked
+    })
+    $WPFCheckbox_Putty_Detail.Add_Checked({
+        $WPFCheckbox_Putty.IsChecked = $WPFCheckbox_Putty_Detail.IsChecked
+    })
+    $WPFCheckbox_Putty_Detail.Add_Unchecked({
+        $WPFCheckbox_Putty.IsChecked = $WPFCheckbox_Putty_Detail.IsChecked
+    })
+    $WPFCheckbox_Slack.Add_Checked({
+        $WPFCheckbox_Slack_Detail.IsChecked = $WPFCheckbox_Slack.IsChecked
+    })
+    $WPFCheckbox_Slack.Add_Unchecked({
+        $WPFCheckbox_Slack_Detail.IsChecked = $WPFCheckbox_Slack.IsChecked
+    })
+    $WPFCheckbox_Slack_Detail.Add_Checked({
+        $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_Slack_Detail.IsChecked
+    })
+    $WPFCheckbox_Slack_Detail.Add_Unchecked({
+        $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_Slack_Detail.IsChecked
+    })
+    $WPFCheckbox_VLCPlayer.Add_Checked({
+        $WPFCheckbox_VLCPlayer_Detail.IsChecked = $WPFCheckbox_VLCPlayer.IsChecked
+    })
+    $WPFCheckbox_VLCPlayer.Add_Unchecked({
+        $WPFCheckbox_VLCPlayer_Detail.IsChecked = $WPFCheckbox_VLCPlayer.IsChecked
+    })
+    $WPFCheckbox_VLCPlayer_Detail.Add_Checked({
+        $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_VLCPlayer_Detail.IsChecked
+    })
+    $WPFCheckbox_VLCPlayer_Detail.Add_Unchecked({
+        $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_VLCPlayer_Detail.IsChecked
+    })
+    $WPFCheckbox_VMWareTools.Add_Checked({
+        $WPFCheckbox_VMWareTools_Detail.IsChecked = $WPFCheckbox_VMWareTools.IsChecked
+    })
+    $WPFCheckbox_VMWareTools.Add_Unchecked({
+        $WPFCheckbox_VMWareTools_Detail.IsChecked = $WPFCheckbox_VMWareTools.IsChecked
+    })
+    $WPFCheckbox_VMWareTools_Detail.Add_Checked({
+        $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_VMWareTools_Detail.IsChecked
+    })
+    $WPFCheckbox_VMWareTools_Detail.Add_Unchecked({
+        $WPFCheckbox_VMWareTools.IsChecked = $WPFCheckbox_VMWareTools_Detail.IsChecked
+    })
+    $WPFCheckbox_WinMerge.Add_Checked({
+        $WPFCheckbox_WinMerge_Detail.IsChecked = $WPFCheckbox_WinMerge.IsChecked
+    })
+    $WPFCheckbox_WinMerge.Add_Unchecked({
+        $WPFCheckbox_WinMerge_Detail.IsChecked = $WPFCheckbox_WinMerge.IsChecked
+    })
+    $WPFCheckbox_WinMerge_Detail.Add_Checked({
+        $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_WinMerge_Detail.IsChecked
+    })
+    $WPFCheckbox_WinMerge_Detail.Add_Unchecked({
+        $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_WinMerge_Detail.IsChecked
+    })
+    $WPFCheckbox_Wireshark.Add_Checked({
+        $WPFCheckbox_Wireshark_Detail.IsChecked = $WPFCheckbox_Wireshark.IsChecked
+    })
+    $WPFCheckbox_Wireshark.Add_Unchecked({
+        $WPFCheckbox_Wireshark_Detail.IsChecked = $WPFCheckbox_Wireshark.IsChecked
+    })
+    $WPFCheckbox_Wireshark_Detail.Add_Checked({
+        $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_Wireshark_Detail.IsChecked
+    })
+    $WPFCheckbox_Wireshark_Detail.Add_Unchecked({
+        $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_Wireshark_Detail.IsChecked
+    })
     # Checkbox SelectAll (AddScript)
     $WPFCheckbox_SelectAll.Add_Checked({
         $WPFCheckbox_7Zip.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -1877,6 +2824,14 @@ $inputXML = @"
         Else {$Script:TechSmithSnagIt = 0}
         If ($WPFCheckbox_WinMerge.ischecked -eq $true) {$Script:WinMerge = 1}
         Else {$Script:WinMerge = 0}
+        If ($WPFCheckbox_WhatIf.ischecked -eq $true) {$Script:WhatIf = 1}
+        Else {$Script:WhatIf = 0}
+        If ($WPFCheckbox_CleanUp.ischecked -eq $true) {$Script:CleanUp = 1}
+        Else {$Script:CleanUp = 0}
+        If ($WPFCheckbox_MS365Apps_Visio_Detail.ischecked -eq $true) {$Script:MS365Apps_Visio = 1}
+        Else {$Script:MS365Apps_Visio = 0}
+        If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
+        Else {$Script:MS365Apps_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -1899,8 +2854,40 @@ $inputXML = @"
         $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         $Script:ControlUpAgentFramework = $WPFBox_ControlUpAgent.SelectedIndex
         $Script:MSAVDRemoteDesktopChannel = $WPFBox_MSAVDRemoteDesktop.SelectedIndex
+        $Script:7Zip_Architecture = $WPFBox_7Zip_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Architecture = $WPFBox_AdobeReaderDC_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Language = $WPFBox_AdobeReaderDC_Language.SelectedIndex
+        $Script:CiscoWebexTeams_Architecture = $WPFBox_CiscoWebexTeams_Architecture.SelectedIndex
+        $Script:CitrixHypervisorTools_Architecture = $WPFBox_CitrixHypervisorTools_Architecture.SelectedIndex
+        $Script:ControlUpAgent_Architecture = $WPFBox_ControlUpAgent_Architecture.SelectedIndex
+        $Script:deviceTRUST_Architecture = $WPFBox_deviceTRUST_Architecture.SelectedIndex
+        $Script:FoxitPDFEditor_Language = $WPFBox_FoxitPDFEditor_Language.SelectedIndex
+        $Script:FoxitReader_Language = $WPFBox_FoxitReader_Language.SelectedIndex
+        $Script:GitForWindows_Architecture = $WPFBox_GitForWindows_Architecture.SelectedIndex
+        $Script:GoogleChrome_Architecture = $WPFBox_GoogleChrome_Architecture.SelectedIndex
+        $Script:ImageGlass_Architecture = $WPFBox_ImageGlass_Architecture.SelectedIndex
+        $Script:IrfanView_Architecture = $WPFBox_IrfanView_Architecture.SelectedIndex
+        $Script:Keepass_Language = $WPFBox_KeePass_Language.SelectedIndex
+        $Script:MSDotNetFramework_Architecture = $WPFBox_MSDotNetFramework_Architecture.SelectedIndex
+        $Script:MS365Apps_Architecture = $WPFBox_MS365Apps_Architecture.SelectedIndex
+        $Script:MS365Apps_Language = $WPFBox_MS365Apps_Language.SelectedIndex
+        $Script:MS365Apps_Visio_Language = $WPFBox_MS365Apps_Visio_Language.SelectedIndex
+        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedInde
+        $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
+        $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
+        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
+        $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
+        $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
+        $Script:MSSQLServerManagementStudio_Language = $WPFBox_MSSQLServerManagementStudio_Language.SelectedIndex
+        $Script:MSTeams_Architecture = $WPFBox_MSTeams_Architecture.SelectedIndex
+        $Script:MSVisualStudioCode_Architecture = $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex
+        $Script:Firefox_Architecture = $WPFBox_Firefox_Architecture.SelectedIndex
+        $Script:Firefox_Language = $WPFBox_Firefox_Language.SelectedIndex
+        $NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture
+               
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
