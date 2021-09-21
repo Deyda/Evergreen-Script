@@ -87,6 +87,10 @@ the script checks the version number and will update the package.
   2021-08-24        Add 1Password Download / Add 1Password, Citrix Files, Microsoft Azure CLI, Nmap, TechSmith Camtasia, TechSmith SnagIt and Cisco Webex Teams Install
   2021-08-25        Change LogMeIn GoToMeeting to Xen and Local / Add LogMeIn GoToMeeting Xen and Local and Git for Windows Install
   2021-08-26        Add Foxit PDF Editor, WinMerge, Microsoft Power BI Report Builder and PeaZip Install
+  2021-08-31        Correction Auto Update List File Parameter
+  2021-09-04        Correction Language Parameter M365 Apps
+  2021-09-14        Correction Install Parameter Adobe Acrobat Reader
+  2021-09-17        Add KeePass Language Function / Add KeePass Language Download and Install / Add IrfanView Language Download and Install
 
 .PARAMETER list
 
@@ -539,6 +543,165 @@ Function Get-PuTTY() {
     }
 }
 
+# Function KeePass Language
+#========================================================================================================================================
+Function Get-KeePassLanguage() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://keepass.info/translations.html"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexLanguageGerman = 'https:\/\/.*German.zip'
+        $URLGerman = $webRequest.RawContent | Select-String -Pattern $regexLanguageGerman -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionGerman = $URLGerman.Split("-")[1]
+        $regexLanguageDutch = 'https:\/\/.*Dutch.zip'
+        $URLDutch = $webRequest.RawContent | Select-String -Pattern $regexLanguageDutch -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionDutch = $URLDutch.Split("-")[1]
+        $regexLanguageDanish = 'https:\/\/.*Danish.zip'
+        $URLDanish = $webRequest.RawContent | Select-String -Pattern $regexLanguageDanish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionDanish = $URLDanish.Split("-")[1]
+        $regexLanguageFinnish = 'https:\/\/.*Finnish.zip'
+        $URLFinnish = $webRequest.RawContent | Select-String -Pattern $regexLanguageFinnish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionFinnish = $URLFinnish.Split("-")[1]
+        $regexLanguageFrench = 'https:\/\/.*French.zip'
+        $URLFrench = $webRequest.RawContent | Select-String -Pattern $regexLanguageFrench -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionFrench = $URLFrench.Split("-")[1]
+        $regexLanguageItalian = 'https:\/\/.*Italian-b.zip'
+        $URLItalian = $webRequest.RawContent | Select-String -Pattern $regexLanguageItalian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionItalian = $URLItalian.Split("-")[1]
+        $regexLanguageJapanese = 'https:\/\/.*Japanese.zip'
+        $URLJapanese = $webRequest.RawContent | Select-String -Pattern $regexLanguageJapanese -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionJapanese = $URLJapanese.Split("-")[1]
+        $regexLanguageKorean = 'https:\/\/.*Korean.zip'
+        $URLKorean = $webRequest.RawContent | Select-String -Pattern $regexLanguageKorean -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionKorean = $URLKorean.Split("-")[1]
+        $regexLanguageNorwegian = 'https:\/\/.*Norwegian_NB.zip'
+        $URLNorwegian = $webRequest.RawContent | Select-String -Pattern $regexLanguageNorwegian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionNorwegian = $URLNorwegian.Split("-")[1]
+        $regexLanguagePolish = 'https:\/\/.*Polish.zip'
+        $URLPolish = $webRequest.RawContent | Select-String -Pattern $regexLanguagePolish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionPolish = $URLPolish.Split("-")[1]
+        $regexLanguagePortuguese = 'https:\/\/.*Portuguese_PT.zip'
+        $URLPortuguese = $webRequest.RawContent | Select-String -Pattern $regexLanguagePortuguese -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionPortuguese = $URLPortuguese.Split("-")[1]
+        $regexLanguageRussian = 'https:\/\/.*Russian.zip'
+        $URLRussian = $webRequest.RawContent | Select-String -Pattern $regexLanguageRussian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionRussian = $URLRussian.Split("-")[1]
+        $regexLanguageSpanish = 'https:\/\/.*Spanish.zip'
+        $URLSpanish = $webRequest.RawContent | Select-String -Pattern $regexLanguageSpanish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSpanish = $URLSpanish.Split("-")[1]
+        $regexLanguageSwedish = 'https:\/\/.*Swedish.zip'
+        $URLSwedish = $webRequest.RawContent | Select-String -Pattern $regexLanguageSwedish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSwedish = $URLSwedish.Split("-")[1]
+
+        $PSObjectGerman = [PSCustomObject] @{
+            Language     = "German"
+            Version      = $VersionGerman
+            URI          = $URLGerman
+        }
+
+        $PSObjectDutch = [PSCustomObject] @{
+            Language     = "Dutch"
+            Version      = $VersionDutch
+            URI          = $URLDutch
+        }
+
+        $PSObjectDanish = [PSCustomObject] @{
+            Language     = "Danish"
+            Version      = $VersionDanish
+            URI          = $URLDanish
+        }
+
+        $PSObjectFinnish = [PSCustomObject] @{
+            Language     = "Finnish"
+            Version      = $VersionFinnish
+            URI          = $URLFinnish
+        }
+
+        $PSObjectFrench = [PSCustomObject] @{
+            Language     = "French"
+            Version      = $VersionFrench
+            URI          = $URLFrench
+        }
+
+        $PSObjectItalian = [PSCustomObject] @{
+            Language     = "Italian"
+            Version      = $VersionItalian
+            URI          = $URLItalian
+        }
+
+        $PSObjectJapanese = [PSCustomObject] @{
+            Language     = "Japanese"
+            Version      = $VersionJapanese
+            URI          = $URLJapanese
+        }
+
+        $PSObjectKorean = [PSCustomObject] @{
+            Language     = "Korean"
+            Version      = $VersionKorean
+            URI          = $URLKorean
+        }
+
+        $PSObjectNorwegian = [PSCustomObject] @{
+            Language     = "Norwegian"
+            Version      = $VersionNorwegian
+            URI          = $URLNorwegian
+        }
+
+        $PSObjectPolish = [PSCustomObject] @{
+            Language     = "Polish"
+            Version      = $VersionPolish
+            URI          = $URLPolish
+        }
+
+        $PSObjectPortuguese = [PSCustomObject] @{
+            Language     = "Portuguese"
+            Version      = $VersionPortuguese
+            URI          = $URLPortuguese
+        }
+
+        $PSObjectRussian = [PSCustomObject] @{
+            Language     = "Russian"
+            Version      = $VersionRussian
+            URI          = $URLRussian
+        }
+
+        $PSObjectSpanish = [PSCustomObject] @{
+            Language     = "Spanish"
+            Version      = $VersionSpanish
+            URI          = $URLSpanish
+        }
+
+        $PSObjectSwedish = [PSCustomObject] @{
+            Language     = "Swedish"
+            Version      = $VersionSwedish
+            URI          = $URLSwedish
+        }
+
+        Write-Output -InputObject $PSObjectGerman
+        Write-Output -InputObject $PSObjectDutch
+        Write-Output -InputObject $PSObjectDanish
+        Write-Output -InputObject $PSObjectFinnish
+        Write-Output -InputObject $PSObjectFrench
+        Write-Output -InputObject $PSObjectJapanese
+        Write-Output -InputObject $PSObjectKorean
+        Write-Output -InputObject $PSObjectItalian
+        Write-Output -InputObject $PSObjectNorwegian
+        Write-Output -InputObject $PSObjectPolish
+        Write-Output -InputObject $PSObjectPortuguese
+        Write-Output -InputObject $PSObjectRussian
+        Write-Output -InputObject $PSObjectSpanish
+        Write-Output -InputObject $PSObjectSwedish
+    }
+}
+
 # Function Microsoft Office ADMX Download
 #========================================================================================================================================
 function Get-MicrosoftOfficeAdmx {
@@ -760,7 +923,7 @@ $ProgressPreference = 'SilentlyContinue'
 $eVersion = "1.54"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1"
+$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
 If (!$WebVersion) {
     $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 }
@@ -843,7 +1006,7 @@ Else {
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
                 & "$PSScriptRoot\evergreen.ps1" -list -download file $file
 '@
                 $update > $PSScriptRoot\update.ps1
@@ -852,20 +1015,20 @@ Else {
             }
             else {
                 $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -list -download
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list -download
 '@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
             }
         }
         ElseIf ($install -eq $True -and $download -eq $False) {
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
                 & "$PSScriptRoot\evergreen.ps1" -list -install -file $file
 '@
                 $update > $PSScriptRoot\update.ps1
@@ -874,20 +1037,20 @@ Else {
             }
             else {
                 $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -list -install
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list -install
 '@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
             }
         }
         Else {
             If ($file) {
                 $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
                 & "$PSScriptRoot\evergreen.ps1" -list -file $file
 '@
                 $update > $PSScriptRoot\update.ps1
@@ -896,13 +1059,13 @@ Else {
             }
             else {
                 $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -list
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -list
 '@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
+                $update > $PSScriptRoot\update.ps1
+                & "$PSScriptRoot\update.ps1"
+                Break
             }
         }
     }
@@ -913,7 +1076,7 @@ Else {
             Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
             $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/developer/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
                 & "$PSScriptRoot\evergreen.ps1"
 '@
             $update > $PSScriptRoot\update.ps1
@@ -2329,6 +2492,22 @@ Switch ($LanguageClear) {
     Korean { $FoxitReaderLanguageClear = 'English'}
 }
 
+Switch ($Language) {
+    0 { $IrfanViewLanguageClear = 'da'}
+    1 { $IrfanViewLanguageClear = 'nl-NL'}
+    3 { $IrfanViewLanguageClear = 'fi'}
+    4 { $IrfanViewLanguageClear = 'fr'}
+    5 { $IrfanViewLanguageClear = 'de'}
+    6 { $IrfanViewLanguageClear = 'it'}
+    7 { $IrfanViewLanguageClear = 'ja'}
+    8 { $IrfanViewLanguageClear = 'ko'}
+    10 { $IrfanViewLanguageClear = 'pl'}
+    11 { $IrfanViewLanguageClear = 'pt-PT'}
+    12 { $IrfanViewLanguageClear = 'ru'}
+    13 { $IrfanViewLanguageClear = 'es'}
+    14 { $IrfanViewLanguageClear = 'sv'}
+}
+
 Switch ($MSDotNetFrameworkChannel) {
     0 { $MSDotNetFrameworkChannelClear = 'Current'}
     1 { $MSDotNetFrameworkChannelClear = 'LTS'}
@@ -2363,7 +2542,7 @@ Switch ($Language) {
     2 { $MS365AppsLanguageClear = 'en-US'}
     3 { $MS365AppsLanguageClear = 'fi-FI'}
     4 { $MS365AppsLanguageClear = 'fr-FR'}
-    5 { $MS365AppsLanguageClear = 'fr-FR'}
+    5 { $MS365AppsLanguageClear = 'de-DE'}
     6 { $MS365AppsLanguageClear = 'it-IT'}
     7 { $MS365AppsLanguageClear = 'ja-JP'}
     8 { $MS365AppsLanguageClear = 'ko-KR'}
@@ -3710,6 +3889,20 @@ If ($install -eq $False) {
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            If ($LanguageClear -ne "English") {
+                If ($LanguageClear -ne "Norwegian") {
+                    $IrfanViewLD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Language -eq "$IrfanViewLanguageClear" -and $_.Type -eq "Zip"}
+                    $VersionL = $IrfanViewLD.Version
+                    $URLL = $IrfanViewLD.uri
+                    $PackageNameL = "IrfanView_lang_" + "$LanguageClear"
+                    $SourceL = "$PackageNameL" + ".zip"
+                    Write-Host "Starting download of $Product $LanguageClear language pack version $VersionL"
+                    Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
+                    expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product\$LanguageClear"
+                    Remove-Item "$PSScriptRoot\$Product\$SourceL"
+                    Write-Host -ForegroundColor Green "Download of the $LanguageClear language pack version $VersionL finished!"
+                }
+            }
             Write-Output ""
         }
         Else {
@@ -3741,10 +3934,19 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            $KeePassLD = Get-KeePassLanguage | Where-Object {$_.Language -eq "$LanguageClear"}
+            $VersionL = $KeePassLD.Version
+            $URLL = $KeePassLD.uri
+            $PackageNameL = "KeePass-" + "$LanguageClear"
+            $SourceL = "$PackageNameL" + ".zip"
+            Write-Host "Starting download of $Product $LanguageClear language pack version $VersionL"
+            Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
+            expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product"
+            Remove-Item "$PSScriptRoot\$Product\$SourceL"
+            Write-Host -ForegroundColor Green "Download of the $LanguageClear language pack version $VersionL finished!"
             Write-Output ""
         }
         Else {
@@ -3863,7 +4065,7 @@ If ($install -eq $False) {
     If ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         $PackageName = "setup_" + "$MS365AppsChannelClear"
-        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
+        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClear"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -3908,7 +4110,7 @@ If ($install -eq $False) {
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
                     $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClearDL")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","O365ProPlusRetail")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -3949,7 +4151,7 @@ If ($install -eq $False) {
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product\$MS365AppsChannelClear")
                     $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
-                    $Node1.SetAttribute("Channel","$MS365AppsChannelClear")
+                    $Node1.SetAttribute("Channel","$MS365AppsChannelClearDL")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","O365ProPlusRetail")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -6341,9 +6543,9 @@ If ($download -eq $False) {
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
-        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Adobe) {
-            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $AdobeReaderInstaller = "Adobe_Reader_DC_" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $AdobeArchitectureClear $AdobeLanguageClear"
@@ -7320,6 +7522,31 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
+            If ($LanguageClear -ne "English") {
+                If ($LanguageClear -ne "Norwegian") {
+                    Write-Host "Copy $Product language pack $LanguageClear"
+                    Switch ($ArchitectureClear) {
+                        x64 { 
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                        }
+                        x86 {
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
+                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                            }
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\$LanguageClear"
+                    Write-Host -ForegroundColor Green "Copy $Product language pack $LanguageClear finished!"
+                }
+            }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
@@ -7362,6 +7589,9 @@ If ($download -eq $False) {
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
+            Write-Host "Copy $Product language pack $LanguageClear"
+            Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear.lngx" -Destination "${Env:ProgramFiles(x86)}\KeePass2x\Languages" -ErrorAction SilentlyContinue
+            Write-Host -ForegroundColor Green "Copy $Product language pack $LanguageClear finished!"
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
