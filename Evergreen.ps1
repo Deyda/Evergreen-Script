@@ -91,7 +91,9 @@ the script checks the version number and will update the package.
   2021-09-04        Correction Language Parameter M365 Apps
   2021-09-14        Correction Install Parameter Adobe Acrobat Reader
   2021-09-17        Add KeePass Language Function / Add KeePass Language Download and Install / Add IrfanView Language Download and 
-  2021-09-21        Add new GUI with second page
+  2021-09-21        Add new GUI with second page / Add new variables from second page
+  2021-09-22        Change 7 Zip and Adobe Reader DC to new variables
+  2021-09-23        Change disable update task for Adobe Acrobat Reader DC, Pro and Google Chrome / Change Citrix Hypervisor, ControlUp Agent, Foxit PDF Editor, Foxit Reader, Git for Windows, Google Chrome, ImageGlass, IrfanView and deviceTRUST to new variables
 
 .PARAMETER list
 
@@ -1379,7 +1381,6 @@ $inputXML = @"
                     <ListBoxItem Content="Korean"/>
                     <ListBoxItem Content="Norwegian"/>
                     <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
                     <ListBoxItem Content="Russian"/>
                     <ListBoxItem Content="Spanish"/>
                     <ListBoxItem Content="Swedish"/>
@@ -1418,7 +1419,6 @@ $inputXML = @"
                     <ListBoxItem Content="French"/>
                     <ListBoxItem Content="German"/>
                     <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
                     <ListBoxItem Content="Korean"/>
                     <ListBoxItem Content="Norwegian"/>
                     <ListBoxItem Content="Polish"/>
@@ -1437,8 +1437,6 @@ $inputXML = @"
                     <ListBoxItem Content="French"/>
                     <ListBoxItem Content="German"/>
                     <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
                     <ListBoxItem Content="Norwegian"/>
                     <ListBoxItem Content="Polish"/>
                     <ListBoxItem Content="Portuguese"/>
@@ -1481,7 +1479,6 @@ $inputXML = @"
                     <ListBoxItem Content="Italian"/>
                     <ListBoxItem Content="Japanese"/>
                     <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
                     <ListBoxItem Content="Polish"/>
                     <ListBoxItem Content="Portuguese"/>
                     <ListBoxItem Content="Russian"/>
@@ -1640,21 +1637,15 @@ $inputXML = @"
                 <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="170,143,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
                 <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
                     <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
                     <ListBoxItem Content="French"/>
                     <ListBoxItem Content="German"/>
                     <ListBoxItem Content="Italian"/>
                     <ListBoxItem Content="Japanese"/>
                     <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
                     <ListBoxItem Content="Portuguese"/>
                     <ListBoxItem Content="Russian"/>
                     <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,168,0,0" VerticalAlignment="Top" Grid.Column="2"/>
                 <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
@@ -1676,17 +1667,12 @@ $inputXML = @"
                 </ComboBox>
                 <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
                     <ListBoxItem Content="Dutch"/>
                     <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
                     <ListBoxItem Content="French"/>
                     <ListBoxItem Content="German"/>
                     <ListBoxItem Content="Italian"/>
                     <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
                     <ListBoxItem Content="Portuguese"/>
                     <ListBoxItem Content="Russian"/>
                     <ListBoxItem Content="Spanish"/>
@@ -1864,20 +1850,30 @@ $inputXML = @"
         $WPFBox_VMWareTools_Architecture.SelectedIndex = $LastSetting[135] -as [int]
         $WPFBox_WinMerge_Architecture.SelectedIndex = $LastSetting[136] -as [int]
         $WPFBox_Wireshark_Architecture.SelectedIndex = $LastSetting[137] -as [int]
+        $WPFBox_IrfanView_Language.SelectedIndex = $LastSetting[138] -as [int]
         Switch ($LastSetting[8]) {
-            1 { $WPFCheckbox_7ZIP.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_7ZIP.IsChecked = "True"
+                $WPFCheckbox_7ZIP_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[9]) {
-            1 { $WPFCheckbox_AdobeProDC.IsChecked = "True"}
+            1 {$WPFCheckbox_AdobeProDC.IsChecked = "True"}
         }
         Switch ($LastSetting[10]) {
-            1 { $WPFCheckbox_AdobeReaderDC.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_AdobeReaderDC.IsChecked = "True"
+                $WPFCheckbox_AdobeReaderDC_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[11]) {
             1 { $WPFCheckbox_BISF.IsChecked = "True"}
         }
         Switch ($LastSetting[12]) {
-            1 { $WPFCheckbox_CitrixHypervisorTools.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_CitrixHypervisorTools.IsChecked = "True"
+                $WPFCheckbox_CitrixHypervisorTools_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[13]) {
             1 { $WPFCheckbox_CitrixWorkspaceApp.IsChecked = "True"}
@@ -1886,58 +1882,103 @@ $inputXML = @"
             1 { $WPFCheckbox_Filezilla.IsChecked = "True"}
         }
         Switch ($LastSetting[15]) {
-            1 { $WPFCheckbox_Firefox.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_Firefox.IsChecked = "True"
+                $WPFCheckbox_Firefox_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[16]) {
-            1 { $WPFCheckbox_FoxitReader.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_FoxitReader.IsChecked = "True"
+                $WPFCheckbox_FoxitReader_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[17]) {
-            1 { $WPFCheckbox_MSFSLogix.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSFSLogix.IsChecked = "True"
+                $WPFCheckbox_MSFSLogix_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[18]) {
-            1 { $WPFCheckbox_GoogleChrome.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_GoogleChrome.IsChecked = "True"
+                $WPFCheckbox_GoogleChrome_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[19]) {
             1 { $WPFCheckbox_Greenshot.IsChecked = "True"}
         }
         Switch ($LastSetting[20]) {
-            1 { $WPFCheckbox_KeePass.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_KeePass.IsChecked = "True"
+                $WPFCheckbox_KeePass_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[21]) {
             1 { $WPFCheckbox_mRemoteNG.IsChecked = "True"}
         }
         Switch ($LastSetting[22]) {
-            1 { $WPFCheckbox_MS365Apps.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MS365Apps.IsChecked = "True"
+                $WPFCheckbox_MS365Apps_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[23]) {
-            1 { $WPFCheckbox_MSEdge.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSEdge.IsChecked = "True"
+                $WPFCheckbox_MSEdge_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[24]) {
-            1 { $WPFCheckbox_MSOffice2019.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSOffice2019.IsChecked = "True"
+                $WPFCheckbox_MSOffice2019_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[25]) {
-            1 { $WPFCheckbox_MSOneDrive.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSOneDrive.IsChecked = "True"
+                $WPFCheckbox_MSOneDrive_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[26]) {
-            1 { $WPFCheckbox_MSTeams.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSTeams.IsChecked = "True"
+                $WPFCheckbox_MSTeams_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[27]) {
-            1 { $WPFCheckbox_NotePadPlusPlus.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_NotePadPlusPlus.IsChecked = "True"
+                $WPFCheckbox_NotepadPlusPlus_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[28]) {
-            1 { $WPFCheckbox_OpenJDK.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_OpenJDK.IsChecked = "True"
+                $WPFCheckbox_OpenJDK_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[29]) {
-            1 { $WPFCheckbox_OracleJava8.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_OracleJava8.IsChecked = "True"
+                $WPFCheckbox_OracleJava8_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[30]) {
             1 { $WPFCheckbox_TreeSize.IsChecked = "True"}
         }
         Switch ($LastSetting[31]) {
-            1 { $WPFCheckbox_VLCPlayer.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_VLCPlayer.IsChecked = "True"
+                $WPFCheckbox_VLCPlayer_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[32]) {
-            1 { $WPFCheckbox_VMWareTools.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_VMWareTools.IsChecked = "True"
+                $WPFCheckbox_VMWareTools_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[33]) {
             1 { $WPFCheckbox_WinSCP.IsChecked = "True"}
@@ -1949,28 +1990,46 @@ $inputXML = @"
             True { $WPFCheckbox_Install.IsChecked = "True"}
         }
         Switch ($LastSetting[36]) {
-            1 { $WPFCheckbox_IrfanView.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_IrfanView.IsChecked = "True"
+                $WPFCheckbox_IrfanView_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[37]) {
             1 { $WPFCheckbox_MSTeams_No_AutoStart.IsChecked = "True"}
         }
         Switch ($LastSetting[38]) {
-            1 { $WPFCheckbox_deviceTRUST.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_deviceTRUST.IsChecked = "True"
+                $WPFCheckbox_deviceTRUST_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[39]) {
-            1 { $WPFCheckbox_MSDotNetFramework.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSDotNetFramework.IsChecked = "True"
+                $WPFCheckbox_MSDotNetFramework_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[41]) {
-            1 { $WPFCheckbox_MSPowerShell.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSPowerShell.IsChecked = "True"
+                $WPFCheckbox_MSPowerShell_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[43]) {
             1 { $WPFCheckbox_RemoteDesktopManager.IsChecked = "True"}
         }
         Switch ($LastSetting[45]) {
-            1 { $WPFCheckbox_Slack.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_Slack.IsChecked = "True"
+                $WPFCheckbox_Slack_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[46]) {
-            1 { $WPFCheckbox_Wireshark.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_Wireshark.IsChecked = "True"
+                $WPFCheckbox_Wireshark_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[47]) {
             1 { $WPFCheckbox_ShareX.IsChecked = "True"}
@@ -1988,13 +2047,19 @@ $inputXML = @"
             1 { $WPFCheckbox_MSVisualStudio.IsChecked = "True"}
         }
         Switch ($LastSetting[55]) {
-            1 { $WPFCheckbox_MSVisualStudioCode.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSVisualStudioCode.IsChecked = "True"
+                $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[57]) {
             1 { $WPFCheckbox_PaintDotNet.IsChecked = "True"}
         }
         Switch ($LastSetting[58]) {
-            1 { $WPFCheckbox_Putty.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_Putty.IsChecked = "True"
+                $WPFCheckbox_Putty_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[59]) {
             1 { $WPFCheckbox_TeamViewer.IsChecked = "True"}
@@ -2003,7 +2068,10 @@ $inputXML = @"
             1 { $WPFCheckbox_MSAzureDataStudio.IsChecked = "True"}
         }
         Switch ($LastSetting[65]) {
-            1 { $WPFCheckbox_ImageGlass.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_ImageGlass.IsChecked = "True"
+                $WPFCheckbox_ImageGlass_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[67]) {
             1 { $WPFCheckbox_uberAgent.IsChecked = "True"}
@@ -2012,37 +2080,61 @@ $inputXML = @"
             1 { $WPFCheckbox_1Password.IsChecked = "True"}
         }
         Switch ($LastSetting[69]) {
-            1 { $WPFCheckbox_SumatraPDF.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_SumatraPDF.IsChecked = "True"
+                $WPFCheckbox_SumatraPDF_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[70]) {
-            1 { $WPFCheckbox_ControlUpAgent.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_ControlUpAgent.IsChecked = "True"
+                $WPFCheckbox_ControlUpAgent_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[72]) {
             1 { $WPFCheckbox_ControlUpConsole.IsChecked = "True"}
         }
         Switch ($LastSetting[73]) {
-            1 { $WPFCheckbox_MSSQLServerManagementStudio.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSSQLServerManagementStudio.IsChecked = "True"
+                $WPFCheckbox_MSSQLServerManagementStudio_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[74]) {
-            1 { $WPFCheckbox_MSAVDRemoteDesktop.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSAVDRemoteDesktop.IsChecked = "True"
+                $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[76]) {
-            1 { $WPFCheckbox_MSPowerBIDesktop.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_MSPowerBIDesktop.IsChecked = "True"
+                $WPFCheckbox_MSPowerBIDesktop_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[77]) {
             1 { $WPFCheckbox_RDAnalyzer.IsChecked = "True"}
         }
         Switch ($LastSetting[78]) {
-            1 { $WPFCheckbox_CiscoWebexTeams.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_CiscoWebexTeams.IsChecked = "True"
+                $WPFCheckbox_CiscoWebexTeams_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[79]) {
             1 { $WPFCheckbox_CitrixFiles.IsChecked = "True"}
         }
         Switch ($LastSetting[80]) {
-            1 { $WPFCheckbox_FoxitPDFEditor.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_FoxitPDFEditor.IsChecked = "True"
+                $WPFCheckbox_FoxitPDFEditor_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[81]) {
-            1 { $WPFCheckbox_GitForWindows.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_GitForWindows.IsChecked = "True"
+                $WPFCheckbox_GitForWindows_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[82]) {
             1 { $WPFCheckbox_LogMeInGoToMeeting.IsChecked = "True"}
@@ -2060,16 +2152,25 @@ $inputXML = @"
             1 { $WPFCheckbox_Nmap.IsChecked = "True"}
         }
         Switch ($LastSetting[87]) {
-            1 { $WPFCheckbox_PeaZip.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_PeaZip.IsChecked = "True"
+                $WPFCheckbox_PeaZip_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[88]) {
             1 { $WPFCheckbox_TechSmithCamtasia.IsChecked = "True"}
         }
         Switch ($LastSetting[89]) {
-            1 { $WPFCheckbox_TechSmithSnagIt.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_TechSmithSnagIt.IsChecked = "True"
+                $WPFCheckbox_TechSmithSnagIt_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[90]) {
-            1 { $WPFCheckbox_WinMerge.IsChecked = "True"}
+            1 {
+                $WPFCheckbox_WinMerge.IsChecked = "True"
+                $WPFCheckbox_WinMerge_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[91]) {
             1 { $WPFCheckbox_WhatIf.IsChecked = "True"}
@@ -2872,7 +2973,8 @@ $inputXML = @"
         $Script:MS365Apps_Architecture = $WPFBox_MS365Apps_Architecture.SelectedIndex
         $Script:MS365Apps_Language = $WPFBox_MS365Apps_Language.SelectedIndex
         $Script:MS365Apps_Visio_Language = $WPFBox_MS365Apps_Visio_Language.SelectedIndex
-        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedInde
+        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedIndex
+        $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
         $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
         $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
         $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
@@ -2884,16 +2986,260 @@ $inputXML = @"
         $Script:MSVisualStudioCode_Architecture = $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex
         $Script:Firefox_Architecture = $WPFBox_Firefox_Architecture.SelectedIndex
         $Script:Firefox_Language = $WPFBox_Firefox_Language.SelectedIndex
-        $NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture
-               
+        $Script:NotePadPlusPlus_Architecture = $WPFBox_NotepadPlusPlus_Architecture.SelectedIndex
+        $Script:OpenJDK_Architecture = $WPFBox_OpenJDK_Architecture.SelectedIndex
+        $Script:OracleJava8_Architecture = $WPFBox_OracleJava8_Architecture.SelectedIndex
+        $Script:PeaZip_Architecture = $WPFBox_PeaZip_Architecture.SelectedIndex
+        $Script:Putty_Architecture = $WPFBox_Putty_Architecture.SelectedIndex
+        $Script:Slack_Architecture = $WPFBox_Slack_Architecture.SelectedIndex
+        $Script:SumatraPDF_Architecture = $WPFBox_SumatraPDF_Architecture.SelectedIndex
+        $Script:TechSmithSnagIt_Architecture = $WPFBox_TechSmithSnagIT_Architecture.SelectedIndex
+        $Script:VLCPlayer_Architecture = $WPFBox_VLCPlayer_Architecture.SelectedIndex
+        $Script:VMWareTools_Architecture = $WPFBox_VMWareTools_Architecture.SelectedIndex
+        $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
+        $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
+        $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
+        
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "GUI Mode"
         $Form.Close()
     })
 
-    # Button Cancel                                                                    
+    # Button Start Detail (AddScript)
+    $WPFButton_Start_Detail.Add_Click({
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
+        Else {$Script:install = $true}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
+        Else {$Script:download = $true}
+        If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
+        Else {$Script:7ZIP = 0}
+        If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
+        Else {$Script:AdobeProDC = 0}
+        If ($WPFCheckbox_AdobeReaderDC.IsChecked -eq $true) {$Script:AdobeReaderDC = 1}
+        Else {$Script:AdobeReaderDC = 0}
+        If ($WPFCheckbox_BISF.IsChecked -eq $true) {$Script:BISF = 1}
+        Else {$Script:BISF = 0}
+        If ($WPFCheckbox_CitrixHypervisorTools.IsChecked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
+        Else {$Script:Citrix_Hypervisor_Tools = 0}
+        If ($WPFCheckbox_CitrixWorkspaceApp.IsChecked -eq $true) {$Script:Citrix_WorkspaceApp = 1}
+        Else {$Script:Citrix_WorkspaceApp = 0}
+        If ($WPFCheckbox_Filezilla.IsChecked -eq $true) {$Script:Filezilla = 1}
+        Else {$Script:Filezilla = 0}
+        If ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
+        Else {$Script:Firefox = 0}
+        If ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:MSFSLogix = 1}
+        Else {$Script:MSFSLogix = 0}
+        If ($WPFCheckbox_FoxitReader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
+        Else {$Script:Foxit_Reader = 0}
+        If ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
+        Else {$Script:GoogleChrome = 0}
+        If ($WPFCheckbox_Greenshot.ischecked -eq $true) {$Script:Greenshot = 1}
+        Else {$Script:Greenshot = 0}
+        If ($WPFCheckbox_IrfanView.ischecked -eq $true) {$Script:IrfanView = 1}
+        Else {$Script:IrfanView = 0}
+        If ($WPFCheckbox_KeePass.ischecked -eq $true) {$Script:KeePass = 1}
+        Else {$Script:KeePass = 0}
+        If ($WPFCheckbox_mRemoteNG.ischecked -eq $true) {$Script:mRemoteNG = 1}
+        Else {$Script:mRemoteNG = 0}
+        If ($WPFCheckbox_MS365Apps.ischecked -eq $true) {$Script:MS365Apps = 1}
+        Else {$Script:MS365Apps = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
+        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
+        Else {$Script:MSOneDrive = 0}
+        If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
+        Else {$Script:MSTeams = 0}
+        If ($WPFCheckbox_NotePadPlusPlus.ischecked -eq $true) {$Script:NotePadPlusPlus = 1}
+        Else {$Script:NotePadPlusPlus = 0}
+        If ($WPFCheckbox_OpenJDK.ischecked -eq $true) {$Script:OpenJDK = 1}
+        Else {$Script:OpenJDK = 0}
+        If ($WPFCheckbox_OracleJava8.ischecked -eq $true) {$Script:OracleJava8 = 1}
+        Else {$Script:OracleJava8 = 0}
+        If ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSize = 1}
+        Else {$Script:TreeSize = 0}
+        If ($WPFCheckbox_VLCPlayer.ischecked -eq $true) {$Script:VLCPlayer = 1}
+        Else {$Script:VLCPlayer = 0}
+        If ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
+        Else {$Script:VMWareTools = 0}
+        If ($WPFCheckbox_WinSCP.ischecked -eq $true) {$Script:WinSCP = 1}
+        Else {$Script:WinSCP = 0}        
+        If ($WPFCheckbox_MSTeams_No_AutoStart.ischecked -eq $true) {$Script:MSTeamsNoAutoStart = 1}
+        Else {$Script:MSTeamsNoAutoStart = 0}
+        If ($WPFCheckbox_deviceTRUST.ischecked -eq $true) {$Script:deviceTRUST = 1}
+        Else {$Script:deviceTRUST = 0}
+        If ($WPFCheckbox_MSDotNetFramework.ischecked -eq $true) {$Script:MSDotNetFramework = 1}
+        Else {$Script:MSDotNetFramework = 0}
+        If ($WPFCheckbox_MSPowerShell.ischecked -eq $true) {$Script:MSPowerShell = 1}
+        Else {$Script:MSPowerShell = 0}
+        If ($WPFCheckbox_RemoteDesktopManager.ischecked -eq $true) {$Script:RemoteDesktopManager = 1}
+        Else {$Script:RemoteDesktopManager = 0}
+        If ($WPFCheckbox_Slack.ischecked -eq $true) {$Script:Slack = 1}
+        Else {$Script:Slack = 0}
+        If ($WPFCheckbox_ShareX.ischecked -eq $true) {$Script:ShareX = 1}
+        Else {$Script:ShareX = 0}
+        If ($WPFCheckbox_Zoom.ischecked -eq $true) {$Script:Zoom = 1}
+        Else {$Script:Zoom = 0}
+        If ($WPFCheckbox_GIMP.ischecked -eq $true) {$Script:GIMP = 1}
+        Else {$Script:GIMP = 0}
+        If ($WPFCheckbox_MSPowerToys.ischecked -eq $true) {$Script:MSPowerToys = 1}
+        Else {$Script:MSPowerToys = 0}
+        If ($WPFCheckbox_MSVisualStudio.ischecked -eq $true) {$Script:MSVisualStudio = 1}
+        Else {$Script:MSVisualStudio = 0}
+        If ($WPFCheckbox_MSVisualStudioCode.ischecked -eq $true) {$Script:MSVisualStudioCode = 1}
+        Else {$Script:MSVisualStudioCode = 0}
+        If ($WPFCheckbox_PaintDotNet.ischecked -eq $true) {$Script:PaintDotNet = 1}
+        Else {$Script:PaintDotNet = 0}
+        If ($WPFCheckbox_Putty.ischecked -eq $true) {$Script:Putty = 1}
+        Else {$Script:Putty = 0}
+        If ($WPFCheckbox_TeamViewer.ischecked -eq $true) {$Script:TeamViewer = 1}
+        Else {$Script:TeamViewer = 0}
+        If ($WPFCheckbox_Wireshark.ischecked -eq $true) {$Script:Wireshark = 1}
+        Else {$Script:Wireshark = 0}
+        If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
+        Else {$Script:MSAzureDataStudio = 0}
+        If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
+        Else {$Script:ImageGlass = 0}
+        If ($WPFCheckbox_uberAgent.ischecked -eq $true) {$Script:uberAgent = 1}
+        Else {$Script:uberAgent = 0}
+        If ($WPFCheckbox_1Password.ischecked -eq $true) {$Script:1Password = 1}
+        Else {$Script:1Password = 0}
+        If ($WPFCheckbox_ControlUpAgent.ischecked -eq $true) {$Script:ControlUpAgent = 1}
+        Else {$Script:ControlUpAgent = 0}
+        If ($WPFCheckbox_ControlUpConsole.ischecked -eq $true) {$Script:ControlUpConsole = 1}
+        Else {$Script:ControlUpConsole = 0}
+        If ($WPFCheckbox_MSSQLServerManagementStudio.ischecked -eq $true) {$Script:MSSQLServerManagementStudio = 1}
+        Else {$Script:MSSQLServerManagementStudio = 0}
+        If ($WPFCheckbox_MSAVDRemoteDesktop.ischecked -eq $true) {$Script:MSAVDRemoteDesktop = 1}
+        Else {$Script:MSAVDRemoteDesktop = 0}
+        If ($WPFCheckbox_MSPowerBIDesktop.ischecked -eq $true) {$Script:MSPowerBIDesktop = 1}
+        Else {$Script:MSPowerBIDesktop = 0}
+        If ($WPFCheckbox_RDAnalyzer.ischecked -eq $true) {$Script:RDAnalyzer = 1}
+        Else {$Script:RDAnalyzer = 0}
+        If ($WPFCheckbox_SumatraPDF.ischecked -eq $true) {$Script:SumatraPDF = 1}
+        Else {$Script:SumatraPDF = 0}
+        If ($WPFCheckbox_CiscoWebexTeams.ischecked -eq $true) {$Script:CiscoWebexTeams = 1}
+        Else {$Script:CiscoWebexTeams = 0}
+        If ($WPFCheckbox_CitrixFiles.ischecked -eq $true) {$Script:CitrixFiles = 1}
+        Else {$Script:CitrixFiles = 0}
+        If ($WPFCheckbox_FoxitPDFEditor.ischecked -eq $true) {$Script:FoxitPDFEditor = 1}
+        Else {$Script:FoxitPDFEditor = 0}
+        If ($WPFCheckbox_GitForWindows.ischecked -eq $true) {$Script:GitForWindows = 1}
+        Else {$Script:GitForWindows = 0}
+        If ($WPFCheckbox_LogMeInGoToMeeting.ischecked -eq $true) {$Script:LogMeInGoToMeeting = 1}
+        Else {$Script:LogMeInGoToMeeting = 0}
+        If ($WPFCheckbox_MSAzureCLI.ischecked -eq $true) {$Script:MSAzureCLI = 1}
+        Else {$Script:MSAzureCLI = 0}
+        If ($WPFCheckbox_MSPowerBIReportBuilder.ischecked -eq $true) {$Script:MSPowerBIReportBuilder = 1}
+        Else {$Script:MSPowerBIReportBuilder = 0}
+        If ($WPFCheckbox_MSSysinternals.ischecked -eq $true) {$Script:MSSysinternals = 1}
+        Else {$Script:MSSysinternals = 0}
+        If ($WPFCheckbox_Nmap.ischecked -eq $true) {$Script:Nmap = 1}
+        Else {$Script:Nmap = 0}
+        If ($WPFCheckbox_PeaZip.ischecked -eq $true) {$Script:PeaZip = 1}
+        Else {$Script:PeaZip = 0}
+        If ($WPFCheckbox_TechSmithCamtasia.ischecked -eq $true) {$Script:TechSmithCamtasia = 1}
+        Else {$Script:TechSmithCamtasia = 0}
+        If ($WPFCheckbox_TechSmithSnagIt.ischecked -eq $true) {$Script:TechSmithSnagIt = 1}
+        Else {$Script:TechSmithSnagIt = 0}
+        If ($WPFCheckbox_WinMerge.ischecked -eq $true) {$Script:WinMerge = 1}
+        Else {$Script:WinMerge = 0}
+        If ($WPFCheckbox_WhatIf.ischecked -eq $true) {$Script:WhatIf = 1}
+        Else {$Script:WhatIf = 0}
+        If ($WPFCheckbox_CleanUp.ischecked -eq $true) {$Script:CleanUp = 1}
+        Else {$Script:CleanUp = 0}
+        If ($WPFCheckbox_MS365Apps_Visio_Detail.ischecked -eq $true) {$Script:MS365Apps_Visio = 1}
+        Else {$Script:MS365Apps_Visio = 0}
+        If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
+        Else {$Script:MS365Apps_Project = 0}
+        $Script:Language = $WPFBox_Language.SelectedIndex
+        $Script:Architecture = $WPFBox_Architecture.SelectedIndex
+        $Script:Machine = $WPFBox_Machine.SelectedIndex
+        $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
+        $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
+        $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
+        $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
+        $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
+        $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        $Script:MSDotNetFrameworkChannel = $WPFBox_MSDotNetFramework.SelectedIndex
+        $Script:MSPowerShellRelease = $WPFBox_MSPowerShell.SelectedIndex
+        $Script:RemoteDesktopManagerType = $WPFBox_RemoteDesktopManager.SelectedIndex
+        $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
+        $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
+        $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
+        $Script:MSVisualStudioCodeChannel = $WPFBox_MSVisualStudioCode.SelectedIndex
+        $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
+        $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
+        $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
+        $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
+        $Script:ControlUpAgentFramework = $WPFBox_ControlUpAgent.SelectedIndex
+        $Script:MSAVDRemoteDesktopChannel = $WPFBox_MSAVDRemoteDesktop.SelectedIndex
+        $Script:7Zip_Architecture = $WPFBox_7Zip_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Architecture = $WPFBox_AdobeReaderDC_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Language = $WPFBox_AdobeReaderDC_Language.SelectedIndex
+        $Script:CiscoWebexTeams_Architecture = $WPFBox_CiscoWebexTeams_Architecture.SelectedIndex
+        $Script:CitrixHypervisorTools_Architecture = $WPFBox_CitrixHypervisorTools_Architecture.SelectedIndex
+        $Script:ControlUpAgent_Architecture = $WPFBox_ControlUpAgent_Architecture.SelectedIndex
+        $Script:deviceTRUST_Architecture = $WPFBox_deviceTRUST_Architecture.SelectedIndex
+        $Script:FoxitPDFEditor_Language = $WPFBox_FoxitPDFEditor_Language.SelectedIndex
+        $Script:FoxitReader_Language = $WPFBox_FoxitReader_Language.SelectedIndex
+        $Script:GitForWindows_Architecture = $WPFBox_GitForWindows_Architecture.SelectedIndex
+        $Script:GoogleChrome_Architecture = $WPFBox_GoogleChrome_Architecture.SelectedIndex
+        $Script:ImageGlass_Architecture = $WPFBox_ImageGlass_Architecture.SelectedIndex
+        $Script:IrfanView_Architecture = $WPFBox_IrfanView_Architecture.SelectedIndex
+        $Script:Keepass_Language = $WPFBox_KeePass_Language.SelectedIndex
+        $Script:MSDotNetFramework_Architecture = $WPFBox_MSDotNetFramework_Architecture.SelectedIndex
+        $Script:MS365Apps_Architecture = $WPFBox_MS365Apps_Architecture.SelectedIndex
+        $Script:MS365Apps_Language = $WPFBox_MS365Apps_Language.SelectedIndex
+        $Script:MS365Apps_Visio_Language = $WPFBox_MS365Apps_Visio_Language.SelectedIndex
+        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedIndex
+        $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
+        $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
+        $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
+        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
+        $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
+        $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
+        $Script:MSSQLServerManagementStudio_Language = $WPFBox_MSSQLServerManagementStudio_Language.SelectedIndex
+        $Script:MSTeams_Architecture = $WPFBox_MSTeams_Architecture.SelectedIndex
+        $Script:MSVisualStudioCode_Architecture = $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex
+        $Script:Firefox_Architecture = $WPFBox_Firefox_Architecture.SelectedIndex
+        $Script:Firefox_Language = $WPFBox_Firefox_Language.SelectedIndex
+        $Script:NotePadPlusPlus_Architecture = $WPFBox_NotepadPlusPlus_Architecture.SelectedIndex
+        $Script:OpenJDK_Architecture = $WPFBox_OpenJDK_Architecture.SelectedIndex
+        $Script:OracleJava8_Architecture = $WPFBox_OracleJava8_Architecture.SelectedIndex
+        $Script:PeaZip_Architecture = $WPFBox_PeaZip_Architecture.SelectedIndex
+        $Script:Putty_Architecture = $WPFBox_Putty_Architecture.SelectedIndex
+        $Script:Slack_Architecture = $WPFBox_Slack_Architecture.SelectedIndex
+        $Script:SumatraPDF_Architecture = $WPFBox_SumatraPDF_Architecture.SelectedIndex
+        $Script:TechSmithSnagIt_Architecture = $WPFBox_TechSmithSnagIT_Architecture.SelectedIndex
+        $Script:VLCPlayer_Architecture = $WPFBox_VLCPlayer_Architecture.SelectedIndex
+        $Script:VMWareTools_Architecture = $WPFBox_VMWareTools_Architecture.SelectedIndex
+        $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
+        $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
+        $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
+        
+        # Write LastSettings.txt to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        Write-Host "GUI Mode"
+        $Form.Close()
+    })
+
+    # Button Cancel
     $WPFButton_Cancel.Add_Click({
+        $Script:install = $true
+        $Script:download = $true
+        Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
+        $Form.Close()
+        Break
+    })
+
+    # Button Cancel Detail
+    $WPFButton_Cancel_Detail.Add_Click({
         $Script:install = $true
         $Script:download = $true
         Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
@@ -3043,6 +3389,14 @@ $inputXML = @"
         Else {$Script:TechSmithSnagIt = 0}
         If ($WPFCheckbox_WinMerge.ischecked -eq $true) {$Script:WinMerge = 1}
         Else {$Script:WinMerge = 0}
+        If ($WPFCheckbox_WhatIf.ischecked -eq $true) {$Script:WhatIf = 1}
+        Else {$Script:WhatIf = 0}
+        If ($WPFCheckbox_CleanUp.ischecked -eq $true) {$Script:CleanUp = 1}
+        Else {$Script:CleanUp = 0}
+        If ($WPFCheckbox_MS365Apps_Visio_Detail.ischecked -eq $true) {$Script:MS365Apps_Visio = 1}
+        Else {$Script:MS365Apps_Visio = 0}
+        If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
+        Else {$Script:MS365Apps_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -3065,13 +3419,284 @@ $inputXML = @"
         $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
         $Script:ControlUpAgentFramework = $WPFBox_ControlUpAgent.SelectedIndex
         $Script:MSAVDRemoteDesktopChannel = $WPFBox_MSAVDRemoteDesktop.SelectedIndex
+        $Script:7Zip_Architecture = $WPFBox_7Zip_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Architecture = $WPFBox_AdobeReaderDC_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Language = $WPFBox_AdobeReaderDC_Language.SelectedIndex
+        $Script:CiscoWebexTeams_Architecture = $WPFBox_CiscoWebexTeams_Architecture.SelectedIndex
+        $Script:CitrixHypervisorTools_Architecture = $WPFBox_CitrixHypervisorTools_Architecture.SelectedIndex
+        $Script:ControlUpAgent_Architecture = $WPFBox_ControlUpAgent_Architecture.SelectedIndex
+        $Script:deviceTRUST_Architecture = $WPFBox_deviceTRUST_Architecture.SelectedIndex
+        $Script:FoxitPDFEditor_Language = $WPFBox_FoxitPDFEditor_Language.SelectedIndex
+        $Script:FoxitReader_Language = $WPFBox_FoxitReader_Language.SelectedIndex
+        $Script:GitForWindows_Architecture = $WPFBox_GitForWindows_Architecture.SelectedIndex
+        $Script:GoogleChrome_Architecture = $WPFBox_GoogleChrome_Architecture.SelectedIndex
+        $Script:ImageGlass_Architecture = $WPFBox_ImageGlass_Architecture.SelectedIndex
+        $Script:IrfanView_Architecture = $WPFBox_IrfanView_Architecture.SelectedIndex
+        $Script:Keepass_Language = $WPFBox_KeePass_Language.SelectedIndex
+        $Script:MSDotNetFramework_Architecture = $WPFBox_MSDotNetFramework_Architecture.SelectedIndex
+        $Script:MS365Apps_Architecture = $WPFBox_MS365Apps_Architecture.SelectedIndex
+        $Script:MS365Apps_Language = $WPFBox_MS365Apps_Language.SelectedIndex
+        $Script:MS365Apps_Visio_Language = $WPFBox_MS365Apps_Visio_Language.SelectedIndex
+        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedIndex
+        $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
+        $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
+        $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
+        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
+        $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
+        $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
+        $Script:MSSQLServerManagementStudio_Language = $WPFBox_MSSQLServerManagementStudio_Language.SelectedIndex
+        $Script:MSTeams_Architecture = $WPFBox_MSTeams_Architecture.SelectedIndex
+        $Script:MSVisualStudioCode_Architecture = $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex
+        $Script:Firefox_Architecture = $WPFBox_Firefox_Architecture.SelectedIndex
+        $Script:Firefox_Language = $WPFBox_Firefox_Language.SelectedIndex
+        $Script:NotePadPlusPlus_Architecture = $WPFBox_NotepadPlusPlus_Architecture.SelectedIndex
+        $Script:OpenJDK_Architecture = $WPFBox_OpenJDK_Architecture.SelectedIndex
+        $Script:OracleJava8_Architecture = $WPFBox_OracleJava8_Architecture.SelectedIndex
+        $Script:PeaZip_Architecture = $WPFBox_PeaZip_Architecture.SelectedIndex
+        $Script:Putty_Architecture = $WPFBox_Putty_Architecture.SelectedIndex
+        $Script:Slack_Architecture = $WPFBox_Slack_Architecture.SelectedIndex
+        $Script:SumatraPDF_Architecture = $WPFBox_SumatraPDF_Architecture.SelectedIndex
+        $Script:TechSmithSnagIt_Architecture = $WPFBox_TechSmithSnagIT_Architecture.SelectedIndex
+        $Script:VLCPlayer_Architecture = $WPFBox_VLCPlayer_Architecture.SelectedIndex
+        $Script:VMWareTools_Architecture = $WPFBox_VMWareTools_Architecture.SelectedIndex
+        $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
+        $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
+        $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
+
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        Write-Host "Save Settings"
+    })
+
+    # Button Save Detail (AddScript)
+    $WPFButton_Save_Detail.Add_Click({
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
+        Else {$Script:install = $true}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
+        Else {$Script:download = $true}
+        If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
+        Else {$Script:7ZIP = 0}
+        If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
+        Else {$Script:AdobeProDC = 0}
+        If ($WPFCheckbox_AdobeReaderDC.IsChecked -eq $true) {$Script:AdobeReaderDC = 1}
+        Else {$Script:AdobeReaderDC = 0}
+        If ($WPFCheckbox_BISF.IsChecked -eq $true) {$Script:BISF = 1}
+        Else {$Script:BISF = 0}
+        If ($WPFCheckbox_CitrixHypervisorTools.IsChecked -eq $true) {$Script:Citrix_Hypervisor_Tools = 1}
+        Else {$Script:Citrix_Hypervisor_Tools = 0}
+        If ($WPFCheckbox_CitrixWorkspaceApp.IsChecked -eq $true) {$Script:Citrix_WorkspaceApp = 1}
+        Else {$Script:Citrix_WorkspaceApp = 0}
+        If ($WPFCheckbox_Filezilla.IsChecked -eq $true) {$Script:Filezilla = 1}
+        Else {$Script:Filezilla = 0}
+        If ($WPFCheckbox_Firefox.IsChecked -eq $true) {$Script:Firefox = 1}
+        Else {$Script:Firefox = 0}
+        If ($WPFCheckbox_MSFSLogix.IsChecked -eq $true) {$Script:MSFSLogix = 1}
+        Else {$Script:MSFSLogix = 0}
+        If ($WPFCheckbox_FoxitReader.Ischecked -eq $true) {$Script:Foxit_Reader = 1}
+        Else {$Script:Foxit_Reader = 0}
+        If ($WPFCheckbox_GoogleChrome.ischecked -eq $true) {$Script:GoogleChrome = 1}
+        Else {$Script:GoogleChrome = 0}
+        If ($WPFCheckbox_Greenshot.ischecked -eq $true) {$Script:Greenshot = 1}
+        Else {$Script:Greenshot = 0}
+        If ($WPFCheckbox_IrfanView.ischecked -eq $true) {$Script:IrfanView = 1}
+        Else {$Script:IrfanView = 0}
+        If ($WPFCheckbox_KeePass.ischecked -eq $true) {$Script:KeePass = 1}
+        Else {$Script:KeePass = 0}
+        If ($WPFCheckbox_mRemoteNG.ischecked -eq $true) {$Script:mRemoteNG = 1}
+        Else {$Script:mRemoteNG = 0}
+        If ($WPFCheckbox_MS365Apps.ischecked -eq $true) {$Script:MS365Apps = 1}
+        Else {$Script:MS365Apps = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
+        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
+        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
+        Else {$Script:MSOneDrive = 0}
+        If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
+        Else {$Script:MSTeams = 0}
+        If ($WPFCheckbox_NotePadPlusPlus.ischecked -eq $true) {$Script:NotePadPlusPlus = 1}
+        Else {$Script:NotePadPlusPlus = 0}
+        If ($WPFCheckbox_OpenJDK.ischecked -eq $true) {$Script:OpenJDK = 1}
+        Else {$Script:OpenJDK = 0}
+        If ($WPFCheckbox_OracleJava8.ischecked -eq $true) {$Script:OracleJava8 = 1}
+        Else {$Script:OracleJava8 = 0}
+        If ($WPFCheckbox_TreeSize.ischecked -eq $true) {$Script:TreeSize = 1}
+        Else {$Script:TreeSize = 0}
+        If ($WPFCheckbox_VLCPlayer.ischecked -eq $true) {$Script:VLCPlayer = 1}
+        Else {$Script:VLCPlayer = 0}
+        If ($WPFCheckbox_VMWareTools.ischecked -eq $true) {$Script:VMWareTools = 1}
+        Else {$Script:VMWareTools = 0}
+        If ($WPFCheckbox_WinSCP.ischecked -eq $true) {$Script:WinSCP = 1}
+        Else {$Script:WinSCP = 0}        
+        If ($WPFCheckbox_MSTeams_No_AutoStart.ischecked -eq $true) {$Script:MSTeamsNoAutoStart = 1}
+        Else {$Script:MSTeamsNoAutoStart = 0}
+        If ($WPFCheckbox_deviceTRUST.ischecked -eq $true) {$Script:deviceTRUST = 1}
+        Else {$Script:deviceTRUST = 0}
+        If ($WPFCheckbox_MSDotNetFramework.ischecked -eq $true) {$Script:MSDotNetFramework = 1}
+        Else {$Script:MSDotNetFramework = 0}
+        If ($WPFCheckbox_MSPowerShell.ischecked -eq $true) {$Script:MSPowerShell = 1}
+        Else {$Script:MSPowerShell = 0}
+        If ($WPFCheckbox_RemoteDesktopManager.ischecked -eq $true) {$Script:RemoteDesktopManager = 1}
+        Else {$Script:RemoteDesktopManager = 0}
+        If ($WPFCheckbox_Slack.ischecked -eq $true) {$Script:Slack = 1}
+        Else {$Script:Slack = 0}
+        If ($WPFCheckbox_ShareX.ischecked -eq $true) {$Script:ShareX = 1}
+        Else {$Script:ShareX = 0}
+        If ($WPFCheckbox_Zoom.ischecked -eq $true) {$Script:Zoom = 1}
+        Else {$Script:Zoom = 0}
+        If ($WPFCheckbox_GIMP.ischecked -eq $true) {$Script:GIMP = 1}
+        Else {$Script:GIMP = 0}
+        If ($WPFCheckbox_MSPowerToys.ischecked -eq $true) {$Script:MSPowerToys = 1}
+        Else {$Script:MSPowerToys = 0}
+        If ($WPFCheckbox_MSVisualStudio.ischecked -eq $true) {$Script:MSVisualStudio = 1}
+        Else {$Script:MSVisualStudio = 0}
+        If ($WPFCheckbox_MSVisualStudioCode.ischecked -eq $true) {$Script:MSVisualStudioCode = 1}
+        Else {$Script:MSVisualStudioCode = 0}
+        If ($WPFCheckbox_PaintDotNet.ischecked -eq $true) {$Script:PaintDotNet = 1}
+        Else {$Script:PaintDotNet = 0}
+        If ($WPFCheckbox_Putty.ischecked -eq $true) {$Script:Putty = 1}
+        Else {$Script:Putty = 0}
+        If ($WPFCheckbox_TeamViewer.ischecked -eq $true) {$Script:TeamViewer = 1}
+        Else {$Script:TeamViewer = 0}
+        If ($WPFCheckbox_Wireshark.ischecked -eq $true) {$Script:Wireshark = 1}
+        Else {$Script:Wireshark = 0}
+        If ($WPFCheckbox_MSAzureDataStudio.ischecked -eq $true) {$Script:MSAzureDataStudio = 1}
+        Else {$Script:MSAzureDataStudio = 0}
+        If ($WPFCheckbox_ImageGlass.ischecked -eq $true) {$Script:ImageGlass = 1}
+        Else {$Script:ImageGlass = 0}
+        If ($WPFCheckbox_uberAgent.ischecked -eq $true) {$Script:uberAgent = 1}
+        Else {$Script:uberAgent = 0}
+        If ($WPFCheckbox_1Password.ischecked -eq $true) {$Script:1Password = 1}
+        Else {$Script:1Password = 0}
+        If ($WPFCheckbox_ControlUpAgent.ischecked -eq $true) {$Script:ControlUpAgent = 1}
+        Else {$Script:ControlUpAgent = 0}
+        If ($WPFCheckbox_ControlUpConsole.ischecked -eq $true) {$Script:ControlUpConsole = 1}
+        Else {$Script:ControlUpConsole = 0}
+        If ($WPFCheckbox_MSSQLServerManagementStudio.ischecked -eq $true) {$Script:MSSQLServerManagementStudio = 1}
+        Else {$Script:MSSQLServerManagementStudio = 0}
+        If ($WPFCheckbox_MSAVDRemoteDesktop.ischecked -eq $true) {$Script:MSAVDRemoteDesktop = 1}
+        Else {$Script:MSAVDRemoteDesktop = 0}
+        If ($WPFCheckbox_MSPowerBIDesktop.ischecked -eq $true) {$Script:MSPowerBIDesktop = 1}
+        Else {$Script:MSPowerBIDesktop = 0}
+        If ($WPFCheckbox_RDAnalyzer.ischecked -eq $true) {$Script:RDAnalyzer = 1}
+        Else {$Script:RDAnalyzer = 0}
+        If ($WPFCheckbox_SumatraPDF.ischecked -eq $true) {$Script:SumatraPDF = 1}
+        Else {$Script:SumatraPDF = 0}
+        If ($WPFCheckbox_CiscoWebexTeams.ischecked -eq $true) {$Script:CiscoWebexTeams = 1}
+        Else {$Script:CiscoWebexTeams = 0}
+        If ($WPFCheckbox_CitrixFiles.ischecked -eq $true) {$Script:CitrixFiles = 1}
+        Else {$Script:CitrixFiles = 0}
+        If ($WPFCheckbox_FoxitPDFEditor.ischecked -eq $true) {$Script:FoxitPDFEditor = 1}
+        Else {$Script:FoxitPDFEditor = 0}
+        If ($WPFCheckbox_GitForWindows.ischecked -eq $true) {$Script:GitForWindows = 1}
+        Else {$Script:GitForWindows = 0}
+        If ($WPFCheckbox_LogMeInGoToMeeting.ischecked -eq $true) {$Script:LogMeInGoToMeeting = 1}
+        Else {$Script:LogMeInGoToMeeting = 0}
+        If ($WPFCheckbox_MSAzureCLI.ischecked -eq $true) {$Script:MSAzureCLI = 1}
+        Else {$Script:MSAzureCLI = 0}
+        If ($WPFCheckbox_MSPowerBIReportBuilder.ischecked -eq $true) {$Script:MSPowerBIReportBuilder = 1}
+        Else {$Script:MSPowerBIReportBuilder = 0}
+        If ($WPFCheckbox_MSSysinternals.ischecked -eq $true) {$Script:MSSysinternals = 1}
+        Else {$Script:MSSysinternals = 0}
+        If ($WPFCheckbox_Nmap.ischecked -eq $true) {$Script:Nmap = 1}
+        Else {$Script:Nmap = 0}
+        If ($WPFCheckbox_PeaZip.ischecked -eq $true) {$Script:PeaZip = 1}
+        Else {$Script:PeaZip = 0}
+        If ($WPFCheckbox_TechSmithCamtasia.ischecked -eq $true) {$Script:TechSmithCamtasia = 1}
+        Else {$Script:TechSmithCamtasia = 0}
+        If ($WPFCheckbox_TechSmithSnagIt.ischecked -eq $true) {$Script:TechSmithSnagIt = 1}
+        Else {$Script:TechSmithSnagIt = 0}
+        If ($WPFCheckbox_WinMerge.ischecked -eq $true) {$Script:WinMerge = 1}
+        Else {$Script:WinMerge = 0}
+        If ($WPFCheckbox_WhatIf.ischecked -eq $true) {$Script:WhatIf = 1}
+        Else {$Script:WhatIf = 0}
+        If ($WPFCheckbox_CleanUp.ischecked -eq $true) {$Script:CleanUp = 1}
+        Else {$Script:CleanUp = 0}
+        If ($WPFCheckbox_MS365Apps_Visio_Detail.ischecked -eq $true) {$Script:MS365Apps_Visio = 1}
+        Else {$Script:MS365Apps_Visio = 0}
+        If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
+        Else {$Script:MS365Apps_Project = 0}
+        $Script:Language = $WPFBox_Language.SelectedIndex
+        $Script:Architecture = $WPFBox_Architecture.SelectedIndex
+        $Script:Machine = $WPFBox_Machine.SelectedIndex
+        $Script:FirefoxChannel = $WPFBox_Firefox.SelectedIndex
+        $Script:CitrixWorkspaceAppRelease = $WPFBox_CitrixWorkspaceApp.SelectedIndex
+        $Script:MS365AppsChannel = $WPFBox_MS365Apps.SelectedIndex
+        $Script:MSOneDriveRing = $WPFBox_MSOneDrive.SelectedIndex
+        $Script:MSTeamsRing = $WPFBox_MSTeams.SelectedIndex
+        $Script:TreeSizeType = $WPFBox_TreeSize.SelectedIndex
+        $Script:MSDotNetFrameworkChannel = $WPFBox_MSDotNetFramework.SelectedIndex
+        $Script:MSPowerShellRelease = $WPFBox_MSPowerShell.SelectedIndex
+        $Script:RemoteDesktopManagerType = $WPFBox_RemoteDesktopManager.SelectedIndex
+        $Script:ZoomCitrixClient = $WPFBox_Zoom.SelectedIndex
+        $Script:deviceTRUSTPackage = $WPFBox_deviceTRUST.SelectedIndex
+        $Script:MSEdgeChannel = $WPFBox_MSEdge.SelectedIndex
+        $Script:MSVisualStudioCodeChannel = $WPFBox_MSVisualStudioCode.SelectedIndex
+        $Script:MSVisualStudioEdition = $WPFBox_MSVisualStudio.SelectedIndex
+        $Script:PuttyChannel = $WPFBox_Putty.SelectedIndex
+        $Script:MSAzureDataStudioChannel = $WPFBox_MSAzureDataStudio.SelectedIndex
+        $Script:MSFSLogixChannel = $WPFBox_MSFSLogix.SelectedIndex
+        $Script:ControlUpAgentFramework = $WPFBox_ControlUpAgent.SelectedIndex
+        $Script:MSAVDRemoteDesktopChannel = $WPFBox_MSAVDRemoteDesktop.SelectedIndex
+        $Script:7Zip_Architecture = $WPFBox_7Zip_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Architecture = $WPFBox_AdobeReaderDC_Architecture.SelectedIndex
+        $Script:AdobeReaderDC_Language = $WPFBox_AdobeReaderDC_Language.SelectedIndex
+        $Script:CiscoWebexTeams_Architecture = $WPFBox_CiscoWebexTeams_Architecture.SelectedIndex
+        $Script:CitrixHypervisorTools_Architecture = $WPFBox_CitrixHypervisorTools_Architecture.SelectedIndex
+        $Script:ControlUpAgent_Architecture = $WPFBox_ControlUpAgent_Architecture.SelectedIndex
+        $Script:deviceTRUST_Architecture = $WPFBox_deviceTRUST_Architecture.SelectedIndex
+        $Script:FoxitPDFEditor_Language = $WPFBox_FoxitPDFEditor_Language.SelectedIndex
+        $Script:FoxitReader_Language = $WPFBox_FoxitReader_Language.SelectedIndex
+        $Script:GitForWindows_Architecture = $WPFBox_GitForWindows_Architecture.SelectedIndex
+        $Script:GoogleChrome_Architecture = $WPFBox_GoogleChrome_Architecture.SelectedIndex
+        $Script:ImageGlass_Architecture = $WPFBox_ImageGlass_Architecture.SelectedIndex
+        $Script:IrfanView_Architecture = $WPFBox_IrfanView_Architecture.SelectedIndex
+        $Script:Keepass_Language = $WPFBox_KeePass_Language.SelectedIndex
+        $Script:MSDotNetFramework_Architecture = $WPFBox_MSDotNetFramework_Architecture.SelectedIndex
+        $Script:MS365Apps_Architecture = $WPFBox_MS365Apps_Architecture.SelectedIndex
+        $Script:MS365Apps_Language = $WPFBox_MS365Apps_Language.SelectedIndex
+        $Script:MS365Apps_Visio_Language = $WPFBox_MS365Apps_Visio_Language.SelectedIndex
+        $Script:MS365Apps_Project_Language = $WPFBox_MS365Apps_Project_Language.SelectedIndex
+        $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
+        $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
+        $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
+        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
+        $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
+        $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
+        $Script:MSSQLServerManagementStudio_Language = $WPFBox_MSSQLServerManagementStudio_Language.SelectedIndex
+        $Script:MSTeams_Architecture = $WPFBox_MSTeams_Architecture.SelectedIndex
+        $Script:MSVisualStudioCode_Architecture = $WPFBox_MSVisualStudioCode_Architecture.SelectedIndex
+        $Script:Firefox_Architecture = $WPFBox_Firefox_Architecture.SelectedIndex
+        $Script:Firefox_Language = $WPFBox_Firefox_Language.SelectedIndex
+        $Script:NotePadPlusPlus_Architecture = $WPFBox_NotepadPlusPlus_Architecture.SelectedIndex
+        $Script:OpenJDK_Architecture = $WPFBox_OpenJDK_Architecture.SelectedIndex
+        $Script:OracleJava8_Architecture = $WPFBox_OracleJava8_Architecture.SelectedIndex
+        $Script:PeaZip_Architecture = $WPFBox_PeaZip_Architecture.SelectedIndex
+        $Script:Putty_Architecture = $WPFBox_Putty_Architecture.SelectedIndex
+        $Script:Slack_Architecture = $WPFBox_Slack_Architecture.SelectedIndex
+        $Script:SumatraPDF_Architecture = $WPFBox_SumatraPDF_Architecture.SelectedIndex
+        $Script:TechSmithSnagIt_Architecture = $WPFBox_TechSmithSnagIT_Architecture.SelectedIndex
+        $Script:VLCPlayer_Architecture = $WPFBox_VLCPlayer_Architecture.SelectedIndex
+        $Script:VMWareTools_Architecture = $WPFBox_VMWareTools_Architecture.SelectedIndex
+        $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
+        $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
+        $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
+
+        # Write LastSettings.txt to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         Write-Host "Save Settings"
     })
 
     # Image Logo
     $WPFImage_Logo.Add_MouseLeftButtonUp({
+        [system.Diagnostics.Process]::start('https://www.deyda.net')
+    })
+
+    $WPFImage_Logo_Detail.Add_MouseLeftButtonUp({
         [system.Diagnostics.Process]::start('https://www.deyda.net')
     })
 
@@ -3183,6 +3808,54 @@ If ($list -eq $True) {
             $TechSmithCamtasia = $FileSetting[88] -as [int]
             $TechSmithSnagit = $FileSetting[89] -as [int]
             $WinMerge = $FileSetting[90] -as [int]
+            $WhatIf = $FileSetting[91] -as [int]
+            $CleanUp = $FileSetting[92] -as [int]
+            $7Zip_Architecture = $FileSetting[93] -as [int]
+            $AdobeReaderDC_Architecture = $FileSetting[94] -as [int]
+            $AdobeReaderDC_Language = $FileSetting[95] -as [int]
+            $CiscoWebexTeams_Architecture = $FileSetting[96] -as [int]
+            $CitrixHypervisorTools_Architecture = $FileSetting[97] -as [int]
+            $ControlUpAgent_Architecture = $FileSetting[98] -as [int]
+            $deviceTRUST_Architecture = $FileSetting[99] -as [int]
+            $FoxitPDFEditor_Language = $FileSetting[100] -as [int]
+            $FoxitReader_Language = $FileSetting[101] -as [int]
+            $GitForWindows_Architecture = $FileSetting[102] -as [int]
+            $GoogleChrome_Architecture = $FileSetting[103] -as [int]
+            $ImageGlass_Architecture = $FileSetting[104] -as [int]
+            $IrfanView_Architecture = $FileSetting[105] -as [int]
+            $KeePass_Language = $FileSetting[106] -as [int]
+            $MSDotNetFramework_Architecture = $FileSetting[107] -as [int]
+            $MS365Apps_Architecture = $FileSetting[108] -as [int]
+            $MS365Apps_Language = $FileSetting[109] -as [int]
+            $MS365Apps_Visio = $FileSetting[110] -as [int]
+            $MS365Apps_Visio_Language = $FileSetting[111] -as [int]
+            $MS365Apps_Project = $FileSetting[112] -as [int]
+            $MS365Apps_Project_Language = $FileSetting[113] -as [int]
+            $MSAVDRemoteDesktop_Architecture = $FileSetting[114] -as [int]
+            $MSEdge_Architecture = $FileSetting[115] -as [int]
+            $MSFSLogix_Architecture = $FileSetting[116] -as [int]
+            $MSOffice2019_Architecture = $FileSetting[117] -as [int]
+            $MSOneDrive_Architecture = $FileSetting[118] -as [int]
+            $MSPowerBIDesktop_Architecture = $FileSetting[119] -as [int]
+            $MSPowerShell_Architecture = $FileSetting[120] -as [int]
+            $MSSQLServerManagementStudio_Language = $FileSetting[121] -as [int]
+            $MSTeams_Architecture = $FileSetting[122] -as [int]
+            $MSVisualStudioCode_Architecture = $FileSetting[123] -as [int]
+            $Firefox_Architecture = $FileSetting[124] -as [int]
+            $Firefox_Language = $FileSetting[125] -as [int]
+            $NotepadPlusPlus_Architecture = $FileSetting[126] -as [int]
+            $OpenJDK_Architecture = $FileSetting[127] -as [int]
+            $OracleJava8_Architecture = $FileSetting[128] -as [int]
+            $PeaZip_Architecture = $FileSetting[129] -as [int]
+            $Putty_Architecture = $FileSetting[130] -as [int]
+            $Slack_Architecture = $FileSetting[131] -as [int]
+            $SumatraPDF_Architecture = $FileSetting[132] -as [int]
+            $TechSmithSnagIt_Architecture = $FileSetting[133] -as [int]
+            $VLCPlayer_Architecture = $FileSetting[134] -as [int]
+            $VMWareTools_Architecture = $FileSetting[135] -as [int]
+            $WinMerge_Architecture = $FileSetting[136] -as [int]
+            $Wireshark_Architecture = $FileSetting[137] -as [int]
+            $IrfanView_Language = $FileSetting[138] -as [int]
         }
     }
     Else {
@@ -3215,16 +3888,70 @@ If ($list -eq $True) {
         # 1 = Physical
         $Machine = 0
 
-        # Software Release / Ring / Channel / Type ?!
+        # Software Release / Ring / Channel / Type / Architecture / Language ?!
+        # 7 Zip Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $7Zip_Architecture = 0
+
+        # Adobe Reader DC Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $AdobeReaderDC_Architecture = 0
+
+        # Adobe Reader DC Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Russian
+        # 13 = Spanish
+        # 14 = Swedish
+        $AdobeReaderDC_Language = 0
+
+        # Cisco Webex Teams Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $CiscoWebexTeams_Architecture = 0
+
+        # Citrix Hypervisor Tools Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $CitrixHypervisorTools_Architecture = 0
+
         # Citrix Workspace App
         # 0 = Current Release
         # 1 = Long Term Service Release
         $CitrixWorkspaceAppRelease = 1
 
+        # ControlUp Agent Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $ControlUpAgent_Architecture = 0
+
         # ControlUp Agent
         # 0 = .Net 3.5 Framework
         # 1 = .Net 4.5 Framework
         $ControlUpAgentFramework = 1
+
+        # deviceTRUST Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $deviceTRUST_Architecture = 0
 
         # deviceTRUST
         # 0 = Client
@@ -3234,11 +3961,138 @@ If ($list -eq $True) {
         # 4 = Host + Console
         $deviceTRUSTPackage = 1
 
+        # Foxit PDF Editor Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Korean
+        # 9 = Norwegian
+        # 10 = Polish
+        # 11 = Portuguese
+        # 12 = Russian
+        # 13 = Spanish
+        # 14 = Swedish
+        $FoxitPDFEditor_Language = 0
+
+        # Foxit Reader Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Norwegian
+        # 9 = Polish
+        # 10 = Portuguese
+        # 11 = Russian
+        # 12 = Spanish
+        # 13 = Swedish
+        $FoxitReader_Language = 0
+
+        # Git for Windows Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $GitForWindows_Architecture = 0
+
+        # Google Chrome Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $GoogleChrome_Architecture = 0
+
+        # ImageGlass Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $ImageGlass_Architecture = 0
+
+        # IrfanView Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $IrfanView_Architecture = 0
+
+        # IrfanView Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Russian
+        # 13 = Spanish
+        # 14 = Swedish
+        $IrfanView_Language = 0
+
+        # KeePass Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Portuguese
+        # 13 = Russian
+        # 14 = Spanish
+        # 15 = Swedish
+        $KeePass_Language = 0
+
+        # Microsoft .Net Framework Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSDotNetFramework_Architecture = 0
+
         # Microsoft .Net Framework
         # 0 = Current Channel
         # 1 = LTS (Long Term Support) Channel
         $MSDotNetFrameworkChannel = 1
 
+        # Microsoft 365 Apps Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MS365Apps_Architecture = 0
+
+        # Microsoft 365 Apps Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Portuguese
+        # 13 = Russian
+        # 14 = Spanish
+        # 15 = Swedish
+        $MS365Apps_Language = 0
+        
         # Microsoft 365 Apps
         # 0 = Current (Preview) Channel
         # 1 = Current Channel
@@ -3247,10 +4101,65 @@ If ($list -eq $True) {
         # 4 = Semi-Annual Enterprise Channel
         $MS365AppsChannel = 4
 
+        # Microsoft 365 Apps Visio Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Portuguese
+        # 13 = Russian
+        # 14 = Spanish
+        # 15 = Swedish
+        $MS365Apps_Visio_Language = 0
+
+        # Microsoft 365 Apps Project Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Portuguese
+        # 13 = Russian
+        # 14 = Spanish
+        # 15 = Swedish
+        $MS365Apps_Project_Language = 0
+
+        # Microsoft AVD Remote Desktop Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSAVDRemoteDesktop_Architecture = 0
+
+        # Microsoft AVD Remote Desktop
+        # 0 = Insider Channel
+        # 1 = Public Channel
+        $MSAVDRemoteDesktopChannel = 1
+
         # Microsoft Azure Data Studio
         # 0 = Insider Channel
         # 1 = Stable Channel
         $MSAzureDataStudioChannel = 1
+
+        # Microsoft Edge Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSEdge_Architecture = 0
 
         # Microsoft Edge
         # 0 = Developer Channel
@@ -3258,10 +4167,41 @@ If ($list -eq $True) {
         # 2 = Stable Channel
         $MSEdgeChannel = 2
 
+        # Microsoft FSLogix Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSFSLogix_Architecture = 0
+
         # Microsoft FSLogix
         # 0 = Preview Channel
         # 1 = Production Channel
         $MSFSLogixChannel = 1
+
+        # Microsoft Office 2019 Language
+        # 0 = Global Language
+        # 1 = Danish
+        # 2 = Dutch
+        # 3 = English
+        # 4 = Finnish
+        # 5 = French
+        # 6 = German
+        # 7 = Italian
+        # 8 = Japanese
+        # 9 = Korean
+        # 10 = Norwegian
+        # 11 = Polish
+        # 12 = Portuguese
+        # 13 = Russian
+        # 14 = Spanish
+        # 15 = Swedish
+        $MSOffice2019_Architecture = 0
+
+        # Microsoft OneDrive Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSOneDrive_Architecture = 0
 
         # Microsoft OneDrive
         # 0 = Insider Ring
@@ -3269,10 +4209,41 @@ If ($list -eq $True) {
         # 2 = Enterprise Ring
         $MSOneDriveRing = 2
 
+        # Microsoft Power BI Desktop Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSPowerBIDesktop_Architecture = 0
+
+        # Microsoft PowerShell Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSPowerShell_Architecture = 0
+
         # Microsoft PowerShell
         # 0 = Stable Release
         # 1 = LTS (Long Term Support) Release
         $MSPowerShellRelease = 1
+
+        # Microsoft SQL Server Management Studio Language
+        # 0 = Global Language
+        # 1 = English
+        # 2 = French
+        # 3 = German
+        # 4 = Italian
+        # 5 = Japanese
+        # 6 = Korean
+        # 7 = Portuguese
+        # 8 = Russian
+        # 9 = Spanish
+        $MSSQLServerManagementStudio_Language = 0
+
+        # Microsoft Teams Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSTeams_Architecture = 0
 
         # Microsoft Teams
         # 0 = Developer Ring
@@ -3292,20 +4263,71 @@ If ($list -eq $True) {
         # 2 = Community Edition
         $MSVisualStudioEdition = 1
 
+        # Microsoft Visual Studio Code Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $MSVisualStudioCode_Architecture = 0
+
         # Microsoft Visual Studio Code
         # 0 = Insider Channel
         # 1 = Stable Channel
         $MSVisualStudioCodeChannel = 1
 
-        # Microsoft AVD Remote Desktop
-        # 0 = Insider Channel
-        # 1 = Public Channel
-        $MSAVDRemoteDesktopChannel = 1
+        # Mozilla Firefox Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $Firefox_Architecture = 0
+
+        # Mozilla Firefox Language
+        # 0 = Global Language
+        # 1 = Dutch
+        # 2 = English
+        # 3 = French
+        # 4 = German
+        # 5 = Italian
+        # 6 = Japanese
+        # 7 = Portuguese
+        # 8 = Russian
+        # 9 = Spanish
+        # 10 = Swedish
+        $Firefox_Language = 0
 
         # Mozilla Firefox
         # 0 = Current
         # 1 = ESR
         $FirefoxChannel = 0
+
+        # Notepad ++ Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $NotePadPlusPlus_Architecture = 0
+
+        # Open JDK Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $OpenJDK_Architecture = 0
+
+        # Oracle Java 8 Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $OracleJava8_Architecture = 0
+
+        # PeaZip Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $PeaZip_Architecture = 0
+
+        # PuTTY Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $Putty_Architecture = 0
 
         # PuTTY
         # 0 = Pre-Release
@@ -3317,10 +4339,52 @@ If ($list -eq $True) {
         # 1 = Enterprise
         $RemoteDesktopManagerType = 0
 
+        # Slack Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $Slack_Architecture = 0
+
+        # SumatraPDF Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $SumatraPDF_Architecture = 0
+
+        # TechSmith SnagIt Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $TechSmithSnagIt_Architecture = 0
+
         # TreeSize
         # 0 = Free
         # 1 = Professional
         $TreeSizeType = 0
+
+        # VLC Player Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $VLCPlayer_Architecture = 0
+
+        # VMWareTools Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $VMWareTools_Architecture = 0
+
+        # WinMerge Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $WinMerge_Architecture = 0
+
+        # Wireshark Architecture
+        # 0 = Global Architecture
+        # 1 = x86
+        # 2 = x64
+        $Wireshark_Architecture = 0
 
         # Zoom
         # 0 = Installer
@@ -3357,6 +4421,8 @@ If ($list -eq $True) {
         $mRemoteNG = 0
         $MSDotNetFramework = 0
         $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+        $MS365Apps_Visio = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
+        $MS365Apps_Project = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
         $MSAVDRemoteDesktop = 0
         $MSAzureCLI = 0
         $MSAzureDataStudio = 0
@@ -3398,7 +4464,8 @@ If ($list -eq $True) {
 }
 Else {
     # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language -ErrorAction SilentlyContinue
+
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
         $WScriptShell = New-Object -ComObject 'WScript.Shell'
@@ -3441,21 +4508,99 @@ Switch ($Language) {
     14 { $LanguageClear = 'Swedish'}
 }
 
-$AdobeLanguageClear = $LanguageClear
-Switch ($LanguageClear) {
-    Portuguese { $AdobeLanguageClear = 'English'}
+If ($7Zip_Architecture -ne "") {
+    Switch ($7Zip_Architecture) {
+        1 { $7ZipArchitectureClear = 'x86'}
+        2 { $7ZipArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $7ZipArchitectureClear = $ArchitectureClear
 }
 
-$AdobeArchitectureClear = $ArchitectureClear
+If ($AdobeReaderDC_Architecture -ne "") {
+    Switch ($AdobeReaderDC_Architecture) {
+        1 { $AdobeArchitectureClear = 'x86'}
+        2 { $AdobeArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $AdobeArchitectureClear = $ArchitectureClear
+}
+
+If ($AdobeReaderDC_Language -ne "") {
+    Switch ($AdobeReaderDC_Language) {
+        1 { $AdobeLanguageClear = 'Danish'}
+        2 { $AdobeLanguageClear = 'Dutch'}
+        3 { $AdobeLanguageClear = 'English'}
+        4 { $AdobeLanguageClear = 'Finnish'}
+        5 { $AdobeLanguageClear = 'French'}
+        6 { $AdobeLanguageClear = 'German'}
+        7 { $AdobeLanguageClear = 'Italian'}
+        8 { $AdobeLanguageClear = 'Japanese'}
+        9 { $AdobeLanguageClear = 'Korean'}
+        10 { $AdobeLanguageClear = 'Norwegian'}
+        11 { $AdobeLanguageClear = 'Polish'}
+        12 { $AdobeLanguageClear = 'Russian'}
+        13 { $AdobeLanguageClear = 'Spanish'}
+        14 { $AdobeLanguageClear = 'Swedish'}
+    }
+}
+Else {
+    $AdobeLanguageClear = $LanguageClear
+    Switch ($LanguageClear) {
+        Portuguese { $AdobeLanguageClear = 'English'}
+    }
+}
+
+If ($CiscoWebexTeams_Architecture -ne "") {
+    Switch ($CiscoWebexTeams_Architecture) {
+        1 { $CiscoWebexTeamsArchitectureClear = 'x86'}
+        2 { $CiscoWebexTeamsArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $CiscoWebexTeamsArchitectureClear = $ArchitectureClear
+}
+
+If ($CitrixHypervisorTools_Architecture -ne "") {
+    Switch ($CitrixHypervisorTools_Architecture) {
+        1 { $CitrixHypervisorToolsArchitectureClear = 'x86'}
+        2 { $CitrixHypervisorToolsArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $CitrixHypervisorToolsArchitectureClear = $ArchitectureClear
+}
 
 Switch ($CitrixWorkspaceAppRelease) {
     0 { $CitrixWorkspaceAppReleaseClear = 'Current'}
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
 }
 
+If ($ControlUpAgent_Architecture -ne "") {
+    Switch ($ControlUpAgent_Architecture) {
+        1 { $ControlUpAgentArchitectureClear = 'x86'}
+        2 { $ControlUpAgentArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $ControlUpAgentArchitectureClear = $ArchitectureClear
+}
+
 Switch ($ControlUpAgentFramework) {
     0 { $ControlUpAgentFrameworkClear = 'net35'}
     1 { $ControlUpAgentFrameworkClear = 'net45'}
+}
+
+If ($deviceTRUST_Architecture -ne "") {
+    Switch ($deviceTRUST_Architecture) {
+        1 { $deviceTRUSTArchitectureClear = 'x86'}
+        2 { $deviceTRUSTArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $deviceTRUSTArchitectureClear = $ArchitectureClear
 }
 
 Switch ($deviceTRUSTPackage) {
@@ -3468,31 +4613,162 @@ Switch ($deviceTRUSTPackage) {
         $deviceTRUSTHost = $True}
 }
 
-$FoxitPDFEditorLanguageClear = $LanguageClear
-Switch ($LanguageClear) {
-    Japanese { $FoxitPDFEditorLanguageClear = 'English'}
+If ($FoxitPDFEditor_Language -ne "") {
+    Switch ($FoxitPDFEditor_Language) {
+        1 { $FoxitPDFEditorLanguageClear = 'Danish'}
+        2 { $FoxitPDFEditorLanguageClear = 'Dutch'}
+        3 { $FoxitPDFEditorLanguageClear = 'English'}
+        4 { $FoxitPDFEditorLanguageClear = 'Finnish'}
+        5 { $FoxitPDFEditorLanguageClear = 'French'}
+        6 { $FoxitPDFEditorLanguageClear = 'German'}
+        7 { $FoxitPDFEditorLanguageClear = 'Italian'}
+        8 { $FoxitPDFEditorLanguageClear = 'Korean'}
+        9 { $FoxitPDFEditorLanguageClear = 'Norwegian'}
+        10 { $FoxitPDFEditorLanguageClear = 'Polish'}
+        11 { $FoxitPDFEditorLanguageClear = 'Portuguese'}
+        12 { $FoxitPDFEditorLanguageClear = 'Russian'}
+        13 { $FoxitPDFEditorLanguageClear = 'Spanish'}
+        14 { $FoxitPDFEditorLanguageClear = 'Swedish'}
+    }
+}
+Else {
+    $FoxitPDFEditorLanguageClear = $LanguageClear
+    Switch ($LanguageClear) {
+        Japanese { $FoxitPDFEditorLanguageClear = 'English'}
+    }
 }
 
-$FoxitReaderLanguageClear = $LanguageClear
-Switch ($LanguageClear) {
-    Japanese { $FoxitReaderLanguageClear = 'English'}
-    Korean { $FoxitReaderLanguageClear = 'English'}
+If ($FoxitReader_Language -ne "") {
+    Switch ($FoxitReader_Language) {
+        1 { $FoxitReaderLanguageClear = 'Danish'}
+        2 { $FoxitReaderLanguageClear = 'Dutch'}
+        3 { $FoxitReaderLanguageClear = 'English'}
+        4 { $FoxitReaderLanguageClear = 'Finnish'}
+        5 { $FoxitReaderLanguageClear = 'French'}
+        6 { $FoxitReaderLanguageClear = 'German'}
+        7 { $FoxitReaderLanguageClear = 'Italian'}
+        8 { $FoxitReaderLanguageClear = 'Norwegian'}
+        9 { $FoxitReaderLanguageClear = 'Polish'}
+        10 { $FoxitReaderLanguageClear = 'Portuguese'}
+        11 { $FoxitReaderLanguageClear = 'Russian'}
+        12 { $FoxitReaderLanguageClear = 'Spanish'}
+        13 { $FoxitReaderLanguageClear = 'Swedish'}
+    }
+}
+Else {
+    $FoxitReaderLanguageClear = $LanguageClear
+    Switch ($LanguageClear) {
+        Japanese { $FoxitReaderLanguageClear = 'English'}
+        Korean { $FoxitReaderLanguageClear = 'English'}
+    }
 }
 
-Switch ($Language) {
-    0 { $IrfanViewLanguageClear = 'da'}
-    1 { $IrfanViewLanguageClear = 'nl-NL'}
-    3 { $IrfanViewLanguageClear = 'fi'}
-    4 { $IrfanViewLanguageClear = 'fr'}
-    5 { $IrfanViewLanguageClear = 'de'}
-    6 { $IrfanViewLanguageClear = 'it'}
-    7 { $IrfanViewLanguageClear = 'ja'}
-    8 { $IrfanViewLanguageClear = 'ko'}
-    10 { $IrfanViewLanguageClear = 'pl'}
-    11 { $IrfanViewLanguageClear = 'pt-PT'}
-    12 { $IrfanViewLanguageClear = 'ru'}
-    13 { $IrfanViewLanguageClear = 'es'}
-    14 { $IrfanViewLanguageClear = 'sv'}
+If ($GitForWindows_Architecture -ne "") {
+    Switch ($GitForWindows_Architecture) {
+        1 { $GitForWindowsArchitectureClear = 'x86'}
+        2 { $GitForWindowsArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $GitForWindowsArchitectureClear = $ArchitectureClear
+}
+
+If ($GoogleChrome_Architecture -ne "") {
+    Switch ($GoogleChrome_Architecture) {
+        1 { $GoogleChromeArchitectureClear = 'x86'}
+        2 { $GoogleChromeArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $GoogleChromeArchitectureClear = $ArchitectureClear
+}
+
+If ($ImageGlass_Architecture -ne "") {
+    Switch ($ImageGlass_Architecture) {
+        1 { $ImageGlassArchitectureClear = 'x86'}
+        2 { $ImageGlassArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $ImageGlassArchitectureClear = $ArchitectureClear
+}
+
+If ($IrfanView_Architecture -ne "") {
+    Switch ($IrfanView_Architecture) {
+        1 { $IrfanViewArchitectureClear = 'x86'}
+        2 { $IrfanViewArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $IrfanViewArchitectureClear = $ArchitectureClear
+}
+
+If ($IrfanView_Language -ne "") {
+    Switch ($IrfanView_Language) {
+        1 { $IrfanViewLanguageClear = 'da'}
+        2 { $IrfanViewLanguageClear = 'nl-NL'}
+        4 { $IrfanViewLanguageClear = 'fi'}
+        5 { $IrfanViewLanguageClear = 'fr'}
+        6 { $IrfanViewLanguageClear = 'de'}
+        7 { $IrfanViewLanguageClear = 'it'}
+        8 { $IrfanViewLanguageClear = 'ja'}
+        9 { $IrfanViewLanguageClear = 'ko'}
+        10 { $IrfanViewLanguageClear = 'pl'}
+        11 { $IrfanViewLanguageClear = 'pt-PT'}
+        12 { $IrfanViewLanguageClear = 'ru'}
+        13 { $IrfanViewLanguageClear = 'es'}
+        14 { $IrfanViewLanguageClear = 'sv'}
+    }
+    Switch ($IrfanView_Language) {
+        1 { $IrfanViewLanguageLongClear = 'Danish'}
+        2 { $IrfanViewLanguageLongClear = 'Dutch'}
+        3 { $IrfanViewLanguageLongClear = 'English'}
+        4 { $IrfanViewLanguageLongClear = 'Finnish'}
+        5 { $IrfanViewLanguageLongClear = 'French'}
+        6 { $IrfanViewLanguageLongClear = 'German'}
+        7 { $IrfanViewLanguageLongClear = 'Italian'}
+        8 { $IrfanViewLanguageLongClear = 'Japanese'}
+        9 { $IrfanViewLanguageLongClear = 'Korean'}
+        10 { $IrfanViewLanguageLongClear = 'Polish'}
+        11 { $IrfanViewLanguageLongClear = 'Portuguese'}
+        12 { $IrfanViewLanguageLongClear = 'Russian'}
+        13 { $IrfanViewLanguageLongClear = 'Spanish'}
+        14 { $IrfanViewLanguageLongClear = 'Swedish'}
+    }
+}
+Else {
+    Switch ($Language) {
+        0 { $IrfanViewLanguageClear = 'da'}
+        1 { $IrfanViewLanguageClear = 'nl-NL'}
+        3 { $IrfanViewLanguageClear = 'fi'}
+        4 { $IrfanViewLanguageClear = 'fr'}
+        5 { $IrfanViewLanguageClear = 'de'}
+        6 { $IrfanViewLanguageClear = 'it'}
+        7 { $IrfanViewLanguageClear = 'ja'}
+        8 { $IrfanViewLanguageClear = 'ko'}
+        10 { $IrfanViewLanguageClear = 'pl'}
+        11 { $IrfanViewLanguageClear = 'pt-PT'}
+        12 { $IrfanViewLanguageClear = 'ru'}
+        13 { $IrfanViewLanguageClear = 'es'}
+        14 { $IrfanViewLanguageClear = 'sv'}
+    }
+    Switch ($Language) {
+        0 { $IrfanViewLanguageLongClear = 'Danish'}
+        1 { $IrfanViewLanguageLongClear = 'Dutch'}
+        2 { $IrfanViewLanguageLongClear = 'English'}
+        3 { $IrfanViewLanguageLongClear = 'Finnish'}
+        4 { $IrfanViewLanguageLongClear = 'French'}
+        5 { $IrfanViewLanguageLongClear = 'German'}
+        6 { $IrfanViewLanguageLongClear = 'Italian'}
+        7 { $IrfanViewLanguageLongClear = 'Japanese'}
+        8 { $IrfanViewLanguageLongClear = 'Korean'}
+        9 { $IrfanViewLanguageLongClear = 'English'}
+        10 { $IrfanViewLanguageLongClear = 'Polish'}
+        11 { $IrfanViewLanguageLongClear = 'Portuguese'}
+        12 { $IrfanViewLanguageLongClear = 'Russian'}
+        13 { $IrfanViewLanguageLongClear = 'Spanish'}
+        14 { $IrfanViewLanguageLongClear = 'Swedish'}
+    }
 }
 
 Switch ($MSDotNetFrameworkChannel) {
@@ -3598,24 +4874,6 @@ Switch ($LanguageClear) {
     Polish { $MSSQLServerManagementStudioLanguageClear = 'English'}
     Portuguese { $MSSQLServerManagementStudioLanguageClear = 'Portuguese (Brazil)'}
     Swedish { $MSSQLServerManagementStudioLanguageClear = 'English'}
-}
-
-Switch ($Language) {
-    0 { $LanguageClear = 'Danish'}
-    1 { $LanguageClear = 'Dutch'}
-    2 { $LanguageClear = 'English'}
-    3 { $LanguageClear = 'Finnish'}
-    4 { $LanguageClear = 'French'}
-    5 { $LanguageClear = 'German'}
-    6 { $LanguageClear = 'Italian'}
-    7 { $LanguageClear = 'Japanese'}
-    8 { $LanguageClear = 'Korean'}
-    9 { $LanguageClear = 'Norwegian'}
-    10 { $LanguageClear = 'Polish'}
-    11 { $LanguageClear = 'Portuguese'}
-    12 { $LanguageClear = 'Russian'}
-    13 { $LanguageClear = 'Spanish'}
-    14 { $LanguageClear = 'Swedish'}
 }
 
 Switch ($MSTeamsRing) {
@@ -3825,16 +5083,16 @@ If ($install -eq $False) {
     #// Mark: Download 7-ZIP
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
-        $PackageName = "7-Zip_" + "$ArchitectureClear"
-        $7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
+        $PackageName = "7-Zip_" + "$7ZipArchitectureClear"
+        $7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$7ZipArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $7ZipArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -3844,9 +5102,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $7ZipArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -3881,7 +5138,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source)) 
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -3917,7 +5173,6 @@ If ($install -eq $False) {
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $AdobeArchitectureClear $AdobeLanguageClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -3975,43 +5230,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
-            Write-Verbose "Stop logging"
-            Stop-Transcript | Out-Null
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
-            Write-Output ""
-        }
-        Else {
-            Write-Host -ForegroundColor Cyan "No new version available"
-            Write-Output ""
-        }
-    }
-
-    #// Mark: Download Cisco Webex Meetings
-    If ($CiscoWebex -eq 1) {
-        $Product = "Cisco Webex Meetings"
-        $PackageName = "webex-" + "$CiscoWebexClientClear"
-        $WebexD = Get-EvergreenApp -Name CiscoWebex | Where-Object { $_.Type -eq "$CiscoWebexClientClear" }
-        $Version = $WebexD.Version
-        $URL = $WebexD.uri
-        Add-Content -Path "$FWFile" -Value "$URL"
-        $InstallerType = "msi"
-        $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexClientClear" + ".txt"
-        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $CiscoWebexClientClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
-            Write-Host -ForegroundColor Green "Update available"
-            If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-            $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
-            Start-Transcript $LogPS | Out-Null
-            Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $CiscoWebexClientClear $Version"
-            Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4026,16 +5244,16 @@ If ($install -eq $False) {
     #// Mark: Download Cisco Webex Teams
     If ($CiscoWebexTeams -eq 1) {
         $Product = "Cisco Webex Teams"
-        $PackageName = "webexteams-" + "$ArchitectureClear"
-        $WebexTeamsD = Get-NevergreenApp -Name CiscoWebex | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "Msi" }
+        $PackageName = "webexteams-" + "$CiscoWebexTeamsArchitectureClear"
+        $WebexTeamsD = Get-NevergreenApp -Name CiscoWebex | Where-Object { $_.Architecture -eq "$CiscoWebexTeamsArchitectureClear" -and $_.Type -eq "Msi" }
         $Version = $WebexTeamsD.Version
         $URL = $WebexTeamsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexTeamsArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $CiscoWebexTeamsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4045,9 +5263,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $CiscoWebexTeamsArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4097,16 +5314,16 @@ If ($install -eq $False) {
     #// Mark: Download Citrix Hypervisor Tools
     If ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
-        $PackageName = "managementagent" + "$ArchitectureClear"
-        $CitrixHypervisor = Get-EvergreenApp -Name CitrixVMTools | Where-Object {$_.Architecture -eq "$ArchitectureClear"} | Select-Object -Last 1
+        $PackageName = "managementagent" + "$CitrixHypervisorToolsArchitectureClear"
+        $CitrixHypervisor = Get-EvergreenApp -Name CitrixVMTools | Where-Object {$_.Architecture -eq "$CitrixHypervisorToolsArchitectureClear"} | Select-Object -Last 1
         $Version = $CitrixHypervisor.Version
         $URL = $CitrixHypervisor.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$CitrixHypervisorToolsArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $CitrixHypervisorToolsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4116,9 +5333,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting Download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting Download of $Product $CitrixHypervisorToolsArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\Citrix\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4162,7 +5378,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\Citrix\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\Citrix\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4285,16 +5500,16 @@ If ($install -eq $False) {
     #// Mark: Download ControlUp Agent
     If ($ControlUpAgent -eq 1) {
         $Product = "ControlUp Agent"
-        $PackageName = "ControlUpAgent-" + "$ControlUpAgentFrameworkClear" + "-$ArchitectureClear"
-        $ControlUpAgentD = Get-EvergreenApp -Name ControlUpAgent | Where-Object { $_.Framework -like "*$ControlUpAgentFrameworkClear" -and $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "ControlUpAgent-" + "$ControlUpAgentFrameworkClear" + "-$ControlUpAgentArchitectureClear"
+        $ControlUpAgentD = Get-EvergreenApp -Name ControlUpAgent | Where-Object { $_.Framework -like "*$ControlUpAgentFrameworkClear" -and $_.Architecture -eq "$ControlUpAgentArchitectureClear" }
         $Version = $ControlUpAgentD.Version
         $URL = $ControlUpAgentD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ControlUpAgentArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ControlUpAgentFrameworkClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4304,9 +5519,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ControlUpAgentFrameworkClear $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4342,7 +5556,6 @@ If ($install -eq $False) {
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\Install\" + ($Source))
             expand-archive -path "$PSScriptRoot\$Product\$Source" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$Source" -Force
             Write-Verbose "Stop logging"
@@ -4372,9 +5585,9 @@ If ($install -eq $False) {
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "zip"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$deviceTRUSTArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host -ForegroundColor Magenta "Download $Product $deviceTRUSTArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4384,24 +5597,24 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $Version"
+            Write-Host "Starting download of $Product $deviceTRUSTArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             expand-archive -path "$PSScriptRoot\$Product\deviceTRUST.zip" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\deviceTRUST.zip" -Force
-            Remove-Item -Path "$PSScriptRoot\$Product\dtreporting-$Version.0.zip" -Force
-            If (Test-Path -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe") {Remove-Item -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.0.exe" -Force}
-            Switch ($Architecture) {
-                0 {
+            Remove-Item -Path "$PSScriptRoot\$Product\dtreporting-$Version.zip" -Force
+            If (Test-Path -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.exe") {Remove-Item -Path "$PSScriptRoot\$Product\dtdemotool-release-$Version.exe" -Force}
+            Switch ($deviceTRUSTArchitectureClear) {
+                x64 {
                     Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x86"* | Remove-Item
-                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
-                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x64-release-$Version.0.msi" -NewName "dtconsole-x64-release.msi"
-                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x64-release-$Version.0.msi" -NewName "dthost-x64-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.exe" -NewName "dtclient-release.exe"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x64-release-$Version.msi" -NewName "dtconsole-x64-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x64-release-$Version.msi" -NewName "dthost-x64-release.msi"
                 }
-                1 {
+                x86 {
                     Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x64"* | Remove-Item
-                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.0.exe" -NewName "dtclient-release.exe"
-                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x86-release-$Version.0.msi" -NewName "dtconsole-x86-release.msi"
-                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x86-release-$Version.0.msi" -NewName "dthost-x86-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.exe" -NewName "dtclient-release.exe"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x86-release-$Version.msi" -NewName "dtconsole-x86-release.msi"
+                    Rename-Item -Path "$PSScriptRoot\$Product\dthost-x86-release-$Version.msi" -NewName "dthost-x86-release.msi"
                 }
             }
             Write-Verbose "Stop logging"
@@ -4409,7 +5622,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
             Write-Host "Starting copy of $Product ADMX files $Version"
-            expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
+            expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
             If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
             If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
             Move-Item -Path "$PSScriptRoot\$Product\ADMX\deviceTRUST.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
@@ -4418,7 +5631,7 @@ If ($install -eq $False) {
                 Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\deviceTRUST.adml" -ErrorAction SilentlyContinue
             }
             Move-Item -Path "$PSScriptRoot\$Product\ADMX\en-US\deviceTRUST.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-            Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.0.zip" -Force
+            Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.zip" -Force
             Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -4451,7 +5664,6 @@ If ($install -eq $False) {
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
-            #Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
@@ -4523,7 +5735,6 @@ If ($install -eq $False) {
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $FoxitReaderLanguageClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4573,16 +5784,16 @@ If ($install -eq $False) {
     #// Mark: Download Git for Windows
     If ($GitForWindows -eq 1) {
         $Product = "Git for Windows"
-        $PackageName = "GitForWindows_" + "$ArchitectureClear"
-        $GitForWindowsD = Get-EvergreenApp -Name GitForWindows | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" -and $_.URI -like "*bit.exe"}
+        $PackageName = "GitForWindows_" + "$GitForWindowsArchitectureClear"
+        $GitForWindowsD = Get-EvergreenApp -Name GitForWindows | Where-Object {$_.Architecture -eq "$GitForWindowsArchitectureClear" -and $_.Type -eq "exe" -and $_.URI -like "*bit.exe"}
         $Version = $GitForWindowsD.Version
         $URL = $GitForWindowsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GitForWindowsArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $GitForWindowsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4592,9 +5803,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $GitForWindowsArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4609,8 +5819,8 @@ If ($install -eq $False) {
     #// Mark: Download Google Chrome
     If ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
-        $PackageName = "googlechromestandaloneenterprise_" + "$ArchitectureClear"
-        $ChromeD = Get-EvergreenApp -Name GoogleChrome | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "googlechromestandaloneenterprise_" + "$GoogleChromeArchitectureClear"
+        $ChromeD = Get-EvergreenApp -Name GoogleChrome | Where-Object { $_.Architecture -eq "$GoogleChromeArchitectureClear" }
         $Version = $ChromeD.Version
         $ChromeSplit = $Version.split(".")
         $ChromeStrings = ([regex]::Matches($Version, "\." )).count
@@ -4633,7 +5843,7 @@ If ($install -eq $False) {
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GoogleChromeArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
         $NewCurrentVersion = ""
         If ($CurrentVersion) {
@@ -4655,7 +5865,7 @@ If ($install -eq $False) {
                 }
             }
         }
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $GoogleChromeArchitectureClear"
         Write-Host "Download Version: $NewVersion"
         Write-Host "Current Version:  $NewCurrentVersion"
         If ($NewCurrentVersion -lt $NewVersion) {
@@ -4665,9 +5875,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $GoogleChromeArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4815,16 +6024,16 @@ If ($install -eq $False) {
     #// Mark: Download ImageGlass
     If ($ImageGlass -eq 1) {
         $Product = "ImageGlass"
-        $PackageName = "ImageGlass_" + "$ArchitectureClear"
-        $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "ImageGlass_" + "$ImageGlassArchitectureClear"
+        $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ImageGlassArchitectureClear" }
         $Version = $ImageGlassD.Version
         $URL = $ImageGlassD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ImageGlassArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $ImageGlassArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4834,9 +6043,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $ImageGlassArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -4851,16 +6059,16 @@ If ($install -eq $False) {
     #// Mark: Download IrfanView
     If ($IrfanView -eq 1) {
         $Product = "IrfanView"
-        $PackageName = "IrfanView" + "$ArchitectureClear"
-        $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+        $PackageName = "IrfanView" + "$IrfanViewArchitectureClear"
+        $IrfanViewD = Get-IrfanView | Where-Object {$_.Architecture -eq "$IrfanViewArchitectureClear"}
         $Version = $IrfanViewD.Version
         $URL = $IrfanViewD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$IrfanViewArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path $VersionPath -EA SilentlyContinue 
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $IrfanViewLanguageLongClear $IrfanViewArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -4870,25 +6078,22 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $IrfanViewArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
-            If ($LanguageClear -ne "English") {
-                If ($LanguageClear -ne "Norwegian") {
-                    $IrfanViewLD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Language -eq "$IrfanViewLanguageClear" -and $_.Type -eq "Zip"}
-                    $VersionL = $IrfanViewLD.Version
-                    $URLL = $IrfanViewLD.uri
-                    $PackageNameL = "IrfanView_lang_" + "$LanguageClear"
-                    $SourceL = "$PackageNameL" + ".zip"
-                    Write-Host "Starting download of $Product $LanguageClear language pack version $VersionL"
-                    Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
-                    expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product\$LanguageClear"
-                    Remove-Item "$PSScriptRoot\$Product\$SourceL"
-                    Write-Host -ForegroundColor Green "Download of the $LanguageClear language pack version $VersionL finished!"
-                }
+            If ($IrfanViewLanguageLongClear -ne "English") {
+                $IrfanViewLD = Get-NevergreenApp -Name IrfanView | Where-Object {$_.Language -eq "$IrfanViewLanguageClear" -and $_.Type -eq "Zip"}
+                $VersionL = $IrfanViewLD.Version
+                $URLL = $IrfanViewLD.uri
+                $PackageNameL = "IrfanView_lang_" + "$IrfanViewLanguageLongClear"
+                $SourceL = "$PackageNameL" + ".zip"
+                Write-Host "Starting download of $Product $IrfanViewLanguageLongClear language pack version $VersionL"
+                Get-Download $URLL "$PSScriptRoot\$Product\" $SourceL -includeStats
+                expand-archive -path "$PSScriptRoot\$Product\$SourceL" -destinationpath "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear"
+                Remove-Item "$PSScriptRoot\$Product\$SourceL"
+                Write-Host -ForegroundColor Green "Download of the $IrfanViewLanguageLongClear language pack version $VersionL finished!"
             }
             Write-Output ""
         }
@@ -5180,7 +6385,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $MS365AppsChannelClear $Version setup file"
             Get-Download $URL "$PSScriptRoot\$Product\$MS365AppsChannelClear" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MS365AppsChannelClear\" + ($Source))
             Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
@@ -7432,29 +8636,29 @@ If ($download -eq $False) {
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$7ZipArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SevenZip) {
             $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $7ZipInstaller = "7-Zip_" + "$ArchitectureClear" + ".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $7ZipInstaller = "7-Zip_" + "$7ZipArchitectureClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $7ZipArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $SevenZip"
         If ($SevenZip -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $7ZipArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$7ZipInstaller" -ArgumentList /S
-                $p = Get-Process 7-Zip_$ArchitectureClear
+                $p = Get-Process 7-Zip_$7ZipArchitectureClear
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $7ZipArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -7503,12 +8707,9 @@ If ($download -eq $False) {
                     Set-Service AdobeARMservice -StartupType Disabled
                     Write-Host -ForegroundColor Green "Stop and Disable Service $Product finished!"
                 }
-                $ScheduledTask = Get-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue
-                If ($ScheduledTask.Length -gt 0) {
-                    Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue | Out-Null
-                    Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
-                }
+                Write-Host "Customize Scheduled Task"
+                Get-ScheduledTask -TaskName Adobe* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
@@ -7572,12 +8773,9 @@ If ($download -eq $False) {
                 DS_WriteLog "E" "Error customizing (Error: $($Error[0]))" $LogFile
             }
             Try {
-                $ScheduledTask = Get-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue
-                If ($ScheduledTask.Length -gt 0) {
-                    Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "Adobe Acrobat Update Task" -ErrorAction SilentlyContinue | Out-Null
-                    Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
-                }
+                Write-Host "Customize Scheduled Task"
+                Get-ScheduledTask -TaskName Adobe* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
@@ -7664,62 +8862,19 @@ If ($download -eq $False) {
         }
     }
 
-    #// Mark: Install Cisco Webex Meetings
-    If ($CiscoWebex -eq 1) {
-        $Product = "Cisco Webex Meetings"
-        # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexClientClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
-        $WebexV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Cisco Webex Meetings"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-        If (!$WebexV) {
-            $WebexV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Cisco Webex Meetings"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-        }
-        $WebexLog = "$LogTemp\Webex.log"
-        $InstallMSI = "$PSScriptRoot\$Product\webex-Desktop.msi"
-        Write-Host -ForegroundColor Magenta "Install $Product $CiscoWebexClientClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $WebexV"
-        If ($WebexV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
-            Write-Host -ForegroundColor Green "Update available"
-            $Arguments = @(
-                "/i"
-                "`"$InstallMSI`""
-                "/qn"
-                "/L*V $WebexLog"
-                "AUTOOC=0 ALLUSERS=1 ENABLEVDI=2 AUTOUPGRADEENABLED=0 ROAMINGENABLED=1"
-            )
-            Try {
-                Write-Host "Starting install of $Product $CiscoWebexClientClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Get-Content $WebexLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $WebexLog
-            } Catch {
-                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
-            }
-            DS_WriteLog "-" "" $LogFile
-            Write-Output ""
-        }
-        # Stop, if no new version is available
-        Else {
-            Write-Host -ForegroundColor Cyan "No update available for $Product"
-            Write-Output ""
-        }
-    }
-
     #// Mark: Install Cisco Webex Teams
     If ($CiscoWebexTeams -eq 1) {
         $Product = "Cisco Webex Teams"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexTeamsArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $CiscoWebexTeamsV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Webex"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$CiscoWebexTeamsV) {
             $CiscoWebexTeamsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Webex"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $WebexLog = "$LogTemp\WebexTeams.log"
-        $InstallMSI = "$PSScriptRoot\$Product\webexteams-" + "$ArchitectureClear" + ".msi"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $InstallMSI = "$PSScriptRoot\$Product\webexteams-" + "$CiscoWebexTeamsArchitectureClear" + ".msi"
+        Write-Host -ForegroundColor Magenta "Install $Product $CiscoWebexTeamsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CiscoWebexTeamsV"
         If ($CiscoWebexTeamsV -lt $Version) {
@@ -7733,7 +8888,7 @@ If ($download -eq $False) {
                 "ACCEPT_EULA=TRUE ALLUSERS=1 AUTOSTART_WITH_WINDOWS=false"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $CiscoWebexTeamsArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Get-Content $WebexLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $WebexLog
@@ -7798,13 +8953,13 @@ If ($download -eq $False) {
     If ($Citrix_Hypervisor_Tools -eq 1) {
         $Product = "Citrix Hypervisor Tools"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$CitrixHypervisorToolsArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $CitrixHypLog = "$LogTemp\CitrixHypervisor.log"
-        $HypToolsInstaller = "managementagent" + "$ArchitectureClear" + ".msi"
+        $HypToolsInstaller = "managementagent" + "$CitrixHypervisorToolsArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\Citrix\$Product\$HypToolsInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $CitrixHypervisorToolsArchitectureClear"
         If (!$HypTools) {
             $HypTools = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
@@ -7812,7 +8967,7 @@ If ($download -eq $False) {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $HypTools"
         If ($HypTools -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Installing $Product $CitrixHypervisorToolsArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -7908,20 +9063,20 @@ If ($download -eq $False) {
     If ($ControlUpAgent -eq 1) {
         $Product = "ControlUp Agent"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ControlUpAgentArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $ControlUpAgentV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ControlUpAgent"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$ControlUpAgentV) {
             $ControlUpAgentV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ControlUpAgent"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $ControlUpAgentLog = "$LogTemp\ControlUpAgent.log"
-        $ControlUpAgentInstaller = "ControlUpAgent-" + "$ControlUpAgentFrameworkClear" + "-$ArchitectureClear" + ".msi"
+        $ControlUpAgentInstaller = "ControlUpAgent-" + "$ControlUpAgentFrameworkClear" + "-$ControlUpAgentArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ControlUpAgentInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ControlUpAgentFrameworkClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $ControlUpAgentV"
         If ($ControlUpAgentV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ControlUpAgentFrameworkClear $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Installing $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -7951,7 +9106,7 @@ If ($download -eq $False) {
     If ($deviceTRUST -eq 1) {
         $Product = "deviceTRUST"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version" + "_$ArchitectureClear"+ ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version" + "_$deviceTRUSTArchitectureClear"+ ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTClientV) {
@@ -7971,8 +9126,8 @@ If ($download -eq $False) {
         $deviceTRUSTLog = "$LogTemp\deviceTRUST.log"
         $deviceTRUSTClientLog = "$LogTemp\deviceTRUST.txt"
         $deviceTRUSTClientInstaller = "dtclient-release" + ".exe"
-        $deviceTRUSTHostInstaller = "dthost-" + "$ArchitectureClear" + "-release" + ".msi"
-        $deviceTRUSTConsoleInstaller = "dtconsole-" + "$ArchitectureClear" + "-release" + ".msi"
+        $deviceTRUSTHostInstaller = "dthost-" + "$deviceTRUSTArchitectureClear" + "-release" + ".msi"
+        $deviceTRUSTConsoleInstaller = "dtconsole-" + "$deviceTRUSTArchitectureClear" + "-release" + ".msi"
         $Arguments = @(
                 "/i"
                 "`"$InstallMSI`""
@@ -8245,14 +9400,14 @@ If ($download -eq $False) {
     If ($GitForWindows -eq 1) {
         $Product = "Git for Windows"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GitForWindowsArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $GitForWindowsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Git"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$GitForWindowsV) {
             $GitForWindowsV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Git"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $GitForWindowsInstaller = "GitForWindows_" + "$ArchitectureClear" +".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $GitForWindowsInstaller = "GitForWindows_" + "$GitForWindowsArchitectureClear" +".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $GitForWindowsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $GitForWindowsV"
         If ($GitForWindowsV -lt $Version) {
@@ -8265,14 +9420,14 @@ If ($download -eq $False) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $GitForWindowsArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$GitForWindowsInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $GitForWindowsArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -8289,7 +9444,7 @@ If ($download -eq $False) {
     If ($GoogleChrome -eq 1) {
         $Product = "Google Chrome"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GoogleChromeArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $ChromeSplit = $Version.split(".")
         $ChromeStrings = ([regex]::Matches($Version, "\." )).count
@@ -8330,9 +9485,9 @@ If ($download -eq $False) {
                 $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2] + "." + $CurrentChromeSplit[3]
             }
         }
-        $ChromeInstaller = "googlechromestandaloneenterprise_" + "$ArchitectureClear" + ".msi"
+        $ChromeInstaller = "googlechromestandaloneenterprise_" + "$GoogleChromeArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ChromeInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $GoogleChromeArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $Chrome"
         If ($NewCurrentVersion -lt $NewVersion) {
@@ -8345,7 +9500,7 @@ If ($download -eq $False) {
                 "/L*V $ChromeLog"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $GoogleChromeArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Get-Content $ChromeLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $ChromeLog
@@ -8364,14 +9519,10 @@ If ($download -eq $False) {
                     Set-Service gupdatem -StartupType Disabled
                     Write-Host -ForegroundColor Green "Stop and Disable Service $Product finished!"
                 }
-                $ScheduledTask = Get-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" -ErrorAction SilentlyContinue
-                If ($ScheduledTask.Length -gt 0) {
-                    Write-Host "Customize Scheduled Task"
-                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineCore" -ErrorAction SilentlyContinue | Out-Null
-                    Disable-ScheduledTask -TaskName "GoogleUpdateTaskMachineUA" -ErrorAction SilentlyContinue | Out-Null
-                    Disable-ScheduledTask -TaskName "GPUpdate on Startup" -ErrorAction SilentlyContinue | Out-Null
-                    Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
-                }
+                Write-Host "Customize Scheduled Task"
+                Get-ScheduledTask -TaskName GoogleUpdateTaskMachine* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                Get-ScheduledTask -TaskName GPUpdate* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize scripts $Product finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
@@ -8433,16 +9584,16 @@ If ($download -eq $False) {
     If ($ImageGlass -eq 1) {
         $Product = "ImageGlass"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ImageGlassArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $ImageGlassV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ImageGlass"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $ChromeLog = "$LogTemp\ImageGlass.log"
         If (!$ImageGlassV) {
             $ImageGlassV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ImageGlass"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $ImageGlassInstaller = "ImageGlass_" + "$ArchitectureClear" + ".msi"
+        $ImageGlassInstaller = "ImageGlass_" + "$ImageGlassArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ImageGlassInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $ImageGlassArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $ImageGlassV"
         If ($ImageGlassV -lt $Version) {
@@ -8452,11 +9603,11 @@ If ($download -eq $False) {
                 "/i"
                 "`"$InstallMSI`""
                 "/QUIET"
-                "/L* $ChromeLog"
+                "/L* $ImageGlassLog"
                 "/NORESTART"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $ImageGlassArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Get-Content $ImageGlassLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $ImageGlassLog
@@ -8478,14 +9629,14 @@ If ($download -eq $False) {
     If ($IrfanView -eq 1) {
         $Product = "IrfanView"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$IrfanViewArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$IrfanViewV) {
             $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $IrfanViewInstaller = "IrfanView" + "$ArchitectureClear" +".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $IrfanViewInstaller = "IrfanView" + "$IrfanViewArchitectureClear" +".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $IrfanViewArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $IrfanViewV"
         If ($IrfanViewV -lt $Version) {
@@ -8499,40 +9650,38 @@ If ($download -eq $False) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $IrfanViewArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$IrfanViewInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $IrfanViewArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
-            If ($LanguageClear -ne "English") {
-                If ($LanguageClear -ne "Norwegian") {
-                    Write-Host "Copy $Product language pack $LanguageClear"
-                    Switch ($ArchitectureClear) {
-                        x64 { 
-                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
-                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
-                            }
-                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
-                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
-                            }
+            If ($IrfanViewLanguageLongClear -ne "English") {
+                Write-Host "Copy $Product language pack $IrfanViewLanguageLongClear"
+                Switch ($IrfanViewArchitectureClear) {
+                    x64 { 
+                        If (Test-Path -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\Languages\*.lng") {
+                            Move-Item -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\Languages\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
                         }
-                        x86 {
-                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*.lng") {
-                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\Languages\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
-                            }
-                            If (Test-Path -Path "$PSScriptRoot\$Product\$LanguageClear\*.lng") {
-                                Move-Item -Path "$PSScriptRoot\$Product\$LanguageClear\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
-                            }
+                        If (Test-Path -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\*.lng") {
+                            Move-Item -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\*" -Destination "$Env:ProgramFiles\IrfanView\Languages" -ErrorAction SilentlyContinue
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\$LanguageClear"
-                    Write-Host -ForegroundColor Green "Copy $Product language pack $LanguageClear finished!"
+                    x86 {
+                        If (Test-Path -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\Languages\*.lng") {
+                            Move-Item -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\Languages\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                        }
+                        If (Test-Path -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\*.lng") {
+                            Move-Item -Path "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear\*" -Destination "${Env:ProgramFiles(x86)}\IrfanView\Languages" -ErrorAction SilentlyContinue
+                        }
+                    }
                 }
+                Remove-Item "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear"
+                Write-Host -ForegroundColor Green "Copy $Product language pack $IrfanViewLanguageLongClear finished!"
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
