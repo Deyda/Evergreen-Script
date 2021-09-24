@@ -94,7 +94,7 @@ the script checks the version number and will update the package.
   2021-09-21        Add new GUI with second page / Add new variables from second page
   2021-09-22        Change 7 Zip and Adobe Reader DC to new variables
   2021-09-23        Change disable update task for Adobe Acrobat Reader DC, Pro and Google Chrome / Change Citrix Hypervisor, ControlUp Agent, Foxit PDF Editor, Foxit Reader, Git for Windows, Google Chrome, ImageGlass, IrfanView and deviceTRUST to new variables
-  2021-09-24        Change KeePass, Microsoft .Net Framework, Microsoft 365 Apps, Microsoft AVD Remote Desktop and Microsoft Edge to new variables
+  2021-09-24        Change KeePass, Microsoft .Net Framework, Microsoft 365 Apps, Microsoft AVD Remote Desktop Microsoft FSLogix, Microsoft Office 2019 and Microsoft Edge to new variables
 
 .PARAMETER list
 
@@ -1574,30 +1574,30 @@ $inputXML = @"
                     <ListBoxItem Content="Swedish"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="14,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="Danish"/>
                     <ListBoxItem Content="Dutch"/>
@@ -1616,13 +1616,13 @@ $inputXML = @"
                     <ListBoxItem Content="Swedish"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
                 <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1">
+                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
@@ -7144,7 +7144,7 @@ If ($install -eq $False) {
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Version_"+ "$MSFSLogixChannelClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $MSFSLogixChannelClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7154,16 +7154,15 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\$MSFSLogixChannelClear\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $MSFSLogixChannelClear $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\$MSFSLogixChannelClear" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\Install\" + ($Source))
             expand-archive -path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -destinationpath "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
             Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -Force
-            Switch ($Architecture) {
-                1 {
+            Switch ($MSFSLogixArchitectureClear) {
+                x86 {
                     Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Win32\Release\*" -Destination "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
                 }
-                0 {
+                x64 {
                     Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\x64\Release\*" -Destination "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
                 }
             }
@@ -7241,7 +7240,7 @@ If ($install -eq $False) {
                     $XML.appendChild($Root) | out-null
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("OfficeClientEdition","$MSOffice2019ArchitectureClear")
                     $Node1.SetAttribute("Channel","PerpetualVL2019")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","ProPlus2019Volume")
@@ -7249,7 +7248,7 @@ If ($install -eq $False) {
                     $Node3.SetAttribute("ID","MatchOS")
                     $Node3.SetAttribute("Fallback","en-us")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                    $Node3.SetAttribute("ID","$MSOffice2019LanguageClear")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                     $Node3.SetAttribute("ID","Teams")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -7282,7 +7281,7 @@ If ($install -eq $False) {
                     $XML.appendChild($Root) | out-null
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                     $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                    $Node1.SetAttribute("OfficeClientEdition","$MS365AppsArchitectureClear")
+                    $Node1.SetAttribute("OfficeClientEdition","$MSOffice2019ArchitectureClear")
                     $Node1.SetAttribute("Channel","PerpetualVL2019")
                 [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                     $Node2.SetAttribute("ID","ProPlus2019Volume")
@@ -7290,7 +7289,7 @@ If ($install -eq $False) {
                     $Node3.SetAttribute("ID","MatchOS")
                     $Node3.SetAttribute("Fallback","en-us")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                    $Node3.SetAttribute("ID","$MS365AppsLanguageClear")
+                    $Node3.SetAttribute("ID","$MSOffice2019LanguageClear")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                     $Node3.SetAttribute("ID","Teams")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -7325,12 +7324,11 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version setup file"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Output ""
             $PackageNameP = "admintemplates-office"
-            $MSOffice2019PD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+            $MSOffice2019PD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$MSOffice2019ArchitectureClear"}
             $Version = $MSOffice2019PD.Version
             $URL = $MSOffice2019PD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
@@ -10560,7 +10558,7 @@ If ($download -eq $False) {
         If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}) {
             $UninstallFSLRE = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}).UninstallString.replace("/uninstall","")
         }
-        Write-Host -ForegroundColor Magenta "Install $Product $MSFSLogixChannelClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSFSLogixV"
         If ($MSFSLogixV -lt $Version) {
@@ -10588,15 +10586,15 @@ If ($download -eq $False) {
             }
             # FSLogix Install
             Try {
-                Write-Host "Starting install of $Product $MSFSLogixChannelClear $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
-                Write-Host -ForegroundColor Green "Install $Product $MSFSLogixChannelClear $ArchitectureClear finished!"
-                Write-Host "Starting install of $Product Rule Editor $MSFSLogixChannelClear $ArchitectureClear $Version"
+                Write-Host -ForegroundColor Green "Install $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear finished!"
+                Write-Host "Starting install of $Product Rule Editor $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
-                Write-Host -ForegroundColor Green "Install $Product Rule Editor $MSFSLogixChannelClear $ArchitectureClear finished!"
+                Write-Host -ForegroundColor Green "Install $Product Rule Editor $MSFSLogixChannelClear $MSFSLogixArchitectureClear finished!"
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             Try {
@@ -10673,7 +10671,7 @@ If ($download -eq $False) {
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
         }
