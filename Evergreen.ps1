@@ -95,6 +95,8 @@ the script checks the version number and will update the package.
   2021-09-22        Change 7 Zip and Adobe Reader DC to new variables
   2021-09-23        Change disable update task for Adobe Acrobat Reader DC, Pro and Google Chrome / Change Citrix Hypervisor, ControlUp Agent, Foxit PDF Editor, Foxit Reader, Git for Windows, Google Chrome, ImageGlass, IrfanView and deviceTRUST to new variables
   2021-09-24        Change KeePass, Microsoft .Net Framework, Microsoft 365 Apps, Microsoft AVD Remote Desktop Microsoft FSLogix, Microsoft Office 2019 and Microsoft Edge to new variables
+  2021-09-25        Change Microsoft Power BI Desktop, Microsoft PowerShell Microsoft SQL Server Management Studio, Microsoft Visual Studio Code, Mozilla Firefox, Notepad ++, openJDK, OracleJava8 and Microsoft Teams to new variables
+  2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download
 
 .PARAMETER list
 
@@ -426,14 +428,14 @@ Function Get-MicrosoftTeamsUser() {
 
         $PSObjectx86dev = [PSCustomObject] @{
             Version      = $appVersionx86dev
-            Ring         = "Developer"
+            Ring         = "Continuous Deployment"
             Architecture = "x86"
             URI          = $appx86URLdev
         }
 
         $PSObjectx64dev = [PSCustomObject] @{
             Version      = $appVersionx64dev
-            Ring         = "Developer"
+            Ring         = "Continuous Deployment"
             Architecture = "x64"
             URI          = $appx64URLdev
         }
@@ -1275,7 +1277,7 @@ $inputXML = @"
                 <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
                 <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,178,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
                 <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,175,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
-                    <ListBoxItem Content="Developer Ring"/>
+                    <ListBoxItem Content="Continuous Deployment Ring"/>
                     <ListBoxItem Content="Exploration Ring"/>
                     <ListBoxItem Content="Preview Ring"/>
                     <ListBoxItem Content="General Ring"/>
@@ -5171,7 +5173,7 @@ Else {
 }
 
 Switch ($MSTeamsRing) {
-    0 { $MSTeamsRingClear = 'Developer'}
+    0 { $MSTeamsRingClear = 'Continuous Deployment'}
     1 { $MSTeamsRingClear = 'Exploration'}
     2 { $MSTeamsRingClear = 'Preview'}
     3 { $MSTeamsRingClear = 'General'}
@@ -5181,6 +5183,16 @@ Switch ($MSVisualStudioEdition) {
     0 { $MSVisualStudioEditionClear = 'Enterprise'}
     1 { $MSVisualStudioEditionClear = 'Professional'}
     2 { $MSVisualStudioEditionClear = 'Community'}
+}
+
+If ($MSVisualStudioCode_Architecture -ne "") {
+    Switch ($MSVisualStudioCode_Architecture) {
+        1 { $MSVisualStudioCodeArchitectureClear = 'x86'}
+        2 { $MSVisualStudioCodeArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $MSVisualStudioCodeArchitectureClear = $ArchitectureClear
 }
 
 If ($Machine -eq 0) {
@@ -5352,6 +5364,56 @@ If ($SumatraPDF_Architecture -ne "") {
 }
 Else {
     $SumatraPDFArchitectureClear = $ArchitectureClear
+}
+
+If ($TechSmithSnagIt_Architecture -ne "") {
+    Switch ($TechSmithSnagIt_Architecture) {
+        1 { $TechSmithSnagItArchitectureClear = 'x86'}
+        2 { $TechSmithSnagItArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $TechSmithSnagItArchitectureClear = $ArchitectureClear
+}
+
+If ($VLCPlayer_Architecture -ne "") {
+    Switch ($VLCPlayer_Architecture) {
+        1 { $VLCPlayerArchitectureClear = 'x86'}
+        2 { $VLCPlayerArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $VLCPlayerArchitectureClear = $ArchitectureClear
+}
+
+If ($VMWareTools_Architecture -ne "") {
+    Switch ($VMWareTools_Architecture) {
+        1 { $VMWareToolsArchitectureClear = 'x86'}
+        2 { $VMWareToolsArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $VMWareToolsArchitectureClear = $ArchitectureClear
+}
+
+If ($WinMerge_Architecture -ne "") {
+    Switch ($WinMerge_Architecture) {
+        1 { $WinMergeArchitectureClear = 'x86'}
+        2 { $WinMergeArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $WinMergeArchitectureClear = $ArchitectureClear
+}
+
+If ($Wireshark_Architecture -ne "") {
+    Switch ($Wireshark_Architecture) {
+        1 { $WiresharkArchitectureClear = 'x86'}
+        2 { $WiresharkArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $WiresharkArchitectureClear = $ArchitectureClear
 }
 
 Write-Host -ForegroundColor Green "Software selection done."
@@ -6716,6 +6778,42 @@ If ($install -eq $False) {
                     $Node3.SetAttribute("ID","Groove")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                     $Node3.SetAttribute("ID","OneDrive")
+                If ($MS365Apps_Visio -eq '1') {
+                    Write-Host "Add Microsoft Visio to install.xml for Virtual Machine"
+                    [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","VisioProRetail")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","MatchOS")
+                        $Node3.SetAttribute("Fallback","en-us")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","$MS365AppsVisioLanguageClear")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Teams")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Lync")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Groove")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","OneDrive")
+                }
+                If ($MS365Apps_Project -eq '1') {
+                    Write-Host "Add Microsoft Project to install.xml for Virtual Machine"
+                    [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","VisioProRetail")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","MatchOS")
+                        $Node3.SetAttribute("Fallback","en-us")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","$MS365AppsProjectLanguageClear")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Teams")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Lync")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Groove")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","OneDrive")
+                }
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
                     $Node1.SetAttribute("Level","None")
                     $Node1.SetAttribute("AcceptEULA","TRUE")
@@ -6757,6 +6855,42 @@ If ($install -eq $False) {
                     $Node3.SetAttribute("ID","Groove")
                 [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                     $Node3.SetAttribute("ID","OneDrive")
+                If ($MS365Apps_Visio -eq '1') {
+                    Write-Host "Add Microsoft Visio to install.xml for Physical Machine"
+                    [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","VisioProRetail")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","MatchOS")
+                        $Node3.SetAttribute("Fallback","en-us")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","$MS365AppsVisioLanguageClear")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Teams")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Lync")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Groove")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","OneDrive")
+                }
+                If ($MS365Apps_Project -eq '1') {
+                    Write-Host "Add Microsoft Project to install.xml for Physical Machine"
+                    [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","ProjectProRetail")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","MatchOS")
+                        $Node3.SetAttribute("Fallback","en-us")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                        $Node3.SetAttribute("ID","$MS365AppsProjectLanguageClear")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Teams")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Lync")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","Groove")
+                    [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                        $Node3.SetAttribute("ID","OneDrive")
+                }
                 [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
                     $Node1.SetAttribute("Level","None")
                     $Node1.SetAttribute("AcceptEULA","TRUE")
@@ -7394,16 +7528,16 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft Power BI Desktop
     If ($MSPowerBIDesktop -eq 1) {
         $Product = "Microsoft Power BI Desktop"
-        $PackageName = "PBIDesktopSetup_" + "$ArchitectureClear"
-        $MSPowerBIDesktopD = Get-NevergreenApp -Name MicrosoftPowerBIDesktop | Where-Object { $_.Architecture -eq "$ArchitectureClear"}
+        $PackageName = "PBIDesktopSetup_" + "$MSPowerBIDesktopArchitectureClear"
+        $MSPowerBIDesktopD = Get-NevergreenApp -Name MicrosoftPowerBIDesktop | Where-Object { $_.Architecture -eq "$MSPowerBIDesktopArchitectureClear"}
         $Version = $MSPowerBIDesktopD.Version
         $URL = $MSPowerBIDesktopD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerBIDesktopArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSPowerBIDesktopArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7413,9 +7547,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $MSPowerBIDesktopArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7465,16 +7598,16 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft PowerShell
     If ($MSPowerShell -eq 1) {
         $Product = "Microsoft PowerShell"
-        $PackageName = "PowerShell" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear"
-        $MSPowershellD = Get-EvergreenApp -Name MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
+        $PackageName = "PowerShell" + "$MSPowerShellArchitectureClear" + "_$MSPowerShellReleaseClear"
+        $MSPowershellD = Get-EvergreenApp -Name MicrosoftPowerShell | Where-Object {$_.Architecture -eq "$MSPowerShellArchitectureClear" -and $_.Release -eq "$MSPowerShellReleaseClear"}
         $Version = $MSPowershellD.Version
         $URL = $MSPowershellD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerShellArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
         $CurrentVersion = Get-Content -Path $VersionPath -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSPowerShellReleaseClear Release"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSPowerShellArchitectureClear $MSPowerShellReleaseClear Release"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7484,9 +7617,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $MSPowerShellReleaseClear Release $Version"
+            Write-Host "Starting download of $Product $MSPowerShellArchitectureClear $MSPowerShellReleaseClear Release $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7608,14 +7740,14 @@ If ($install -eq $False) {
 
     #// Mark: Download Microsoft Teams
     If ($MSTeams -eq 1) {
-        $PackageName = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
+        $PackageName = "Teams_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear"
         If ($Machine -eq '0') {
             $Product = "Microsoft Teams Machine Based"
-            If ($MSTeamsRingClear -eq 'Developer' -or $MSTeamsRingClear -eq 'Exploration') {
-                $TeamsD = Get-MicrosoftTeamsDevBeta | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" }
+            If ($MSTeamsRingClear -eq 'Continuous Deployment' -or $MSTeamsRingClear -eq 'Exploration') {
+                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" }
             }
             Else {
-                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             }
             $Version = $TeamsD.Version
             $TeamsSplit = $Version.split(".")
@@ -7629,7 +7761,7 @@ If ($install -eq $False) {
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
             $Source = "$PackageName" + "." + "$InstallerType"
-            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
             If ($CurrentVersion) {
                 $CurrentTeamsSplit = $CurrentVersion.split(".")
@@ -7640,7 +7772,7 @@ If ($install -eq $False) {
                 }
                 $NewCurrentVersion = $CurrentTeamsSplit[0] + "." + $CurrentTeamsSplit[1] + "." + $CurrentTeamsSplit[2] + "." + $CurrentTeamsSplit[3]
             }
-            Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host -ForegroundColor Magenta "Download $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $CurrentVersion"
             If ($NewCurrentVersion -lt $NewVersion) {
@@ -7650,9 +7782,8 @@ If ($install -eq $False) {
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
-                Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                Write-Host "Starting download of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7665,15 +7796,15 @@ If ($install -eq $False) {
         }
         If ($Machine -eq '1') {
             $Product = "Microsoft Teams User Based"
-            $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+            $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             $Version = $TeamsD.Version
             $URL = $TeamsD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "exe"
             $Source = "$PackageName" + "." + "$InstallerType"
-            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-            Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host -ForegroundColor Magenta "Download $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $CurrentVersion"
             If ($CurrentVersion -lt $Version) {
@@ -7683,9 +7814,8 @@ If ($install -eq $False) {
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
-                Write-Host "Starting download of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                Write-Host "Starting download of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7722,7 +7852,6 @@ If ($install -eq $False) {
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7738,7 +7867,7 @@ If ($install -eq $False) {
     If ($MSVisualStudioCode -eq 1) {
         $Product = "Microsoft Visual Studio Code"
         $PackageName = "VSCode-Setup-"
-        $MSVisualStudioCodeD = Get-EvergreenApp -Name MicrosoftVisualStudioCode | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$MSVisualStudioCodeChannelClear" -and $_.Platform -eq "$MSVisualStudioCodePlatformClear"}
+        $MSVisualStudioCodeD = Get-EvergreenApp -Name MicrosoftVisualStudioCode | Where-Object { $_.Architecture -eq "$MSVisualStudioCodeArchitectureClear" -and $_.Channel -eq "$MSVisualStudioCodeChannelClear" -and $_.Platform -eq "$MSVisualStudioCodePlatformClear"}
         $Version = $MSVisualStudioCodeD.Version
         $URL = $MSVisualStudioCodeD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -7746,7 +7875,7 @@ If ($install -eq $False) {
         $Source = "$PackageName" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7756,9 +7885,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear $Version"
+            Write-Host "Starting download of $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7773,16 +7901,16 @@ If ($install -eq $False) {
     #// Mark: Download Mozilla Firefox
     If ($Firefox -eq 1) {
         $Product = "Mozilla Firefox"
-        $PackageName = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear"
-        $FirefoxD = Get-EvergreenApp -Name MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
+        $PackageName = "Firefox_Setup_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "_$FFLanguageClear"
+        $FirefoxD = Get-EvergreenApp -Name MozillaFirefox | Where-Object { $_.Type -eq "msi" -and $_.Architecture -eq "$FirefoxArchitectureClear" -and $_.Channel -like "*$FirefoxChannelClear*" -and $_.Language -eq "$FFLanguageClear"}
         $Version = $FirefoxD.Version
         $URL = $FirefoxD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "$FFLanguageClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7792,9 +7920,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear $Version"
+            Write-Host "Starting download of $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7949,18 +8076,16 @@ If ($install -eq $False) {
     #// Mark: Download Notepad ++
     If ($NotePadPlusPlus -eq 1) {
         $Product = "NotePadPlusPlus"
-        $PackageName = "NotePadPlusPlus_" + "$ArchitectureClear"
-        $NotepadD = Get-EvergreenApp -Name NotepadPlusPlus | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe" }
+        $PackageName = "NotePadPlusPlus_" + "$NotepadPlusPlusArchitectureClear"
+        $NotepadD = Get-EvergreenApp -Name NotepadPlusPlus | Where-Object { $_.Architecture -eq "$NotepadPlusPlusArchitectureClear" -and $_.Type -eq "exe" }
         $Version = $NotepadD.Version
-        #$VersionSplit = $Version.split("v")
-        #$Version = $VersionSplit[1]
         $URL = $NotepadD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$NotepadPlusPlusArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $NotepadPlusPlusArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -7970,9 +8095,8 @@ If ($install -eq $False) {
             Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $NotepadPlusPlusArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -7987,16 +8111,16 @@ If ($install -eq $False) {
     #// Mark: Download openJDK
     If ($OpenJDK -eq 1) {
         $Product = "open JDK"
-        $PackageName = "OpenJDK" + "$ArchitectureClear"
-        $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $PackageName = "OpenJDK" + "$openJDKArchitectureClear"
+        $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitectureClear" -and $_.URI -like "*msi*" } | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $OpenJDKD.Version
         $URL = $OpenJDKD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $openJDKArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8006,9 +8130,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $openJDKArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8023,16 +8146,16 @@ If ($install -eq $False) {
     #// Mark: Download OracleJava8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
-        $PackageName = "OracleJava8_" + "$ArchitectureClear"
-        $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "OracleJava8_" + "$OracleJava8ArchitectureClear"
+        $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$OracleJava8ArchitectureClear" }
         $Version = $OracleJava8D.Version
         $URL = $OracleJava8D.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OracleJava8ArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $OracleJava8ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8042,9 +8165,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $OracleJava8ArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8097,16 +8219,16 @@ If ($install -eq $False) {
     #// Mark: Download PeaZip
     If ($PeaZip -eq 1) {
         $Product = "PeaZip"
-        $PackageName = "PeaZip" + "$ArchitectureClear"
-        $PeaZipD = Get-EvergreenApp -Name PeaZipPeaZip | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe"}
+        $PackageName = "PeaZip" + "$PeaZipArchitectureClear"
+        $PeaZipD = Get-EvergreenApp -Name PeaZipPeaZip | Where-Object {$_.Architecture -eq "$PeaZipArchitectureClear" -and $_.Type -eq "exe"}
         $Version = $PeaZipD.Version
         $URL = $PeaZipD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PeaZipArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $PeaZipArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8116,9 +8238,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $PeaZipArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8133,16 +8254,16 @@ If ($install -eq $False) {
     #// Mark: Download PuTTY
     If ($Putty -eq 1) {
         $Product = "PuTTY"
-        $PackageName = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear"
-        $PuTTYD = Get-Putty | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Channel -eq "$PuttyChannelClear"}
+        $PackageName = "PuTTY-" + "$PuTTYArchitectureClear" + "-$PuttyChannelClear"
+        $PuTTYD = Get-Putty | Where-Object { $_.Architecture -eq "$PuTTYArchitectureClear" -and $_.Channel -eq "$PuttyChannelClear"}
         $Version = $PuTTYD.Version
         $URL = $PuTTYD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PuTTYArchitectureClear" + "_$PuttyChannelClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $PuttyChannelClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $PuttyChannelClear $PuTTYArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8152,9 +8273,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $PuttyChannelClear $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $PuttyChannelClear $PuTTYArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8194,7 +8314,6 @@ If ($install -eq $False) {
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Host "Starting download of $Product $Version"
                     Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                    #Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                     Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8230,7 +8349,6 @@ If ($install -eq $False) {
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Host "Starting download of $Product $Version"
                     Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                    #Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                     Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8267,7 +8385,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8302,7 +8419,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8317,7 +8433,7 @@ If ($install -eq $False) {
     #// Mark: Download Slack
     If ($Slack -eq 1) {
         $Product = "Slack"
-        $PackageName = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear"
+        $PackageName = "Slack.setup" + "_$SlackArchitectureClear" + "_$SlackPlatformClear"
         $SlackD = Get-EvergreenApp -Name Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
         $Version = $SlackD.Version
         $URL = $SlackD.uri
@@ -8338,7 +8454,6 @@ If ($install -eq $False) {
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $SlackArchitectureClear $SlackPlatformClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8353,16 +8468,22 @@ If ($install -eq $False) {
     #// Mark: Download Sumatra PDF
     If ($SumatraPDF -eq 1) {
         $Product = "Sumatra PDF"
-        $PackageName = "SumatraPDF-Install-" + "$ArchitectureClear"
-        $SumatraPDFD = Get-EvergreenApp -Name SumatraPDFReader | Where-Object {$_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "SumatraPDF-Install-" + "$SumatraPDFArchitectureClear"
+        $SumatraPDFD = Get-EvergreenApp -Name SumatraPDFReader | Where-Object {$_.Architecture -eq "$SumatraPDFArchitectureClear" }
         $Version = $SumatraPDFD.Version
-        $URL = $SumatraPDFD.uri
+        #$URL = $SumatraPDFD.uri
+        If ($SumatraPDFArchitectureClear -eq 'x86') {
+            $URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-" + "$Version" + "-install.exe"
+        }
+        If ($SumatraPDFArchitectureClear -eq 'x86') {
+            $URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-" + "$Version" + "-64-install.exe"
+        }
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SumatraPDFArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $SumatraPDFArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8372,9 +8493,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $SumatraPDFArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8459,16 +8579,16 @@ If ($install -eq $False) {
     #// Mark: Download TechSmith Snagit
     If ($TechSmithSnagit -eq 1) {
         $Product = "TechSmith Snagit"
-        $PackageName = "snagit-setup" + "_$ArchitectureClear"
-        $TechSmithSnagitD = Get-EvergreenApp -Name TechSmithSnagit | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "msi" }
+        $PackageName = "snagit-setup" + "_$TechSmithSnagItArchitectureClear"
+        $TechSmithSnagitD = Get-EvergreenApp -Name TechSmithSnagit | Where-Object { $_.Architecture -eq "$TechSmithSnagItArchitectureClear" -and $_.Type -eq "msi" }
         $Version = $TechSmithSnagitD.Version
         $URL = $TechSmithSnagitD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$TechSmithSnagItArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $TechSmithSnagItArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8478,9 +8598,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $TechSmithSnagItArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8517,7 +8636,6 @@ If ($install -eq $False) {
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Host "Starting download of $Product $Version"
                     Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                    #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                     Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8550,7 +8668,6 @@ If ($install -eq $False) {
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                     Write-Host "Starting download of $Product $Version"
                     Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                    #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                     Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8587,7 +8704,6 @@ If ($install -eq $False) {
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
-            #Get-Download $URL "$PSScriptRoot\$Product" $Source -includeStats
             Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             expand-archive -path "$PSScriptRoot\$Product\$Source" -destinationpath "$PSScriptRoot\$Product"
             Remove-Item -Path "$PSScriptRoot\$Product\$Source" -Force
@@ -8619,16 +8735,16 @@ If ($install -eq $False) {
     #// Mark: Download VLC Player
     If ($VLCPlayer -eq 1) {
         $Product = "VLC Player"
-        $PackageName = "VLC-Player_" + "$ArchitectureClear"
-        $VLCD = Get-EvergreenApp -Name VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "MSI" }
+        $PackageName = "VLC-Player_" + "$VLCPlayerArchitectureClear"
+        $VLCD = Get-EvergreenApp -Name VideoLanVlcPlayer | Where-Object { $_.Platform -eq "Windows" -and $_.Architecture -eq "$VLCPlayerArchitectureClear" -and $_.Type -eq "MSI" }
         $Version = $VLCD.Version
         $URL = $VLCD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$VLCPlayerArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $VLCPlayerArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8638,9 +8754,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $VLCPlayerArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8655,16 +8770,16 @@ If ($install -eq $False) {
     #// Mark: Download VMWareTools
     If ($VMWareTools -eq 1) {
         $Product = "VMWare Tools"
-        $PackageName = "VMWareTools_" + "$ArchitectureClear"
-        $VMWareToolsD = Get-EvergreenApp -Name VMwareTools | Where-Object { $_.Architecture -eq "$ArchitectureClear" }
+        $PackageName = "VMWareTools_" + "$VMWareToolsArchitectureClear"
+        $VMWareToolsD = Get-EvergreenApp -Name VMwareTools | Where-Object { $_.Architecture -eq "$VMWareToolsArchitectureClear" }
         $Version = $VMWareToolsD.Version
         $URL = $VMWareToolsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$VMWareToolsArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $VMWareToolsArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8674,9 +8789,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $VMWareToolsArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8691,16 +8805,16 @@ If ($install -eq $False) {
     #// Mark: Download WinMerge
     If ($WinMerge -eq 1) {
         $Product = "WinMerge"
-        $PackageName = "WinMerge_" + "$ArchitectureClear"
-        $WinMergeD = Get-EvergreenApp -Name WinMerge | Where-Object {$_.Architecture -eq "$ArchitectureClear" -and $_.URI -notlike "*PerUser*"}
+        $PackageName = "WinMerge_" + "$WinMergeArchitectureClear"
+        $WinMergeD = Get-EvergreenApp -Name WinMerge | Where-Object {$_.Architecture -eq "$WinMergeArchitectureClear" -and $_.URI -notlike "*PerUser*"}
         $Version = $WinMergeD.Version
         $URL = $WinMergeD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$WinMergeArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $WinMergeArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8710,7 +8824,7 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $WinMergeArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
@@ -8746,7 +8860,6 @@ If ($install -eq $False) {
             Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
             Write-Host "Starting download of $Product $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8761,16 +8874,16 @@ If ($install -eq $False) {
     #// Mark: Download Wireshark
     If ($Wireshark -eq 1) {
         $Product = "Wireshark"
-        $PackageName = "Wireshark-" + "$ArchitectureClear"
-        $WiresharkD = Get-EvergreenApp -Name Wireshark | Where-Object { $_.Architecture -eq "$ArchitectureClear" -and $_.Type -eq "exe"}
+        $PackageName = "Wireshark-" + "$WiresharkArchitectureClear"
+        $WiresharkD = Get-EvergreenApp -Name Wireshark | Where-Object { $_.Architecture -eq "$WiresharkArchitectureClear" -and $_.Type -eq "exe"}
         $Version = $WiresharkD.Version
         $URL = $WiresharkD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$WiresharkArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
-        Write-Host -ForegroundColor Magenta "Download $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Download $Product $WiresharkArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
         If ($CurrentVersion -lt $Version) {
@@ -8780,9 +8893,8 @@ If ($install -eq $False) {
             Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             Start-Transcript $LogPS | Out-Null
             Set-Content -Path "$VersionPath" -Value "$Version"
-            Write-Host "Starting download of $Product $ArchitectureClear $Version"
+            Write-Host "Starting download of $Product $WiresharkArchitectureClear $Version"
             Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-            #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
             Write-Verbose "Stop logging"
             Stop-Transcript | Out-Null
             Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8821,7 +8933,6 @@ If ($install -eq $False) {
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                 Write-Host "Starting download of $Product $Version"
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8881,7 +8992,6 @@ If ($install -eq $False) {
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
                 Write-Host "Starting download of $Product $Version"
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -8939,7 +9049,6 @@ If ($install -eq $False) {
                 Set-Content -Path "$PSScriptRoot\$Product2\Version.txt" -Value "$Version"
                 Write-Host "Starting download of $Product2 $Version"
                 Get-Download $URL "$PSScriptRoot\$Product2\" $Source2 -includeStats
-                #Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product2\" + ($Source2))
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
@@ -10072,7 +10181,7 @@ If ($download -eq $False) {
                         }
                     }
                 }
-                Remove-Item "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear"
+                Remove-Item "$PSScriptRoot\$Product\$IrfanViewLanguageLongClear" -Recurse
                 Write-Host -ForegroundColor Green "Copy $Product language pack $IrfanViewLanguageLongClear finished!"
             }
             DS_WriteLog "-" "" $LogFile
@@ -10893,18 +11002,18 @@ If ($download -eq $False) {
     If ($MSPowerBIDesktop -eq 1) {
         $Product = "Microsoft Power BI Desktop"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerBIDesktopArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath" -EA SilentlyContinue
         $MSPowerBIDesktopV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft PowerBI Desktop*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerBIDesktopV) {
             $MSPowerBIDesktopV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft PowerBI Desktop*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $MSPowerBIDesktopInstaller = "PBIDesktopSetup_" + "$ArchitectureClear"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $MSPowerBIDesktopInstaller = "PBIDesktopSetup_" + "$MSPowerBIDesktopArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSPowerBIDesktopArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSPowerBIDesktopV"
         If ($MSPowerBIDesktopV -ne $Version) {
-            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $MSPowerBIDesktopArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "-quiet"
@@ -10912,7 +11021,7 @@ If ($download -eq $False) {
                 "ACCEPT_EULA=1 INSTALLDESKTOPSHORTCUT=0 ENABLECXP=0"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $MSPowerBIDesktopArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSPowerBIDesktopInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 If ($inst) {
                     Wait-Process -InputObject $inst
@@ -10985,7 +11094,7 @@ If ($download -eq $False) {
     If ($MSPowerShell -eq 1) {
         $Product = "Microsoft PowerShell"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerShellArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerShellV) {
@@ -10993,9 +11102,9 @@ If ($download -eq $False) {
         }
         If ($MSPowerShellV) {$MSPowerShellV = $MSPowerShellV -replace ".{2}$"}
         $MSPowerShellLog = "$LogTemp\MSPowerShell.log"
-        $MSPowerShellInstaller = "PowerShell" + "$ArchitectureClear" + "_$MSPowerShellReleaseClear" + ".msi"
+        $MSPowerShellInstaller = "PowerShell" + "$MSPowerShellArchitectureClear" + "_$MSPowerShellReleaseClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$MSPowerShellInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSPowerShellReleaseClear Release"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSPowerShellArchitectureClear $MSPowerShellReleaseClear Release"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSPowerShellV"
         If ($MSPowerShellV -ne $Version) {
@@ -11009,7 +11118,7 @@ If ($download -eq $False) {
                 "/L*V $MSPowerShellLog"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $MSPowerShellReleaseClear Release $Version"
+                Write-Host "Starting install of $Product $MSPowerShellArchitectureClear $MSPowerShellReleaseClear Release $Version"
                 Install-MSI $InstallMSI $Arguments
                 Start-Sleep 25
                 Get-Content $MSPowerShellLog | Add-Content $LogFile -Encoding ASCI
@@ -11124,7 +11233,7 @@ If ($download -eq $False) {
         If ($Machine -eq '0') {
             $Product = "Microsoft Teams Machine Based"
             # Check, if a new version is available
-            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
             If (Test-Path -Path "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\") {
                 $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11134,11 +11243,11 @@ If ($download -eq $False) {
                     $Teams = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 }
             }
-            $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
+            $TeamsInstaller = "Teams_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".msi"
             $TeamsLog = "$LogTemp\MSTeams.log"
             $InstallMSI = "$PSScriptRoot\$Product\$TeamsInstaller"
             If ($Teams) {$Teams = $Teams.Insert(5,'0')}
-            Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            Write-Host -ForegroundColor Magenta "Install $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $Teams"
             If ($Teams -ne $Version) {
@@ -11189,7 +11298,7 @@ If ($download -eq $False) {
                     Write-Host -ForegroundColor Green "Customize System for $Product Machine-Based Install finished!"
                 }
                 Try {
-                    Write-Host "Starting install of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                    Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 5
                     Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
@@ -11239,7 +11348,7 @@ If ($download -eq $False) {
         If ($Machine -eq '1') {
             $Product = "Microsoft Teams User Based"
             # Check, if a new version is available
-            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
             $Version = Get-Content -Path "$VersionPath"
             If (Test-Path -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\") {
                 $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11249,9 +11358,9 @@ If ($download -eq $False) {
                     $Teams = (Get-ItemProperty HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 }
             }
-            $TeamsInstaller = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear" + ".exe"
-            $TeamsProcess = "Teams_" + "$ArchitectureClear" + "_$MSTeamsRingClear"
-            Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $MSTeamsRingClear Ring"
+            $TeamsInstaller = "Teams_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".exe"
+            $TeamsProcess = "Teams_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear"
+            Write-Host -ForegroundColor Magenta "Install $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $Teams"
             If ($Teams -ne $Version) {
@@ -11261,7 +11370,7 @@ If ($download -eq $False) {
                     "/s"
                 )
                 Try {
-                    Write-Host "Starting install of $Product $ArchitectureClear $MSTeamsRingClear Ring $Version"
+                    Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
                     $null = Start-Process -FilePath "$PSScriptRoot\$Product\$TeamsInstaller" -ArgumentList $Options -PassThru -NoNewWindow
                     while (Get-Process -Name $TeamsProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -11365,23 +11474,23 @@ If ($download -eq $False) {
         }
         $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "exe"
         $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear"
-        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSVisualStudioCodeV"
         If ($MSVisualStudioCodeV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
-            DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear" $LogFile
+            DS_WriteLog "I" "Install $Product $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear" $LogFile
             $Options = @(
                 "/VERYSILENT"
                 "/MERGETASKS=!runcode"
             )
             Try {
-                Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear $Version"
+                Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear $Version"
                 $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
                 while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $ArchitectureClear $MSVisualStudioCodeModeClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -11398,16 +11507,16 @@ If ($download -eq $False) {
     If ($Firefox -eq 1) {
         $Product = "Mozilla Firefox"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "$FFLanguageClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "$FFLanguageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $FirefoxV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $FirefoxLog = "$LogTemp\Firefox.log"
         If (!$FirefoxV) {
             $FirefoxV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$ArchitectureClear" + "_$FFLanguageClear" + ".msi"
+        $FirefoxInstaller = "Firefox_Setup_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "_$FFLanguageClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$FirefoxInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $FirefoxV"
         If ($FirefoxV -ne $Version) {
@@ -11421,15 +11530,15 @@ If ($download -eq $False) {
                 "PREVENT_REBOOT_REQUIRED=true"
                 "/L*V $FirefoxLog"
             )
-            DS_WriteLog "I" "Install $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear" $LogFile
+            DS_WriteLog "I" "Install $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
-                Write-Host "Starting install of $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear $Version"
+                Write-Host "Starting install of $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Get-Content $FirefoxLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $FirefoxLog
             } Catch {
-                DS_WriteLog "E" "Error installing $Product $FirefoxChannelClear $ArchitectureClear $FFLanguageClear (Error: $($Error[0]))" $LogFile
+                DS_WriteLog "E" "Error installing $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11527,23 +11636,23 @@ If ($download -eq $False) {
     If ($NotePadPlusPlus -eq 1) {
         $Product = "NotepadPlusPlus"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$NotepadPlusPlusArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Notepad) {
             $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $NotepadPlusPlusInstaller = "NotePadPlusPlus_" + "$ArchitectureClear" + ".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $NotepadPlusPlusInstaller = "NotePadPlusPlus_" + "$NotepadPlusPlusArchitectureClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $NotepadPlusPlusArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $Notepad"
         If ($Notepad -lt $Version) {
             DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $NotepadPlusPlusArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" -ArgumentList /S -NoNewWindow
-                $p = Get-Process NotePadPlusPlus_$ArchitectureClear
+                $p = Get-Process NotePadPlusPlus_$NotepadPlusPlusArchitectureClear
 		        If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -11562,25 +11671,25 @@ If ($download -eq $False) {
         }
     }
 
-    #// Mark: Install OpenJDK
+    #// Mark: Install openJDK
     If ($OpenJDK -eq 1) {
         $Product = "open JDK"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $openJDKLog = "$LogTemp\OpenJDK.log"
         If (!$OpenJDKV) {
             $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $OpenJDKInstaller = "OpenJDK" + "$ArchitectureClear" + ".msi"
+        $OpenJDKInstaller = "OpenJDK" + "$openJDKArchitectureClear" + ".msi"
         If ($Version) {$Version = $Version -replace ".-"}
         $InstallMSI = "$PSScriptRoot\$Product\$OpenJDKInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $openJDKArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $OpenJDKV"
         If ($OpenJDKV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Installing $Product $openJDKArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11591,7 +11700,7 @@ If ($download -eq $False) {
                 "/L*V $openJDKLog"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $openJDKArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Start-Sleep 25
                 Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
@@ -11613,7 +11722,7 @@ If ($download -eq $False) {
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OracleJava8ArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$OracleJava) {
@@ -11624,26 +11733,26 @@ If ($download -eq $False) {
             $OracleJavaSplit2 = $OracleJavaSplit[2].split("0")
             $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit2[0] + "-b" + $OracleJavaSplit[3]
         }
-        $OracleJavaInstaller = "OracleJava8_" + "$ArchitectureClear" +".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $OracleJavaInstaller = "OracleJava8_" + "$OracleJava8ArchitectureClear" +".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $OracleJava8ArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $OracleJava"
         If ($OracleJava -lt $Version) {
-            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $OracleJava8ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/s INSTALL_SILENT=Enable AUTO_UPDATE=Disable REBOOT=Disable SPONSORS=Disable REMOVEOUTOFDATEJRES=1 WEB_ANALYTICS=Disable"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $OracleJava8ArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
-                $p = Get-Process OracleJava8_$ArchitectureClear
+                $p = Get-Process OracleJava8_$OracleJava8ArchitectureClear
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
             } Catch {
-                Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
+                Write-Host -ForegroundColor Red "Error installing $Product $OracleJava8ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
@@ -11706,25 +11815,25 @@ If ($download -eq $False) {
     If ($PeaZip -eq 1) {
         $Product = "PeaZip"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PeaZipArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $PeaZipV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PeaZip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$PeaZipV) {
             $PeaZipV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PeaZip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $PeaZipInstaller = "PeaZip" + "$ArchitectureClear" + ".exe"
-        $PeaZipProcess = "PeaZip" + "$ArchitectureClear"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $PeaZipInstaller = "PeaZip" + "$PeaZipArchitectureClear" + ".exe"
+        $PeaZipProcess = "PeaZip" + "$PeaZipArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $PeaZipArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $PeaZipV"
         If ($PeaZipV -lt $Version) {
-            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $PeaZipArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/VERYSILENT"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $PeaZipArchitectureClear $Version"
                 Start-Process "$PSScriptRoot\$Product\$PeaZipInstaller" -ArgumentList $Options -NoNewWindow
                 $p = Get-Process $PeaZipProcess
                 If ($p) {
@@ -11749,24 +11858,24 @@ If ($download -eq $False) {
     If ($PuTTY -eq 1) {
         $Product = "PuTTY"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$PuttyChannelClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PuTTYArchitectureClear" + "_$PuttyChannelClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $PuTTYV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $PuTTYLog = "$LogTemp\PuTTY.log"
         If (!$PuTTYV) {
             $PuTTYV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $PuTTYInstaller = "PuTTY-" + "$ArchitectureClear" + "-$PuttyChannelClear" + ".msi"
+        $PuTTYInstaller = "PuTTY-" + "$PuTTYArchitectureClear" + "-$PuttyChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$PuTTYInstaller"
         If ($PuTTYV) {
             $PuTTYV = $PuTTYV.Split("\.",3)
             $PuTTYV = $PuTTYV[0] + "." + $PuTTYV[1]
         }
-        Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $PuttyChannelClear $PuTTYArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $PuTTYV"
         If ($PuTTYV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product $PuttyChannelClear $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Installing $Product $PuttyChannelClear $PuTTYArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11775,7 +11884,7 @@ If ($download -eq $False) {
                 "/L*V $PuTTYLog"
             )
             Try {
-                Write-Host "Starting install of $Product $PuttyChannelClear $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $PuttyChannelClear $PuTTYArchitectureClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Start-Sleep 25
                 Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
@@ -11920,7 +12029,7 @@ If ($download -eq $False) {
     If ($Slack -eq 1) {
         $Product = "Slack"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + "_$SlackPlatformClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SlackArchitectureClear" + "_$SlackPlatformClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath"
         $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SlackV) {
@@ -11935,13 +12044,13 @@ If ($download -eq $False) {
             If ($SlackV.length -ne "6") {$SlackV = $SlackV -replace ".{2}$"}
         }
         $SlackLog = "$LogTemp\Slack.log"
-        $SlackInstaller = "Slack.setup" + "_$ArchitectureClear" + "_$SlackPlatformClear" + ".msi"
+        $SlackInstaller = "Slack.setup" + "_$SlackArchitectureClear" + "_$SlackPlatformClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$SlackInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear $SlackPlatformClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $SlackArchitectureClear $SlackPlatformClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $SlackV"
         If ($SlackV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear $SlackPlatformClear" $LogFile
+            DS_WriteLog "I" "Installing $Product $SlackArchitectureClear $SlackPlatformClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11951,13 +12060,13 @@ If ($download -eq $False) {
                 "/L*V $SlackLog"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $SlackPlatformClear $Version"
+                Write-Host "Starting install of $Product $SlackArchitectureClear $SlackPlatformClear $Version"
                 Install-MSI $InstallMSI $Arguments
                 Start-Sleep 25
                 Get-Content $SlackLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $SlackLog
             } Catch {
-                DS_WriteLog "E" "Error installing $Product $ArchitectureClear $SlackPlatformClear (Error: $($Error[0]))" $LogFile
+                DS_WriteLog "E" "Error installing $Product $SlackArchitectureClear $SlackPlatformClear (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11973,25 +12082,25 @@ If ($download -eq $False) {
     If ($SumatraPDF -eq 1) {
         $Product = "Sumatra PDF"
         # Check, if a new version is available
-        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SumatraPDFArchitectureClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath" -EA SilentlyContinue
         $SumatraPDFV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "SumatraPDF"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SumatraPDFV) {
             $SumatraPDFV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "SumatraPDF"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $SumatraPDFInstaller = "SumatraPDF-Install-" + "$ArchitectureClear" + ".exe"
-        Write-Host -ForegroundColor Magenta "Install $Product $ArchitectureClear"
+        $SumatraPDFInstaller = "SumatraPDF-Install-" + "$SumatraPDFArchitectureClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $SumatraPDFArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $SumatraPDFV"
         If ($SumatraPDFV -ne $Version) {
-            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $SumatraPDFArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "-quiet"
                 "-s"
             )
             Try {
-                Write-Host "Starting install of $Product $ArchitectureClear $Version"
+                Write-Host "Starting install of $Product $SumatraPDFArchitectureClear $Version"
                 $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$SumatraPDFInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 If ($inst) {
                     Wait-Process -InputObject $inst
