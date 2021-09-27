@@ -96,7 +96,7 @@ the script checks the version number and will update the package.
   2021-09-23        Change disable update task for Adobe Acrobat Reader DC, Pro and Google Chrome / Change Citrix Hypervisor, ControlUp Agent, Foxit PDF Editor, Foxit Reader, Git for Windows, Google Chrome, ImageGlass, IrfanView and deviceTRUST to new variables
   2021-09-24        Change KeePass, Microsoft .Net Framework, Microsoft 365 Apps, Microsoft AVD Remote Desktop Microsoft FSLogix, Microsoft Office 2019 and Microsoft Edge to new variables
   2021-09-25        Change Microsoft Power BI Desktop, Microsoft PowerShell Microsoft SQL Server Management Studio, Microsoft Visual Studio Code, Mozilla Firefox, Notepad ++, openJDK, OracleJava8 and Microsoft Teams to new variables
-  2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download
+  2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download / Add CleanUp Function
 
 .PARAMETER list
 
@@ -8998,13 +8998,12 @@ If ($install -eq $False) {
                 Write-Output ""
                 $PackageNameP = "ZoomADMX"
                 $ZoomDP = Get-ZoomAdmx
-                $VersionP = $ZoomDP.version
                 $URL = $ZoomDP.uri
                 Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerTypeP = "zip"
                 $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
-                $FolderP = "Zoom_" + + "$VersionP"
-                Write-Host "Starting download of $Product ADMX files $VersionP"
+                $FolderP = "Zoom_" + + "$Version"
+                Write-Host "Starting download of $Product ADMX files $Version"
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                 Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
@@ -9131,6 +9130,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install 7-ZIP
@@ -9168,6 +9173,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9222,6 +9233,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9288,6 +9305,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9361,6 +9384,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Cisco Webex Teams
@@ -9402,6 +9431,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9448,6 +9483,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Citrix Hypervisor Tools
@@ -9491,6 +9532,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9558,6 +9605,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install ControlUp Agent
@@ -9599,6 +9652,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9722,6 +9781,12 @@ If ($download -eq $False) {
                 Write-Output ""
             }
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Filezilla
@@ -9760,6 +9825,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9808,6 +9879,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Foxit Reader
@@ -9854,6 +9931,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install GIMP
@@ -9893,6 +9976,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -9937,6 +10026,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10037,6 +10132,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Greenshot
@@ -10077,6 +10178,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10122,6 +10229,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10192,6 +10305,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install KeePass
@@ -10237,6 +10356,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install LogMeIn GoToMeeting
@@ -10279,6 +10404,12 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Cyan "No update available for $Product"
                 Write-Output ""
             }
+            If ($CleanUp -eq '1') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
         }
         If ($Machine -eq '1') {
             $Product = "LogMeIn GoToMeeting"
@@ -10316,6 +10447,12 @@ If ($download -eq $False) {
             # Stop, if no new version is available
             Else {
                 Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
                 Write-Output ""
             }
         }
@@ -10360,6 +10497,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10428,6 +10571,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft AVD Remote Desktop
@@ -10469,6 +10618,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10514,6 +10669,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft Azure Data Studio
@@ -10557,6 +10718,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10646,6 +10813,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10789,6 +10962,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft Office 2019
@@ -10853,6 +11032,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -10996,6 +11181,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft Power BI Desktop
@@ -11037,6 +11228,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11088,6 +11285,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft PowerShell
@@ -11134,6 +11337,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft PowerToys
@@ -11171,6 +11380,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11224,6 +11439,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11344,6 +11565,12 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Cyan "No update available for $Product"
                 Write-Output ""
             }
+            If ($CleanUp -eq '1') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
         }
         If ($Machine -eq '1') {
             $Product = "Microsoft Teams User Based"
@@ -11404,6 +11631,12 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Cyan "No update available for $Product"
                 Write-Output ""
             }
+            If ($CleanUp -eq '1') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
         }
     }
 
@@ -11457,6 +11690,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualStudioEditionClear Edition"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Microsoft Visual Studio Code
@@ -11499,6 +11738,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11548,6 +11793,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install mRemoteNG
@@ -11591,6 +11842,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Nmap
@@ -11630,6 +11887,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Notepad ++
@@ -11667,6 +11930,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11716,6 +11985,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install OracleJava8
@@ -11761,6 +12036,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11809,6 +12090,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install PeaZip
@@ -11850,6 +12137,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -11902,6 +12195,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install Remote Desktop Manager
@@ -11942,6 +12241,12 @@ If ($download -eq $False) {
                     Write-Host -ForegroundColor Cyan "No update available for $Product"
                     Write-Output ""
                 }
+                If ($CleanUp -eq '1') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
             }
             1 {
                 $Product = "RemoteDesktopManager Enterprise"
@@ -11976,6 +12281,12 @@ If ($download -eq $False) {
                 # Stop, if no new version is available
                 Else {
                     Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                    DS_WriteLog "-" "" $LogFile
                     Write-Output ""
                 }
             }
@@ -12021,6 +12332,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12074,6 +12391,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12134,6 +12457,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install TeamViewer
@@ -12172,6 +12501,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12232,6 +12567,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install TechSmith SnagIt
@@ -12276,6 +12617,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install TreeSize
@@ -12313,6 +12660,12 @@ If ($download -eq $False) {
                     Write-Host -ForegroundColor Cyan "No update available for $Product"
                     Write-Output ""
                 }
+                If ($CleanUp -eq '1') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
             }
             1 {
                 $Product = "TreeSize Professional"
@@ -12344,6 +12697,12 @@ If ($download -eq $False) {
                 # Stop, if no new version is available
                 Else {
                     Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                    DS_WriteLog "-" "" $LogFile
                     Write-Output ""
                 }
             }
@@ -12381,6 +12740,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12428,6 +12793,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install VMWareTools
@@ -12473,6 +12844,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install WinMerge
@@ -12516,6 +12893,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
             Write-Output ""
         }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
     }
 
     #// Mark: Install WinSCP
@@ -12554,6 +12937,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12597,6 +12986,12 @@ If ($download -eq $False) {
         # Stop, if no new version is available
         Else {
             Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
             Write-Output ""
         }
     }
@@ -12729,6 +13124,12 @@ If ($download -eq $False) {
                 Write-Host -ForegroundColor Cyan "No update available for $Product"
                 Write-Output ""
             }
+        }
+        If ($CleanUp -eq '1') {
+            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
         }
     }
     If ($Machine -eq 0) {
