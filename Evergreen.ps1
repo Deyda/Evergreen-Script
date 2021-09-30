@@ -143,13 +143,13 @@ Start the GUI to select the mode (Install and/or Download) and the Software.
 Param (
     
         [Parameter(
-            HelpMessage='Only Download Software?',
+            HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
         )]
         [switch]$download,
 
         [Parameter(
-            HelpMessage='Only Install Software?',
+            HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
         )]
         [switch]$install,
@@ -161,7 +161,7 @@ Param (
         [string]$file,
     
         [Parameter(
-            HelpMessage='Start the Gui to select the Software',
+            HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
         )]
         [switch]$list
@@ -1035,36 +1035,15 @@ Else {
     Write-Output ""
     If ($file) {
         Write-Host -Foregroundcolor Red "File: $file."
-        If ($install -eq $False -and $download -eq $True) {
-            $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -download -file $file
+        $update = @'
+        Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+        Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+        & "$PSScriptRoot\evergreen.ps1" -download -file $file
 '@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
-        }
-        ElseIf ($install -eq $True -and $download -eq $False) {
-            $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -install -file $file
-'@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
-        }
-        Else {
-            $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -file $file
-'@
-            $update > $PSScriptRoot\update.ps1
-            & "$PSScriptRoot\update.ps1"
-            Break
-        }
+        $update > $PSScriptRoot\update.ps1
+        & "$PSScriptRoot\update.ps1"
+        Break
+        
     }
     Else {
         $wshell = New-Object -ComObject Wscript.Shell
@@ -1095,8 +1074,8 @@ Else {
     Break
 }
 
-Write-Host -Foregroundcolor DarkGray "Are there still pending reboots?"
-If ($list -eq $False) {
+If ($file -eq $False) {
+    Write-Host -Foregroundcolor DarkGray "Are there still pending reboots?"
     If ($PendingReboot -eq $false) {
         # OK, no pending reboot
         Write-Host -Foregroundcolor Green "OK, no pending reboot"
@@ -5635,7 +5614,7 @@ If ($install -eq $False) {
         }
     }
 
-    #// Mark: Download 7-ZIP
+    #// Mark: Download 7 Zip
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
         $PackageName = "7-Zip_" + "$7ZipArchitectureClear"
@@ -9597,7 +9576,7 @@ If ($download -eq $False) {
         }
     }
 
-    #// Mark: Install 7-ZIP
+    #// Mark: Install 7 Zip
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
         # Check, if a new version is available
