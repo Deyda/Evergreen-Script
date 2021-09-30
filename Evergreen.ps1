@@ -1,9 +1,9 @@
 #requires -version 3
 <#
 .SYNOPSIS
-Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. 
+Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. and the Nevergreen module from Dan Gough.
 .DESCRIPTION
-To update or download a software package just switch from 0 to 1 in the section "Select software" (With parameter -list) or select your Software out of the GUI.
+To update or download a software package just select a LastSetting.txt file (With parameter -file) or select your Software out of the GUI.
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
@@ -5600,7 +5600,7 @@ If ($install -eq $False) {
     If ($1Password -eq 1) {
         $Product = "1Password"
         $PackageName = "1Password-Setup"
-        $1PasswordD = Get-EvergreenApp -Name 1Password
+        $1PasswordD = Get-EvergreenApp -Name 1Password | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $1PasswordD.Version
         $URL = $1PasswordD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -8655,6 +8655,7 @@ If ($install -eq $False) {
                 $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
                 $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersion.Trim("</td>").Trim("</td>")
+                $RemoteDesktopManagerFreeD = $Version
                 $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManagerFree.$Version.msi"
                 Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "msi"
@@ -8694,6 +8695,7 @@ If ($install -eq $False) {
                 $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
                 $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersion.Trim("</td>").Trim("</td>")
+                $RemoteDesktopManagerEnterpriseD = $Version
                 $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManager.$Version.msi"
                 Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "msi"
@@ -9343,6 +9345,7 @@ If ($install -eq $False) {
             $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
             $regexAppVersion = "(\d\.\d\.\d)"
             $Version = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Sort-Object -Descending | Select-Object -First 1
+            $ZoomVersion = $Version
             $URL = $ZoomD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
@@ -9547,7 +9550,10 @@ If ($download -eq $False) {
         $Product = "1Password"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $1PasswordD.Version
+        }
         $1PasswordV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*1Password*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$1PasswordV) {
             $1PasswordV = (Get-ItemProperty HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* -ErrorAction SilentlyContinue | Where-Object {$_.DisplayName -like "*1Password*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9564,7 +9570,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$1PasswordInstaller" -ArgumentList --Silent
                 }
-                $p = Get-Process 1Password-Setup
+                $p = Get-Process 1Password-Setup -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -9596,7 +9602,10 @@ If ($download -eq $False) {
         $Product = "7-Zip"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$7ZipArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $7ZipD.Version
+        }
         $SevenZip = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SevenZip) {
             $SevenZip = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*7-Zip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9644,7 +9653,10 @@ If ($download -eq $False) {
     If ($AdobeProDC -eq 1) {
         $Product = "Adobe Pro DC"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $AdobeProD.Version
+        }
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Adobe) {
             $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Adobe Acrobat Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9716,7 +9728,10 @@ If ($download -eq $False) {
         $Product = "Adobe Reader DC"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$AdobeArchitectureClear" + "_$AdobeLanguageClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $AdobeReaderD.Version
+        }
         $Adobe = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Adobe) {
             $Adobe = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Adobe Acrobat*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9795,7 +9810,10 @@ If ($download -eq $False) {
     If ($BISF -eq 1) {
         $Product = "BIS-F"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $BISFD.Version
+        }
         $BISFV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$BISFV) {
             $BISFV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Base Image*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9881,7 +9899,10 @@ If ($download -eq $False) {
         $Product = "Cisco Webex Teams"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$CiscoWebexTeamsArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $WebexTeamsD.Version
+        }
         $CiscoWebexTeamsV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Webex"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$CiscoWebexTeamsV) {
             $CiscoWebexTeamsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Webex"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -9934,7 +9955,10 @@ If ($download -eq $False) {
         $Product = "Citrix Files"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $CitrixFilesD.Version
+        }
         $CitrixFilesV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Files*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $CitrixFilesLog = "$LogTemp\CitrixFiles.log"
         $CitrixFilesInstaller = "CitrixFilesForWindows.msi"
@@ -9988,7 +10012,10 @@ If ($download -eq $False) {
         $Product = "Citrix Hypervisor Tools"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\Citrix\$Product\Version_" + "$CitrixHypervisorToolsArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $CitrixHypervisor.Version
+        }
         $HypTools = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Hypervisor*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $CitrixHypLog = "$LogTemp\CitrixHypervisor.log"
         $HypToolsInstaller = "managementagent" + "$CitrixHypervisorToolsArchitectureClear" + ".msi"
@@ -10042,7 +10069,10 @@ If ($download -eq $False) {
     If ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $WSACD.Version
+        }
         $WSA = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$WSA) {
             $WSA = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Citrix Workspace*" -and $_.UninstallString -like "*Trolley*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10125,7 +10155,10 @@ If ($download -eq $False) {
         $Product = "ControlUp Agent"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ControlUpAgentFrameworkClear" + "_$ControlUpAgentArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $ControlUpAgentD.Version
+        }
         $ControlUpAgentV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ControlUpAgent"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$ControlUpAgentV) {
             $ControlUpAgentV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ControlUpAgent"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10178,7 +10211,10 @@ If ($download -eq $False) {
         $Product = "deviceTRUST"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + "_$deviceTRUSTArchitectureClear"+ ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $deviceTRUSTD.Version
+        }
         $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTClientV) {
             $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10312,7 +10348,10 @@ If ($download -eq $False) {
     If ($Filezilla -eq 1) {
         $Product = "Filezilla"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $FilezillaD.Version
+        }
         $FilezillaV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$FilezillaV) {
             $FilezillaV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Filezilla*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10366,7 +10405,10 @@ If ($download -eq $False) {
         $Product = "Foxit PDF Editor"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitPDFEditorLanguageClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $FoxitPDFEditorD.Version
+        }
         $FoxitPDFEditorV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Foxit PDF Editor"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$FoxitPDFEditorV) {
             $FoxitPDFEditorV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Foxit PDF Editor"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10424,7 +10466,10 @@ If ($download -eq $False) {
         $Product = "Foxit Reader"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FoxitReaderLanguageClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $Foxit_ReaderD.Version
+        }
         $FReader = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$FReader) {
             $FReader = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Foxit Reader*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10481,7 +10526,10 @@ If ($download -eq $False) {
     If ($GIMP -eq 1) {
         $Product = "GIMP"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $GIMPD.Version
+        }
         $GIMPV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$GIMPV) {
             $GIMPV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GIMP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10536,7 +10584,10 @@ If ($download -eq $False) {
         $Product = "Git for Windows"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GitForWindowsArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $GitForWindowsD.Version
+        }
         $GitForWindowsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Git"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$GitForWindowsV) {
             $GitForWindowsV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Git"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10593,7 +10644,10 @@ If ($download -eq $False) {
         $Product = "Google Chrome"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$GoogleChromeArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $ChromeD.Version
+        }
         $ChromeSplit = $Version.split(".")
         $ChromeStrings = ([regex]::Matches($Version, "\." )).count
         $ChromeStringLast = ([regex]::Matches($ChromeSplit[$ChromeStrings], "." )).count
@@ -10706,7 +10760,10 @@ If ($download -eq $False) {
     If ($Greenshot -eq 1) {
         $Product = "Greenshot"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $GreenshotD.Version
+        }
         $GreenshotV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$GreenshotV) {
             $GreenshotV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Greenshot*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10762,7 +10819,10 @@ If ($download -eq $False) {
         $Product = "ImageGlass"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ImageGlassArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $ImageGlassD.Version
+        }
         $ImageGlassV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "ImageGlass"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $ChromeLog = "$LogTemp\ImageGlass.log"
         If (!$ImageGlassV) {
@@ -10819,7 +10879,10 @@ If ($download -eq $False) {
         $Product = "IrfanView"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$IrfanViewArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $IrfanViewD.Version
+        }
         $IrfanViewV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$IrfanViewV) {
             $IrfanViewV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*IrfanView*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10901,7 +10964,10 @@ If ($download -eq $False) {
     If ($KeePass -eq 1) {
         $Product = "KeePass"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $KeePassD.Version
+        }
         $KeePassV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$KeePassV) {
             $KeePassV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*KeePass*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -10961,7 +11027,10 @@ If ($download -eq $False) {
         If ($Machine -eq '0') {
             $Product = "LogMeIn GoToMeeting XenApp"
             # Check, if a new version is available
-            $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+            $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $LogMeInGoToMeetingD.Version
+            }
             $LogMeInGoToMeetingV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GoToMeeting*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If (!$LogMeInGoToMeetingV) {
                 $LogMeInGoToMeetingV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GoToMeeting*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11010,7 +11079,10 @@ If ($download -eq $False) {
         If ($Machine -eq '1') {
             $Product = "LogMeIn GoToMeeting"
             # Check, if a new version is available
-            $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+            $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $LogMeInGoToMeetingD.Version
+            }
             $LogMeInGoToMeetingV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GoToMeeting*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If (!$LogMeInGoToMeetingV) {
                 $LogMeInGoToMeetingV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*GoToMeeting*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11063,7 +11135,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Dot Net Framework"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSDotNetFrameworkArchitectureClear" + "_$MSDotNetFrameworkChannelClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSDotNetFrameworkD.Version
+        }
         $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSDotNetFrameworkV) {
             $MSDotNetFrameworkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Windows Desktop Runtime*" -and $_.URLInfoAbout -like "https://dot.net/core"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11118,7 +11193,10 @@ If ($download -eq $False) {
     If ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MS365AppsD.Version
+        }
         $MS365AppsV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MS365AppsV) {
             $MS365AppsV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft 365*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11199,7 +11277,10 @@ If ($download -eq $False) {
         $Product = "Microsoft AVD Remote Desktop"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAVDRemoteDesktopChannelClear" + "$MSAVDRemoteDesktopArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSAVDRemoteDesktopD.Version
+        }
         $MSAVDRemoteDesktopV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Remotedesktop"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $MSAVDRemoteDesktopLog = "$LogTemp\MSAVDRemoteDesktop.log"
         If (!$MSAVDRemoteDesktopV) {
@@ -11252,7 +11333,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Azure CLI"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSAzureCLID.Version
+        }
         $MSAzureCLIV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Azure CLI"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $MSAzureCLILog = "$LogTemp\MSAzureCLI.log"
         If (!$MSAzureCLIV) {
@@ -11305,7 +11389,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Azure Data Studio"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSAzureDataStudioChannelClear" + "-$MSAzureDataStudioPlatformClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSAzureDataStudioD.Version
+        }
         $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSAzureDataStudioV) {
             $MSAzureDataStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Azure Data Studio*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11360,7 +11447,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Edge"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $EdgeD.Version
+        }
         $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $EdgeLog = "$LogTemp\MSEdge.log"
         If (!$Edge) {
@@ -11465,7 +11555,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Edge WebView2"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeWebView2ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $EdgeWebView2D.Version
+        }
         $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$EdgeWebView2) {
             $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11516,7 +11609,10 @@ If ($download -eq $False) {
         $OS = (Get-WmiObject Win32_OperatingSystem).Caption
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\Version_" + "$MSFSLogixChannelClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSFSLogixD.Version
+        }
         $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSFSLogixV) {
             $MSFSLogixV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11687,7 +11783,10 @@ If ($download -eq $False) {
     If ($MSOffice2019 -eq 1) {
         $Product = "Microsoft Office 2019"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSOffice2019D.Version
+        }
         $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSOffice2019V) {
             $MSOffice2019V = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11768,7 +11867,10 @@ If ($download -eq $False) {
         $Product = "Microsoft OneDrive"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSOneDriveRingClear" + "_$MSOneDriveArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSOneDriveD.Version
+        }
         $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSOneDriveV) {
             $MSOneDriveV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OneDrive*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11921,7 +12023,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Power BI Desktop"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerBIDesktopArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSPowerBIDesktopD.Version
+        }
         $MSPowerBIDesktopV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft PowerBI Desktop*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerBIDesktopV) {
             $MSPowerBIDesktopV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft PowerBI Desktop*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -11977,7 +12082,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Power BI Report Builder"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSPowerBIReportBuilderD.Version
+        }
         If ($Version) {
             $VersionSplit = $Version.split("0")
             $Version = $VersionSplit[0] + $VersionSplit[1] + $VersionSplit[2] + $VersionSplit[3] + $VersionSplit[4] + $VersionSplit[5] + $VersionSplit[6]
@@ -12036,7 +12144,10 @@ If ($download -eq $False) {
         $Product = "Microsoft PowerShell"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerShellArchitectureClear" + "_$MSPowerShellReleaseClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSPowershellD.Version
+        }
         $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerShellV) {
             $MSPowerShellV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerShell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12091,7 +12202,10 @@ If ($download -eq $False) {
     If ($MSPowerToys -eq 1) {
         $Product = "Microsoft PowerToys"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSPowerToysD.Version
+        }
         $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSPowerToysV) {
             $MSPowerToysV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PowerToys*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12144,7 +12258,10 @@ If ($download -eq $False) {
         $Product = "Microsoft SQL Server Management Studio"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSSQLServerManagementStudioLanguageClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSSQLServerManagementStudioD.Version
+        }
         If ($Version) {
             $VersionSplit = $Version.split(".")
             $VersionSplit2 = $VersionSplit[2].Substring(0,3)
@@ -12211,7 +12328,10 @@ If ($download -eq $False) {
             $Product = "Microsoft Teams Machine Based"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
-            $Version = Get-Content -Path "$VersionPath"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $TeamsD.Version
+            }
             If (Test-Path -Path "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\") {
                 $Teams = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Teams Machine*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             }
@@ -12343,7 +12463,10 @@ If ($download -eq $False) {
             $Product = "Microsoft Teams User Based"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
-            $Version = Get-Content -Path "$VersionPath"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $TeamsD.Version
+            }
             If (Test-Path -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\") {
                 $Teams = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Teams*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             }
@@ -12417,7 +12540,10 @@ If ($download -eq $False) {
     If ($MSVisualStudio -eq 1) {
         $Product = "Microsoft Visual Studio 2019"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSVisualStudioD.Version
+        }
         $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSVisualStudioV) {
             $MSVisualStudioV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio $MSVisualStudioEditionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12467,6 +12593,7 @@ If ($download -eq $False) {
         }
         If ($CleanUp -eq '1') {
             If ($WhatIf -eq '0') {
+                Start-Sleep -Seconds 20
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
             }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
@@ -12480,7 +12607,10 @@ If ($download -eq $False) {
         $Product = "Microsoft Visual Studio Code"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MSVisualStudioCodeD.Version
+        }
         $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$MSVisualStudioCodeV) {
             $MSVisualStudioCodeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12534,7 +12664,10 @@ If ($download -eq $False) {
         $Product = "Mozilla Firefox"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "$FFLanguageClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $FirefoxD.Version
+        }
         $FirefoxV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Firefox*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $FirefoxLog = "$LogTemp\Firefox.log"
         If (!$FirefoxV) {
@@ -12590,7 +12723,10 @@ If ($download -eq $False) {
     If ($mRemoteNG -eq 1) {
         $Product = "mRemoteNG"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $mRemoteNGD.Version
+        }
         $mRemoteNGV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$mRemoteNGV) {
             $mRemoteNGV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "mRemoteNG"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12646,7 +12782,10 @@ If ($download -eq $False) {
         $Product = "Nmap"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $NMapD.Version
+        }
         $NmapV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Nmap*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$NmapV) {
             $NmapV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Nmap*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12695,7 +12834,10 @@ If ($download -eq $False) {
         $Product = "NotepadPlusPlus"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$NotepadPlusPlusArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $NotepadD.Version
+        }
         $Notepad = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$Notepad) {
             $Notepad = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Notepad++*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12744,7 +12886,10 @@ If ($download -eq $False) {
         $Product = "open JDK"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $OpenJDKD.Version
+        }
         $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $openJDKLog = "$LogTemp\OpenJDK.log"
         If (!$OpenJDKV) {
@@ -12801,7 +12946,10 @@ If ($download -eq $False) {
         $Product = "Oracle Java 8"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OracleJava8ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $OracleJava8D.Version
+        }
         $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$OracleJava) {
             $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12858,7 +13006,10 @@ If ($download -eq $False) {
         $Product = "Paint Dot Net"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $PaintDotNetD.Version
+        }
         If ($Version) {
             $VersionSplit = $Version.split(".")
             $VersionSplit2 = $VersionSplit[1] -split("",3)
@@ -12914,7 +13065,10 @@ If ($download -eq $False) {
         $Product = "PeaZip"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PeaZipArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $PeaZipD.Version
+        }
         $PeaZipV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PeaZip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$PeaZipV) {
             $PeaZipV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PeaZip*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -12967,7 +13121,10 @@ If ($download -eq $False) {
         $Product = "PuTTY"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$PuTTYArchitectureClear" + "_$PuttyChannelClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $PuTTYD.Version
+        }
         $PuTTYV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*PuTTY*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $PuTTYLog = "$LogTemp\PuTTY.log"
         If (!$PuTTYV) {
@@ -13028,7 +13185,10 @@ If ($download -eq $False) {
             0 {
                 $Product = "RemoteDesktopManager Free"
                 # Check, if a new version is available
-                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+                If (!($Version)) {
+                    $Version = $RemoteDesktopManagerFreeD
+                }
                 $RemoteDesktopManagerFree = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
                 $InstallMSI = "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerFree.msi"
@@ -13074,7 +13234,10 @@ If ($download -eq $False) {
             1 {
                 $Product = "RemoteDesktopManager Enterprise"
                 # Check, if a new version is available
-                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+                If (!($Version)) {
+                    $Version = $RemoteDesktopManagerEnterpriseD
+                }
                 $RemoteDesktopManagerEnterprise = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Remote Desktop Manager*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 $RemoteDesktopManagerLog = "$LogTemp\RemoteDesktopManager.log"
                 $InstallMSI = "$PSScriptRoot\$Product\Setup.RemoteDesktopManagerEnterprise.msi"
@@ -13125,7 +13288,10 @@ If ($download -eq $False) {
         $Product = "ShareX"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $ShareXD.Version
+        }
         $ShareXV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$ShareXV) {
             $ShareXV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*ShareX*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13178,7 +13344,10 @@ If ($download -eq $False) {
         $Product = "Slack"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SlackArchitectureClear" + "_$SlackPlatformClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $SlackD.Version
+        }
         $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SlackV) {
             $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13241,7 +13410,10 @@ If ($download -eq $False) {
         $Product = "Sumatra PDF"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$SumatraPDFArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $SumatraPDFD.Version
+        }
         $SumatraPDFV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "SumatraPDF"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SumatraPDFV) {
             $SumatraPDFV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "SumatraPDF"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13316,7 +13488,10 @@ If ($download -eq $False) {
         $Product = "TeamViewer"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $TeamViewerD.Version
+        }
         $TeamViewerV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TeamViewer*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $TeamViewerInstaller = "TeamViewer-setup" + ".exe"
         Write-Host -ForegroundColor Magenta "Install $Product"
@@ -13371,7 +13546,10 @@ If ($download -eq $False) {
         $Product = "TechSmith Camtasia"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $TechSmithCamtasiaD.Version
+        }
         $TechSmithCamtasiaV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Camtasia*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $TechSmithCamtasiaLog = "$LogTemp\TechSmithCamtasia.log"
         If (!$TechSmithCamtasiaV) {
@@ -13439,7 +13617,10 @@ If ($download -eq $False) {
         $Product = "TechSmith SnagIt"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $TechSmithSnagitD.Version
+        }
         $TechSmithSnagItV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "SnagIt*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $TechSmithSnagItLog = "$LogTemp\TechSmithSnagIt.log"
         If (!$TechSmithSnagItV) {
@@ -13494,7 +13675,10 @@ If ($download -eq $False) {
             0 {
                 $Product = "TreeSize Free"
                 # Check, if a new version is available
-                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+                If (!($Version)) {
+                    $Version = $TreeSizeFreeD.Version
+                }
                 $Version = $Version.Insert(3,'.')
                 $TreeSizeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 Write-Host -ForegroundColor Magenta "Install $Product"
@@ -13537,7 +13721,10 @@ If ($download -eq $False) {
             1 {
                 $Product = "TreeSize Professional"
                 # Check, if a new version is available
-                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+                $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+                If (!($Version)) {
+                    $Version = $TreeSizeProfD.Version
+                }
                 $Version = $Version.Insert(3,'.')
                 $TreeSizeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*TreeSize*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 Write-Host -ForegroundColor Magenta "Install $Product"
@@ -13585,7 +13772,10 @@ If ($download -eq $False) {
         $Product = "uberAgent"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $uberAgentD.Version
+        }
         $uberAgentV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*uberAgent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$uberAgentV) {
             $uberAgentV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*uberAgent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13630,7 +13820,10 @@ If ($download -eq $False) {
         $Product = "VLC Player"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $VLCD.Version
+        }
         $VLC = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VLC*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $VLCLog = "$LogTemp\VLC.log"
         If (!$VLC) {
@@ -13685,7 +13878,10 @@ If ($download -eq $False) {
         $Product = "VMWare Tools"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $VMWareToolsD.Version
+        }
         $VMWT = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$VMWT) {
             $VMWT = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*VMWare*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13744,7 +13940,10 @@ If ($download -eq $False) {
         $Product = "WinMerge"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $WinMergeD.Version
+        }
         $WinMergeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "WinMerge*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$WinMergeV) {
             $WinMergeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "WinMerge*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13796,7 +13995,10 @@ If ($download -eq $False) {
     If ($WinSCP -eq 1) {
         $Product = "WinSCP"
         # Check, if a new version is available
-        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $WinSCPD.Version
+        }
         $WSCP = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*WinSCP*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
@@ -13852,7 +14054,10 @@ If ($download -eq $False) {
         $Product = "Wireshark"
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$ArchitectureClear" + ".txt"
-        $Version = Get-Content -Path "$VersionPath"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $WiresharkD.Version
+        }
         $WiresharkV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$WiresharkV) {
             $WiresharkV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Wireshark*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13909,7 +14114,10 @@ If ($download -eq $False) {
             $Product = "Zoom VDI"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-            $Version = Get-Content -Path "$VersionPath"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $ZoomVersion
+            }
             $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Client for VDI*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomLog = "$LogTemp\Zoom.log"
@@ -13953,7 +14161,10 @@ If ($download -eq $False) {
             $Product = "Zoom"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-            $Version = Get-Content -Path "$VersionPath"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $ZoomD.Version
+            }
             $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomLog = "$LogTemp\Zoom.log"
@@ -13999,7 +14210,10 @@ If ($download -eq $False) {
             $Product = "Zoom Citrix Client"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
-            $Version = Get-Content -Path "$VersionPath"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $ZoomD.Version
+            }
             $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Plugin*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomInstaller = "ZoomCitrixHDXMediaPlugin" + ".msi"
