@@ -7,7 +7,7 @@ To update or download a software package just switch from 0 to 1 in the section 
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          1.54
+  Version:          2.00
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -95,47 +95,39 @@ the script checks the version number and will update the package.
   2021-09-22        Change 7 Zip and Adobe Reader DC to new variables
   2021-09-23        Change disable update task for Adobe Acrobat Reader DC, Pro and Google Chrome / Change Citrix Hypervisor, ControlUp Agent, Foxit PDF Editor, Foxit Reader, Git for Windows, Google Chrome, ImageGlass, IrfanView and deviceTRUST to new variables
   2021-09-24        Change KeePass, Microsoft .Net Framework, Microsoft 365 Apps, Microsoft AVD Remote Desktop Microsoft FSLogix, Microsoft Office 2019 and Microsoft Edge to new variables
-  2021-09-25        Change Microsoft Power BI Desktop, Microsoft PowerShell Microsoft SQL Server Management Studio, Microsoft Visual Studio Code, Mozilla Firefox, Notepad ++, openJDK, OracleJava8 and Microsoft Teams to new variables
+  2021-09-25        Change Microsoft Power BI Desktop, Microsoft PowerShell Microsoft SQL Server Management Studio, Microsoft Visual Studio Code, Mozilla Firefox, Notepad ++, openJDK, OracleJava8 and Microsoft Teams to new variables / Add Microsoft Edge WebView2 Runtime
   2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download / Add CleanUp Function
-  2021-09-28        Add WhatIf Function / Add OpenFileDialog Function / Add Own Microsoft 365 Apps XML File
+  2021-09-28        Add WhatIf Function to Download section / Add OpenFileDialog Function / Add Own Microsoft 365 Apps XML File
+  2021-09-29        Add WhatIf Function to Install section / Kill -List Hardcoded Function
 
-.PARAMETER list
-
-Don't start the GUI to select the Software Packages and use the hardcoded list in the script.
 
 .PARAMETER download
 
-Only download the software packages in list Mode (-list).
+Only download the software packages in unattended mode (-file).
 
 .PARAMETER install
 
-Only install the software packages in list Mode (-list).
+Only install the software packages in unattended mode (-file).
 
 .PARAMETER file
 
-Path to GUI file (LastSettings.txt) for software selection in list Mode.
+Path to GUI file (LastSetting.txt) for software selection in unattended mode.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -list -download
+.\Evergreen.ps1 -file LastSettings.txt -download
 
-Download the selected Software out of the list.
-
-.EXAMPLE
-
-.\Evergreen.ps1 -list -install
-
-Install the selected Software out of the list.
+Download the selected Software out of the file.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -list
+.\Evergreen.ps1 -file LastSettings.txt -install
 
-Download and install the selected Software out of the list.
+Install the selected Software out of the file.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -list -file LastSetting.txt
+.\Evergreen.ps1 -file LastSetting.txt
 
 Download and install the selected Software out of the file LastSettings.txt.
 
@@ -245,12 +237,12 @@ Function Get-Download {
         [Parameter(Mandatory=$true)]
         $url, 
         $destinationFolder="$PSScriptRoot\$Product\",
-        $file="$Source",
+        $fileD="$Source",
         [switch]$includeStats
     )
     $wc = New-Object Net.WebClient
     $wc.UseDefaultCredentials = $true
-    $destination = Join-Path $destinationFolder $file
+    $destination = Join-Path $destinationFolder $fileD
     $start = Get-Date
     $wc.DownloadFile($url, $destination)
     $elapsed = ((Get-Date) - $start).ToString('hh\:mm\:ss')
@@ -296,9 +288,9 @@ Function Get-IrfanView {
         $m = $m -replace "<((?!@).)*?>"
         $m = $m.Replace(' ','')
         $Version = $m -replace "Version"
-        $File = $Version -replace "\.",""
-        $x32 = "http://download.betanews.com/download/967963863-1/iview$($File)_setup.exe"
-        $x64 = "http://download.betanews.com/download/967963863-1/iview$($File)_x64_setup.exe"
+        $FileI = $Version -replace "\.",""
+        $x32 = "http://download.betanews.com/download/967963863-1/iview$($FileI)_setup.exe"
+        $x64 = "http://download.betanews.com/download/967963863-1/iview$($FileI)_x64_setup.exe"
 
 
         $PSObjectx32 = [PSCustomObject] @{
@@ -814,7 +806,7 @@ function Get-MozillaFirefoxAdmx {
 function Get-AdobeAcrobatReaderDCAdmx {
     try {
         $ProgressPreference = 'SilentlyContinue'
-        $file = "ReaderADMTemplate.zip"
+        $fileA = "ReaderADMTemplate.zip"
         $url = "ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/misc/"
         Write-Verbose "FTP $($url)"
         $listRequest = [Net.WebRequest]::Create($url)
@@ -826,7 +818,7 @@ function Get-AdobeAcrobatReaderDCAdmx {
         while (!$listReader.EndOfStream)
         {
             $line = $listReader.ReadLine()
-            if ($line.Contains($file)) { $lines.Add($line) | Out-Null }
+            if ($line.Contains($fileA)) { $lines.Add($line) | Out-Null }
         }
         $listReader.Dispose()
         $listStream.Dispose()
@@ -834,7 +826,7 @@ function Get-AdobeAcrobatReaderDCAdmx {
         Write-Verbose "received $($line.Length) characters response"
         $tokens = $lines[0].Split(" ", 9, [StringSplitOptions]::RemoveEmptyEntries)
         $Version = Get-Date -Date "$($tokens[6])/$($tokens[5])/$($tokens[7])" -Format "yy.M.d"
-        return @{ Version = $Version; URI = "$($url)$($file)" }
+        return @{ Version = $Version; URI = "$($url)$($fileA)" }
     }
     catch {
         Throw $_
@@ -961,7 +953,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "1.54"
+$eVersion = "2.00"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1041,73 +1033,37 @@ Else {
     # There is a new Evergreen Script Version
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
-    If ($list -eq $True -and $file) {
-        Write-Host -Foregroundcolor Red "List: $List und File: $file."
+    If ($file) {
+        Write-Host -Foregroundcolor Red "File: $file."
         If ($install -eq $False -and $download -eq $True) {
-            If ($file) {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list -download file $file
+            $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            & "$PSScriptRoot\evergreen.ps1" -download -file $file
 '@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
-            else {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list -download
-'@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
         }
         ElseIf ($install -eq $True -and $download -eq $False) {
-            If ($file) {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list -install -file $file
+            $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            & "$PSScriptRoot\evergreen.ps1" -install -file $file
 '@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
-            else {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list -install
-'@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
         }
         Else {
-            If ($file) {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list -file $file
+            $update = @'
+            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+            & "$PSScriptRoot\evergreen.ps1" -file $file
 '@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
-            else {
-                $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -list
-'@
-                $update > $PSScriptRoot\update.ps1
-                & "$PSScriptRoot\update.ps1"
-                Break
-            }
+            $update > $PSScriptRoot\update.ps1
+            & "$PSScriptRoot\update.ps1"
+            Break
         }
     }
     Else {
@@ -1172,7 +1128,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="880" Width="900"
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="920" Width="900"
         Icon="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
         WindowStartupLocation="CenterScreen">
     <TabControl Grid.Column="1">
@@ -1184,9 +1140,9 @@ $inputXML = @"
                     <ColumnDefinition Width="586*"/>
                 </Grid.ColumnDefinitions>
                 <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-                <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
                 <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                 <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                 <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
@@ -1289,20 +1245,21 @@ $inputXML = @"
                     <ListBoxItem Content="Beta"/>
                     <ListBoxItem Content="Stable"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,676,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSEdgeWebView2" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,696,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="Preview"/>
                     <ListBoxItem Content="Production"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,712,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,732,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="Insider Ring"/>
                     <ListBoxItem Content="Production Ring"/>
                     <ListBoxItem Content="Enterprise Ring"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,778,0,0" VerticalAlignment="Top" Grid.Column="1" />
                 <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
                 <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="374,94,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
                     <ListBoxItem Content="Stable"/>
@@ -1314,7 +1271,7 @@ $inputXML = @"
                 <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
                 <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,178,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
                 <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,175,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
-                    <ListBoxItem Content="Continuous Deployment Ring"/>
+                    <ListBoxItem Content="Continuous Ring"/>
                     <ListBoxItem Content="Exploration Ring"/>
                     <ListBoxItem Content="Preview Ring"/>
                     <ListBoxItem Content="General Ring"/>
@@ -1375,8 +1332,8 @@ $inputXML = @"
                     <ListBoxItem Content="Client"/>
                     <ListBoxItem Content="Client + Citrix Plugin"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,756,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,796,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,826,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
             </Grid>
         </TabItem>
         <TabItem Header="Detail">
@@ -1624,19 +1581,25 @@ $inputXML = @"
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSEdgeWebView2_Detail" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSEdgeWebView2_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ListBoxItem Content="-"/>
+                    <ListBoxItem Content="x86"/>
+                    <ListBoxItem Content="x64"/>
+                </ComboBox>
+                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="Danish"/>
                     <ListBoxItem Content="Dutch"/>
@@ -1654,14 +1617,14 @@ $inputXML = @"
                     <ListBoxItem Content="Spanish"/>
                     <ListBoxItem Content="Swedish"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,693,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                     <ListBoxItem Content="-"/>
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
@@ -1790,8 +1753,9 @@ $inputXML = @"
                     <ListBoxItem Content="x86"/>
                     <ListBoxItem Content="x64"/>
                 </ComboBox>
-                <Label x:Name="Label_MS365Apps_XML" Content="Own Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,632,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,632,0,0" VerticalAlignment="Top" Grid.Column="2"/>
                 <TextBox HorizontalAlignment="Left" Height="40" Margin="172,663,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
+                <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,703,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
                 <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,633,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
                 <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
             </Grid>
@@ -1895,6 +1859,7 @@ $inputXML = @"
         $WPFBox_Wireshark_Architecture.SelectedIndex = $LastSetting[137] -as [int]
         $WPFBox_IrfanView_Language.SelectedIndex = $LastSetting[138] -as [int]
         $WPFBox_MSOffice2019_Language.SelectedIndex = $LastSetting[139] -as [int]
+        $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex = $LastSetting[141] -as [int]
         Switch ($LastSetting[8]) {
             1 {
                 $WPFCheckbox_7ZIP.IsChecked = "True"
@@ -2228,6 +2193,12 @@ $inputXML = @"
         Switch ($LastSetting[112]) {
             1 { $WPFCheckbox_MS365Apps_Project_Detail.IsChecked = "True"}
         }
+        Switch ($LastSetting[140]) {
+            1 {
+                $WPFCheckbox_MSEdgeWebView2.IsChecked = "True"
+                $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked = "True"
+            }
+        }
     }
     
     #// MARK: Event Handler
@@ -2435,6 +2406,18 @@ $inputXML = @"
     })
     $WPFCheckbox_MSEdge_Detail.Add_Unchecked({
         $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_MSEdge_Detail.IsChecked
+    })
+    $WPFCheckbox_MSEdgeWebView2.Add_Checked({
+        $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked = $WPFCheckbox_MSEdgeWebView2.IsChecked
+    })
+    $WPFCheckbox_MSEdgeWebView2.Add_Unchecked({
+        $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked = $WPFCheckbox_MSEdgeWebView2.IsChecked
+    })
+    $WPFCheckbox_MSEdgeWebView2_Detail.Add_Checked({
+        $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked
+    })
+    $WPFCheckbox_MSEdgeWebView2_Detail.Add_Unchecked({
+        $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked
     })
     $WPFCheckbox_MSFSLogix.Add_Checked({
         $WPFCheckbox_MSFSLogix_Detail.IsChecked = $WPFCheckbox_MSFSLogix.IsChecked
@@ -2757,6 +2740,7 @@ $inputXML = @"
         $WPFCheckbox_TechSmithCamtasia.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Checkbox SelectAll to Uncheck (AddScript)
@@ -2827,6 +2811,7 @@ $inputXML = @"
         $WPFCheckbox_TechSmithCamtasia.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Browse
@@ -2874,8 +2859,8 @@ $inputXML = @"
         Else {$Script:MS365Apps = 0}
         If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         Else {$Script:MSEdge = 0}
-        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
-        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
+        Else {$Script:MSEdgeWebView2 = 0}
         If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
         Else {$Script:MSOffice2019 = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
@@ -3052,9 +3037,10 @@ $inputXML = @"
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
+        $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
@@ -3107,8 +3093,8 @@ $inputXML = @"
         Else {$Script:MS365Apps = 0}
         If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         Else {$Script:MSEdge = 0}
-        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
-        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
+        Else {$Script:MSEdgeWebView2 = 0}
         If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
         Else {$Script:MSOffice2019 = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
@@ -3285,9 +3271,10 @@ $inputXML = @"
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
+        $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
@@ -3358,8 +3345,8 @@ $inputXML = @"
         Else {$Script:MS365Apps = 0}
         If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         Else {$Script:MSEdge = 0}
-        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
-        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
+        Else {$Script:MSEdgeWebView2 = 0}
         If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
         Else {$Script:MSOffice2019 = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
@@ -3536,9 +3523,10 @@ $inputXML = @"
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
+        $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
 
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
@@ -3590,8 +3578,8 @@ $inputXML = @"
         Else {$Script:MS365Apps = 0}
         If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
         Else {$Script:MSEdge = 0}
-        If ($WPFCheckbox_MSEdge.ischecked -eq $true) {$Script:MSEdge = 1}
-        Else {$Script:MSEdge = 0}
+        If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
+        Else {$Script:MSEdgeWebView2 = 0}
         If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
         Else {$Script:MSOffice2019 = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
@@ -3768,9 +3756,10 @@ $inputXML = @"
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
+        $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
 
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
@@ -3804,153 +3793,154 @@ $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 $Script:install = $install
 $Script:download = $download
 
-# Define the variables for the unattended install or download (Parameter -list) (AddScript)
-If ($list -eq $True) {
-    If ($file) {
-        # Read File Parameter to get the settings. (AddScript)
-        If (Test-Path "$File" -PathType leaf) {
-            $FileSetting = Get-Content "$file"
-            $Language = $FileSetting[0] -as [int]
-            $Architecture = $FileSetting[1] -as [int]
-            $CitrixWorkspaceAppRelease = $FileSetting[2] -as [int]
-            $MS365AppsChannel = $FileSetting[3] -as [int]
-            $MSOneDriveRing = $FileSetting[4] -as [int]
-            $MSTeamsRing = $FileSetting[5] -as [int]
-            $FirefoxChannel = $FileSetting[6] -as [int]
-            $TreeSizeType = $FileSetting[7] -as [int]
-            $MSDotNetFrameworkChannel = $FileSetting[40] -as [int]
-            $MSPowerShellRelease = $FileSetting[42] -as [int]
-            $RemoteDesktopManagerType = $FileSetting[44] -as [int]
-            $ZoomCitrixClient = $FileSetting[49] -as [int]
-            $deviceTRUSTPackage = $FileSetting[50] -as [int]
-            $MSEdgeChannel = $FileSetting[51] -as [int]
-            $MSVisualStudioCodeChannel = $FileSetting[56] -as [int]
-            $Machine = $FileSetting[60] -as [int]
-            $MSVisualStudioEdition= $FileSetting[61] -as [int]
-            $PuttyChannel = $FileSetting[62] -as [int]
-            $MSAzureDataStudioChannel = $FileSetting[64] -as [int]
-            $7ZIP = $FileSetting[8] -as [int]
-            $AdobeProDC = $FileSetting[9] -as [int]
-            $AdobeReaderDC = $FileSetting[10] -as [int]
-            $BISF = $FileSetting[11] -as [int]
-            $Citrix_Hypervisor_Tools = $FileSetting[12] -as [int]
-            $Citrix_WorkspaceApp = $FileSetting[13] -as [int]
-            $Filezilla = $FileSetting[14] -as [int]
-            $Firefox = $FileSetting[15] -as [int]
-            $Foxit_Reader = $FileSetting[16] -as [int]
-            $MSFSLogix = $FileSetting[17] -as [int]
-            $GoogleChrome = $FileSetting[18] -as [int]
-            $Greenshot = $FileSetting[19] -as [int]
-            $KeePass = $FileSetting[20] -as [int]
-            $mRemoteNG = $FileSetting[21] -as [int]
-            $MS365Apps = $FileSetting[22] -as [int]
-            $MSEdge = $FileSetting[23] -as [int]
-            $MSOffice2019 = $FileSetting[24] -as [int]
-            $MSOneDrive = $FileSetting[25] -as [int]
-            $MSTeams = $FileSetting[26] -as [int]
-            $NotePadPlusPlus = $FileSetting[27] -as [int]
-            $OpenJDK = $FileSetting[28] -as [int]
-            $OracleJava8 = $FileSetting[29] -as [int]
-            $TreeSize = $FileSetting[30] -as [int]
-            $VLCPlayer = $FileSetting[31] -as [int]
-            $VMWareTools = $FileSetting[32] -as [int]
-            $WinSCP = $FileSetting[33] -as [int]
-            $IrfanView = $FileSetting[36] -as [int]
-            $MSTeamsNoAutoStart = $FileSetting[37] -as [int]
-            $deviceTRUST = $FileSetting[38] -as [int]
-            $MSDotNetFramework = $FileSetting[39] -as [int]
-            $MSPowerShell = $FileSetting[41] -as [int]
-            $RemoteDesktopManager = $FileSetting[43] -as [int]
-            $Slack = $FileSetting[45] -as [int]
-            $Wireshark = $FileSetting[46] -as [int]
-            $ShareX = $FileSetting[47] -as [int]
-            $Zoom = $FileSetting[48] -as [int]
-            $GIMP = $FileSetting[52] -as [int]
-            $MSPowerToys = $FileSetting[53] -as [int]
-            $MSVisualStudio = $FileSetting[54] -as [int]
-            $MSVisualStudioCode = $FileSetting[55] -as [int]
-            $PaintDotNet = $FileSetting[57] -as [int]
-            $Putty = $FileSetting[58] -as [int]
-            $TeamViewer = $FileSetting[59] -as [int]
-            $MSAzureDataStudio = $FileSetting[63] -as [int]
-            $ImageGlass = $FileSetting[65] -as [int]
-            $MSFSLogixChannel = $FileSetting[66] -as [int]
-            $uberAgent = $FileSetting[67] -as [int]
-            $1Password = $FileSetting[68] -as [int]
-            $SumatraPDF = $FileSetting[69] -as [int]
-            $ControlUpAgent = $FileSetting[70] -as [int]
-            $ControlUpAgentFramework = $FileSetting[71] -as [int]
-            $ControlUpConsole = $FileSetting[72] -as [int]
-            $MSSQLServerManagementStudio = $FileSetting[73] -as [int]
-            $MSAVDRemoteDesktop = $FileSetting[74] -as [int]
-            $MSAVDRemoteDesktopChannel = $FileSetting[75] -as [int]
-            $MSPowerBIDesktop = $FileSetting[76] -as [int]
-            $RDAnalyzer = $FileSetting[77] -as [int]
-            $CiscoWebexTeams = $FileSetting[78] -as [int]
-            $CitrixFiles = $FileSetting[79] -as [int]
-            $FoxitPDFEditor = $FileSetting[80] -as [int]
-            $GitForWindows = $FileSetting[81] -as [int]
-            $LogMeInGoToMeeting = $FileSetting[82] -as [int]
-            $MSAzureCLI = $FileSetting[83] -as [int]
-            $MSPowerBIReportBuilder = $FileSetting[84] -as [int]
-            $MSSysinternals = $FileSetting[85] -as [int]
-            $NMap = $FileSetting[86] -as [int]
-            $PeaZip = $FileSetting[87] -as [int]
-            $TechSmithCamtasia = $FileSetting[88] -as [int]
-            $TechSmithSnagit = $FileSetting[89] -as [int]
-            $WinMerge = $FileSetting[90] -as [int]
-            $WhatIf = $FileSetting[91] -as [int]
-            $CleanUp = $FileSetting[92] -as [int]
-            $7Zip_Architecture = $FileSetting[93] -as [int]
-            $AdobeReaderDC_Architecture = $FileSetting[94] -as [int]
-            $AdobeReaderDC_Language = $FileSetting[95] -as [int]
-            $CiscoWebexTeams_Architecture = $FileSetting[96] -as [int]
-            $CitrixHypervisorTools_Architecture = $FileSetting[97] -as [int]
-            $ControlUpAgent_Architecture = $FileSetting[98] -as [int]
-            $deviceTRUST_Architecture = $FileSetting[99] -as [int]
-            $FoxitPDFEditor_Language = $FileSetting[100] -as [int]
-            $FoxitReader_Language = $FileSetting[101] -as [int]
-            $GitForWindows_Architecture = $FileSetting[102] -as [int]
-            $GoogleChrome_Architecture = $FileSetting[103] -as [int]
-            $ImageGlass_Architecture = $FileSetting[104] -as [int]
-            $IrfanView_Architecture = $FileSetting[105] -as [int]
-            $KeePass_Language = $FileSetting[106] -as [int]
-            $MSDotNetFramework_Architecture = $FileSetting[107] -as [int]
-            $MS365Apps_Architecture = $FileSetting[108] -as [int]
-            $MS365Apps_Language = $FileSetting[109] -as [int]
-            $MS365Apps_Visio = $FileSetting[110] -as [int]
-            $MS365Apps_Visio_Language = $FileSetting[111] -as [int]
-            $MS365Apps_Project = $FileSetting[112] -as [int]
-            $MS365Apps_Project_Language = $FileSetting[113] -as [int]
-            $MSAVDRemoteDesktop_Architecture = $FileSetting[114] -as [int]
-            $MSEdge_Architecture = $FileSetting[115] -as [int]
-            $MSFSLogix_Architecture = $FileSetting[116] -as [int]
-            $MSOffice2019_Architecture = $FileSetting[117] -as [int]
-            $MSOneDrive_Architecture = $FileSetting[118] -as [int]
-            $MSPowerBIDesktop_Architecture = $FileSetting[119] -as [int]
-            $MSPowerShell_Architecture = $FileSetting[120] -as [int]
-            $MSSQLServerManagementStudio_Language = $FileSetting[121] -as [int]
-            $MSTeams_Architecture = $FileSetting[122] -as [int]
-            $MSVisualStudioCode_Architecture = $FileSetting[123] -as [int]
-            $Firefox_Architecture = $FileSetting[124] -as [int]
-            $Firefox_Language = $FileSetting[125] -as [int]
-            $NotepadPlusPlus_Architecture = $FileSetting[126] -as [int]
-            $OpenJDK_Architecture = $FileSetting[127] -as [int]
-            $OracleJava8_Architecture = $FileSetting[128] -as [int]
-            $PeaZip_Architecture = $FileSetting[129] -as [int]
-            $Putty_Architecture = $FileSetting[130] -as [int]
-            $Slack_Architecture = $FileSetting[131] -as [int]
-            $SumatraPDF_Architecture = $FileSetting[132] -as [int]
-            $TechSmithSnagIt_Architecture = $FileSetting[133] -as [int]
-            $VLCPlayer_Architecture = $FileSetting[134] -as [int]
-            $VMWareTools_Architecture = $FileSetting[135] -as [int]
-            $WinMerge_Architecture = $FileSetting[136] -as [int]
-            $Wireshark_Architecture = $FileSetting[137] -as [int]
-            $IrfanView_Language = $FileSetting[138] -as [int]
-            $MSOffice2019_Language = $FileSetting[139] -as [int]
-        }
+# Define the variables for the unattended install or download (Parameter -file) (AddScript)
+If ($file) {
+    # Read File Parameter to get the settings. (AddScript)
+    If (Test-Path "$File" -PathType leaf) {
+        $FileSetting = Get-Content "$file"
+        $Language = $FileSetting[0] -as [int]
+        $Architecture = $FileSetting[1] -as [int]
+        $CitrixWorkspaceAppRelease = $FileSetting[2] -as [int]
+        $MS365AppsChannel = $FileSetting[3] -as [int]
+        $MSOneDriveRing = $FileSetting[4] -as [int]
+        $MSTeamsRing = $FileSetting[5] -as [int]
+        $FirefoxChannel = $FileSetting[6] -as [int]
+        $TreeSizeType = $FileSetting[7] -as [int]
+        $MSDotNetFrameworkChannel = $FileSetting[40] -as [int]
+        $MSPowerShellRelease = $FileSetting[42] -as [int]
+        $RemoteDesktopManagerType = $FileSetting[44] -as [int]
+        $ZoomCitrixClient = $FileSetting[49] -as [int]
+        $deviceTRUSTPackage = $FileSetting[50] -as [int]
+        $MSEdgeChannel = $FileSetting[51] -as [int]
+        $MSVisualStudioCodeChannel = $FileSetting[56] -as [int]
+        $Machine = $FileSetting[60] -as [int]
+        $MSVisualStudioEdition= $FileSetting[61] -as [int]
+        $PuttyChannel = $FileSetting[62] -as [int]
+        $MSAzureDataStudioChannel = $FileSetting[64] -as [int]
+        $7ZIP = $FileSetting[8] -as [int]
+        $AdobeProDC = $FileSetting[9] -as [int]
+        $AdobeReaderDC = $FileSetting[10] -as [int]
+        $BISF = $FileSetting[11] -as [int]
+        $Citrix_Hypervisor_Tools = $FileSetting[12] -as [int]
+        $Citrix_WorkspaceApp = $FileSetting[13] -as [int]
+        $Filezilla = $FileSetting[14] -as [int]
+        $Firefox = $FileSetting[15] -as [int]
+        $Foxit_Reader = $FileSetting[16] -as [int]
+        $MSFSLogix = $FileSetting[17] -as [int]
+        $GoogleChrome = $FileSetting[18] -as [int]
+        $Greenshot = $FileSetting[19] -as [int]
+        $KeePass = $FileSetting[20] -as [int]
+        $mRemoteNG = $FileSetting[21] -as [int]
+        $MS365Apps = $FileSetting[22] -as [int]
+        $MSEdge = $FileSetting[23] -as [int]
+        $MSOffice2019 = $FileSetting[24] -as [int]
+        $MSOneDrive = $FileSetting[25] -as [int]
+        $MSTeams = $FileSetting[26] -as [int]
+        $NotePadPlusPlus = $FileSetting[27] -as [int]
+        $OpenJDK = $FileSetting[28] -as [int]
+        $OracleJava8 = $FileSetting[29] -as [int]
+        $TreeSize = $FileSetting[30] -as [int]
+        $VLCPlayer = $FileSetting[31] -as [int]
+        $VMWareTools = $FileSetting[32] -as [int]
+        $WinSCP = $FileSetting[33] -as [int]
+        $IrfanView = $FileSetting[36] -as [int]
+        $MSTeamsNoAutoStart = $FileSetting[37] -as [int]
+        $deviceTRUST = $FileSetting[38] -as [int]
+        $MSDotNetFramework = $FileSetting[39] -as [int]
+        $MSPowerShell = $FileSetting[41] -as [int]
+        $RemoteDesktopManager = $FileSetting[43] -as [int]
+        $Slack = $FileSetting[45] -as [int]
+        $Wireshark = $FileSetting[46] -as [int]
+        $ShareX = $FileSetting[47] -as [int]
+        $Zoom = $FileSetting[48] -as [int]
+        $GIMP = $FileSetting[52] -as [int]
+        $MSPowerToys = $FileSetting[53] -as [int]
+        $MSVisualStudio = $FileSetting[54] -as [int]
+        $MSVisualStudioCode = $FileSetting[55] -as [int]
+        $PaintDotNet = $FileSetting[57] -as [int]
+        $Putty = $FileSetting[58] -as [int]
+        $TeamViewer = $FileSetting[59] -as [int]
+        $MSAzureDataStudio = $FileSetting[63] -as [int]
+        $ImageGlass = $FileSetting[65] -as [int]
+        $MSFSLogixChannel = $FileSetting[66] -as [int]
+        $uberAgent = $FileSetting[67] -as [int]
+        $1Password = $FileSetting[68] -as [int]
+        $SumatraPDF = $FileSetting[69] -as [int]
+        $ControlUpAgent = $FileSetting[70] -as [int]
+        $ControlUpAgentFramework = $FileSetting[71] -as [int]
+        $ControlUpConsole = $FileSetting[72] -as [int]
+        $MSSQLServerManagementStudio = $FileSetting[73] -as [int]
+        $MSAVDRemoteDesktop = $FileSetting[74] -as [int]
+        $MSAVDRemoteDesktopChannel = $FileSetting[75] -as [int]
+        $MSPowerBIDesktop = $FileSetting[76] -as [int]
+        $RDAnalyzer = $FileSetting[77] -as [int]
+        $CiscoWebexTeams = $FileSetting[78] -as [int]
+        $CitrixFiles = $FileSetting[79] -as [int]
+        $FoxitPDFEditor = $FileSetting[80] -as [int]
+        $GitForWindows = $FileSetting[81] -as [int]
+        $LogMeInGoToMeeting = $FileSetting[82] -as [int]
+        $MSAzureCLI = $FileSetting[83] -as [int]
+        $MSPowerBIReportBuilder = $FileSetting[84] -as [int]
+        $MSSysinternals = $FileSetting[85] -as [int]
+        $NMap = $FileSetting[86] -as [int]
+        $PeaZip = $FileSetting[87] -as [int]
+        $TechSmithCamtasia = $FileSetting[88] -as [int]
+        $TechSmithSnagit = $FileSetting[89] -as [int]
+        $WinMerge = $FileSetting[90] -as [int]
+        $WhatIf = $FileSetting[91] -as [int]
+        $CleanUp = $FileSetting[92] -as [int]
+        $7Zip_Architecture = $FileSetting[93] -as [int]
+        $AdobeReaderDC_Architecture = $FileSetting[94] -as [int]
+        $AdobeReaderDC_Language = $FileSetting[95] -as [int]
+        $CiscoWebexTeams_Architecture = $FileSetting[96] -as [int]
+        $CitrixHypervisorTools_Architecture = $FileSetting[97] -as [int]
+        $ControlUpAgent_Architecture = $FileSetting[98] -as [int]
+        $deviceTRUST_Architecture = $FileSetting[99] -as [int]
+        $FoxitPDFEditor_Language = $FileSetting[100] -as [int]
+        $FoxitReader_Language = $FileSetting[101] -as [int]
+        $GitForWindows_Architecture = $FileSetting[102] -as [int]
+        $GoogleChrome_Architecture = $FileSetting[103] -as [int]
+        $ImageGlass_Architecture = $FileSetting[104] -as [int]
+        $IrfanView_Architecture = $FileSetting[105] -as [int]
+        $KeePass_Language = $FileSetting[106] -as [int]
+        $MSDotNetFramework_Architecture = $FileSetting[107] -as [int]
+        $MS365Apps_Architecture = $FileSetting[108] -as [int]
+        $MS365Apps_Language = $FileSetting[109] -as [int]
+        $MS365Apps_Visio = $FileSetting[110] -as [int]
+        $MS365Apps_Visio_Language = $FileSetting[111] -as [int]
+        $MS365Apps_Project = $FileSetting[112] -as [int]
+        $MS365Apps_Project_Language = $FileSetting[113] -as [int]
+        $MSAVDRemoteDesktop_Architecture = $FileSetting[114] -as [int]
+        $MSEdge_Architecture = $FileSetting[115] -as [int]
+        $MSFSLogix_Architecture = $FileSetting[116] -as [int]
+        $MSOffice2019_Architecture = $FileSetting[117] -as [int]
+        $MSOneDrive_Architecture = $FileSetting[118] -as [int]
+        $MSPowerBIDesktop_Architecture = $FileSetting[119] -as [int]
+        $MSPowerShell_Architecture = $FileSetting[120] -as [int]
+        $MSSQLServerManagementStudio_Language = $FileSetting[121] -as [int]
+        $MSTeams_Architecture = $FileSetting[122] -as [int]
+        $MSVisualStudioCode_Architecture = $FileSetting[123] -as [int]
+        $Firefox_Architecture = $FileSetting[124] -as [int]
+        $Firefox_Language = $FileSetting[125] -as [int]
+        $NotepadPlusPlus_Architecture = $FileSetting[126] -as [int]
+        $OpenJDK_Architecture = $FileSetting[127] -as [int]
+        $OracleJava8_Architecture = $FileSetting[128] -as [int]
+        $PeaZip_Architecture = $FileSetting[129] -as [int]
+        $Putty_Architecture = $FileSetting[130] -as [int]
+        $Slack_Architecture = $FileSetting[131] -as [int]
+        $SumatraPDF_Architecture = $FileSetting[132] -as [int]
+        $TechSmithSnagIt_Architecture = $FileSetting[133] -as [int]
+        $VLCPlayer_Architecture = $FileSetting[134] -as [int]
+        $VMWareTools_Architecture = $FileSetting[135] -as [int]
+        $WinMerge_Architecture = $FileSetting[136] -as [int]
+        $Wireshark_Architecture = $FileSetting[137] -as [int]
+        $IrfanView_Language = $FileSetting[138] -as [int]
+        $MSOffice2019_Language = $FileSetting[139] -as [int]
+        $MSEdgeWebView2 = $FileSetting[140] -as [int]
+        $MSEdgeWebView2_Architecture = $FileSetting[141] -as [int]
     }
-    Else {
+    Write-Host "Unattended Mode."
+    <#Else {
         # Define the variables for the unattended install or download (Parameter -list without Parameter -file) (AddScript)
         # Select Language (If this is selectable at download)
         # 0 = Danish
@@ -4557,12 +4547,11 @@ If ($list -eq $True) {
         $WinSCP = 0
         $Wireshark = 0
         $Zoom = 0
-    }
-    Write-Host "Unattended Mode."
+    }#>
 }
 Else {
-    # Cleanup of the used vaiables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice2019_Language -ErrorAction SilentlyContinue
+    # Cleanup of the used variables (AddScript)
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice2019_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -5105,6 +5094,16 @@ Switch ($MSEdgeChannel) {
     0 { $MSEdgeChannelClear = 'Dev'}
     1 { $MSEdgeChannelClear = 'Beta'}
     2 { $MSEdgeChannelClear = 'Stable'}
+}
+
+If ($MSEdgeWebView2_Architecture -ne "") {
+    Switch ($MSEdgeWebView2_Architecture) {
+        1 { $MSEdgeWebView2ArchitectureClear = 'x86'}
+        2 { $MSEdgeWebView2ArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $MSEdgeWebView2ArchitectureClear = $ArchitectureClear
 }
 
 If ($MSFSLogix_Architecture -ne "") {
@@ -7487,6 +7486,45 @@ If ($install -eq $False) {
                 Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Microsoft Edge WebView2
+    If ($MSEdgeWebView2 -eq 1) {
+        $Product = "Microsoft Edge WebView2"
+        $PackageName = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear"
+        $EdgeWebView2D = Get-EvergreenApp -Name MicrosoftEdgeWebView2Runtime | Where-Object { $_.Architecture -eq "$MSEdgeWebView2ArchitectureClear" }
+        $Version = $EdgeWebView2D.Version
+        $URL = $EdgeWebView2D.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeWebView2ArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue 
+        Write-Host -ForegroundColor Magenta "Download $Product $MSEdgeWebView2ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $MSEdgeWebView2ArchitectureClear $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
         }
         Else {
@@ -11347,7 +11385,9 @@ If ($download -eq $False) {
             )
             try {
                 Write-Host "Starting install of $Product $MSEdgeChannelClear $MSEdgeArchitectureClear $Version"
-                Install-MSI $InstallMSI $Arguments
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                }
                 Get-Content $EdgeLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $EdgeLog
             } catch {
@@ -11357,39 +11397,45 @@ If ($download -eq $False) {
             Try {
                 # Disable Microsoft Edge auto update
                 Write-Host "Customize $Product registry"
-                If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
-                    New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -ErrorAction SilentlyContinue | Out-Null
-                    New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
-                }
-                Else {
-                    $EdgeUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate" | Select-Object -Expandproperty "UpdateDefault"
-                    If ($EdgeUpdateState -ne "0") {Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 | Out-Null}
-                }
-                # Disable Citrix API Hooks (MS Edge) on Citrix VDA
-                $(
-                    $RegPath = "HKLM:SYSTEM\CurrentControlSet\services\CtxUvi"
-                    If (Test-Path $RegPath) {
-                        $RegName = "UviProcessExcludes"
-                        $EdgeRegvalue = "msedge.exe"
-                        # Get current values in UviProcessExcludes
-                        $CurrentValues = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $RegName
-                        # Add the msedge.exe value to existing values in UviProcessExcludes
-                        Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;" -ErrorAction SilentlyContinue
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
+                        New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -ErrorAction SilentlyContinue | Out-Null
+                        New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
                     }
-                ) | Out-Null
+                    Else {
+                        $EdgeUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate" | Select-Object -Expandproperty "UpdateDefault"
+                        If ($EdgeUpdateState -ne "0") {Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate -Name UpdateDefault -Value 0 | Out-Null}
+                    }
+                    # Disable Citrix API Hooks (MS Edge) on Citrix VDA
+                    $(
+                        $RegPath = "HKLM:SYSTEM\CurrentControlSet\services\CtxUvi"
+                        If (Test-Path $RegPath) {
+                            $RegName = "UviProcessExcludes"
+                            $EdgeRegvalue = "msedge.exe"
+                            # Get current values in UviProcessExcludes
+                            $CurrentValues = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $RegName
+                            # Add the msedge.exe value to existing values in UviProcessExcludes
+                            Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;" -ErrorAction SilentlyContinue
+                        }
+                    ) | Out-Null
+                }
                 Write-Host -ForegroundColor Green "Customize $Product registry finished!"
                 $Service = Get-Service -Name edgeupdate -ErrorAction SilentlyContinue
                 If ($Service.Length -gt 0) {
                     Write-Host "Customize Service"
-                    Stop-Service edgeupdate
-                    Set-Service -Name edgeupdate -StartupType Manual
-                    Stop-Service edgeupdatem
-                    Set-Service -Name edgeupdatem -StartupType Manual
+                    If ($WhatIf -eq '0') {
+                        Stop-Service edgeupdate
+                        Set-Service -Name edgeupdate -StartupType Manual
+                        Stop-Service edgeupdatem
+                        Set-Service -Name edgeupdatem -StartupType Manual
+                    }
                     Write-Host -ForegroundColor Green "Stop and Disable Service $Product finished!"
                 }
                 Write-Host "Customize Scheduled Task"
-                Start-Sleep -s 5
-                Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -s 5
+                    Get-ScheduledTask -TaskName MicrosoftEdgeUpdate* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                }
                 Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
                 Write-Host -ForegroundColor Green "Customize $Product finished!"
             } Catch {
@@ -11405,7 +11451,59 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Microsoft Edge WebView2
+    If ($MSEdgeWebView2 -eq 1) {
+        $Product = "Microsoft Edge WebView2"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeWebView2ArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath"
+        $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$EdgeWebView2) {
+            $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $EdgeWebView2Installer = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear" + ".exe"
+        $EdgeWebView2Process = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeWebView2ArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $EdgeWebView2"
+        If ($EdgeWebView2 -ne $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/SILENT"
+                "/INSTALL"
+            )
+            Try {
+                Write-Host "Starting install of $Product $MSEdgeWebView2ArchitectureClear $Version"
+                If ($WhatIf -eq '0') {
+                    $null = Start-Process "$PSScriptRoot\$Product\$EdgeWebView2Installer" -ArgumentList $Options -NoNewWindow -PassThru
+                    while (Get-Process -Name $EdgeWebView2Process -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                }
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } catch {
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11440,8 +11538,10 @@ If ($download -eq $False) {
                 Write-Host "Uninstall $Product"
                 DS_WriteLog "I" "Uninstall $Product" $LogFile
                 Try {
-                    Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
-                    Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                    If ($WhatIf -eq '0') {
+                        Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                        Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                    }
                     Write-Host -ForegroundColor Green "Uninstall $Product finished!"
                 } Catch {
                     Write-Host -ForegroundColor Red "Error uninstalling $Product (Error: $($Error[0]))"
@@ -11450,18 +11550,24 @@ If ($download -eq $False) {
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
                 Write-Host -ForegroundColor Red "Server needs to reboot, start script again after reboot"
-                Write-Output ""
-                Write-Host -ForegroundColor Red "Hit any key to reboot server"
-                Read-Host
-                Restart-Computer
+                If ($WhatIf -eq '0') {
+                    Write-Output ""
+                    Write-Host -ForegroundColor Red "Hit any key to reboot server"
+                    Read-Host
+                    Restart-Computer
+                }
             }
             # FSLogix Install
             Try {
                 Write-Host "Starting install of $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                }
                 Write-Host -ForegroundColor Green "Install $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear finished!"
                 Write-Host "Starting install of $Product Rule Editor $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsRuleEditorSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
+                }
                 Write-Host -ForegroundColor Green "Install $Product Rule Editor $MSFSLogixChannelClear $MSFSLogixArchitectureClear finished!"
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -11476,40 +11582,54 @@ If ($download -eq $False) {
                 If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops") {
                     If ((Test-RegistryValue2 -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                        If ($WhatIf -eq '0') {
+                            New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                        }
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                     If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch" -ErrorAction SilentlyContinue) -ne "0") {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
+                        If ($WhatIf -eq '0') {
+                            Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
+                        }
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                 }
                 If ($OS -Like "*Windows 10*" -and $OS -ne "Microsoft Windows 10 Enterprise for Virtual Desktops") {
                     If ((Test-RegistryValue2 -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                        If ($WhatIf -eq '0') {
+                            New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                        }
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                     If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" | Select-Object -ExpandProperty "RoamSearch" -ErrorAction SilentlyContinue) -ne "1") {
                         Write-Host "Deactivate FSLogix RoamSearch"
-                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue
+                        If ($WhatIf -eq '0') {
+                            Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Apps" -Name "RoamSearch" -Value "1" -Type DWORD -ErrorAction SilentlyContinue
+                        }
                         Write-Host -ForegroundColor Green "Deactivate FSLogix RoamSearch finished!"
                     }
                 }
                 Write-Host -ForegroundColor Green "Post setup customizations for $OS finished!"
                 # Implement user based group policy processing fix
-                If (!(Test-Path -Path HKLM:SOFTWARE\FSLogix\Profiles)) {
-                    New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles -ErrorAction SilentlyContinue | Out-Null
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path HKLM:SOFTWARE\FSLogix\Profiles)) {
+                        New-Item -Path "HKLM:SOFTWARE\FSLogix" -Name Profiles -ErrorAction SilentlyContinue | Out-Null
+                    }
                 }
                 If ((Test-RegistryValue -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Value "GroupPolicyState") -ne $true) {
                     Write-Host "Deactivate FSLogix GroupPolicy"
-                    New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                    If ($WhatIf -eq '0') {
+                        New-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue | Out-Null
+                    }
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
                 If ((Get-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" | Select-Object -ExpandProperty "GroupPolicyState" -ErrorAction SilentlyContinue) -ne "0") {
                     Write-Host "Deactivate FSLogix GroupPolicy"
-                    Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
+                    If ($WhatIf -eq '0') {
+                        Set-ItemProperty -Path "HKLM:SOFTWARE\FSLogix\Profiles" -Name "GroupPolicyState" -Value "0" -Type DWORD -ErrorAction SilentlyContinue
+                    }
                     Write-Host -ForegroundColor Green "Deactivate FSLogix GroupPolicy finished!"
                 }
                 If (!(Get-ScheduledTask -TaskName "Restart Windows Search Service on Event ID 2" -ErrorAction SilentlyContinue)) {
@@ -11535,7 +11655,9 @@ If ($download -eq $False) {
                         Settings    = $S
                         Trigger     = $Trigger
                     }
-                    Register-ScheduledTask @RegSchTaskParameters -ErrorAction SilentlyContinue
+                    If ($WhatIf -eq '0') {
+                        Register-ScheduledTask @RegSchTaskParameters -ErrorAction SilentlyContinue
+                    }
                     Write-Host -ForegroundColor Green "Implement scheduled task to restart Windows Search service on Event ID 2 finished!"
                 }
                 Write-Host -ForegroundColor Green "Applying $Product post setup customizations finished!"
@@ -11552,7 +11674,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11580,9 +11704,11 @@ If ($download -eq $False) {
                 $DOffice2019 = @(
                     "/download install.xml"
                 )
-                set-location $PSScriptRoot\$Product
-                Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
-                set-location $PSScriptRoot
+                If ($WhatIf -eq '0') {
+                    set-location $PSScriptRoot\$Product
+                    Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
+                    set-location $PSScriptRoot
+                }
                 Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
             }
             # MS Office 2019 Uninstallation
@@ -11592,9 +11718,11 @@ If ($download -eq $False) {
             Write-Host "Uninstall Microsoft Office 2019 or Microsoft 365 Apps"
             DS_WriteLog "I" "Uninstall Microsoft Office 2019 or Microsoft 365 Apps" $LogFile
             Try {
-                set-location $PSScriptRoot\$Product
-                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                set-location $PSScriptRoot
+                If ($WhatIf -eq '0') {
+                    set-location $PSScriptRoot\$Product
+                    Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                    set-location $PSScriptRoot
+                }
                 Write-Host -ForegroundColor Green "Uninstall Microsoft Office 2019 or Microsoft 365 Apps finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office 2019 or Microsoft 365 Apps (Error: $($Error[0]))"
@@ -11607,9 +11735,11 @@ If ($download -eq $False) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host "Starting install of $Product $Version"
             Try {
-                set-location $PSScriptRoot\$Product
-                Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
-                set-location $PSScriptRoot
+                If ($WhatIf -eq '0') {
+                    set-location $PSScriptRoot\$Product
+                    Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
+                    set-location $PSScriptRoot
+                }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -11624,7 +11754,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11665,8 +11797,10 @@ If ($download -eq $False) {
             }
             Try {
                 Write-Host "Starting install of $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear $Version"
-                $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
-                while (Get-Process -Name $OneDriveProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                If ($WhatIf -eq '0') {
+                    $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                    while (Get-Process -Name $OneDriveProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                }
                 # OneDrive starts automatically after setup. kill!
                 #Stop-Process -Name "OneDrive" -Force
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -11677,91 +11811,93 @@ If ($download -eq $False) {
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
             Write-Host "Starting copy of $Product $MSOneDriveRingClear ADMX files $Version"
-            $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
-            If (!$OneDriveUninstall) {
-                $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+            If ($WhatIf -eq '0') {
+                $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+                If (!$OneDriveUninstall) {
+                    $OneDriveUninstall = (Get-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+                }
+                If (!$OneDriveUninstall) {
+                    $OneDriveUninstall = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
+                }
+                $OneDriveInstallFolder = $OneDriveUninstall.DisplayIcon.Substring(0, $OneDriveUninstall.DisplayIcon.IndexOf("\OneDriveSetup.exe"))
+                $sourceadmx = "$($OneDriveInstallFolder)\adm"
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+                }
+                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$sourceadmx\OneDrive.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\de\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\es\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\fr\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\it\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\ja\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\ko\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\nl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\pl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\pt-BR\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\pt-PT\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\ru\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\sv\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -ErrorAction SilentlyContinue
+                }
+                Move-Item -Path "$sourceadmx\zh-CN\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             }
-            If (!$OneDriveUninstall) {
-                $OneDriveUninstall = (Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayIcon -like "*OneDriveSetup.exe*"})
-            }
-            $OneDriveInstallFolder = $OneDriveUninstall.DisplayIcon.Substring(0, $OneDriveUninstall.DisplayIcon.IndexOf("\OneDriveSetup.exe"))
-            $sourceadmx = "$($OneDriveInstallFolder)\adm"
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
-            }
-            If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-            Move-Item -Path "$sourceadmx\OneDrive.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\de\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\es\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\fr\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\it\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\ja\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\ko\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\nl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\pl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\pt-BR\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\pt-PT\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\ru\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\sv\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
-            If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-            If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -PathType leaf)) {
-                Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -ErrorAction SilentlyContinue
-            }
-            Move-Item -Path "$sourceadmx\zh-CN\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
         }
@@ -11771,7 +11907,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11802,7 +11940,12 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $MSPowerBIDesktopArchitectureClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSPowerBIDesktopInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSPowerBIDesktopInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -11820,7 +11963,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11859,8 +12004,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
                 Get-Content $MSPowerBIReportBuilderLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $MSPowerBIReportBuilderLog
             } Catch {
@@ -11875,7 +12022,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11911,8 +12060,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $MSPowerShellArchitectureClear $MSPowerShellReleaseClear Release $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
                 Get-Content $MSPowerShellLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $MSPowerShellLog
             } Catch {
@@ -11927,7 +12078,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -11954,7 +12107,12 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\PowerToysSetup-x64.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\PowerToysSetup-x64.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -11972,7 +12130,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12013,7 +12173,12 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $MSSQLServerManagementStudioLanguageClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSSQLServerManagementStudioInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$MSSQLServerManagementStudioInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -12031,7 +12196,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12077,8 +12244,10 @@ If ($download -eq $False) {
                             }
                         }
                         $UninstallTeams = $UninstallTeams -Replace("MsiExec.exe /I","")
-                        Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
-                        Start-Sleep 20
+                        If ($WhatIf -eq '0') {
+                            Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
+                            Start-Sleep 20
+                        }
                         Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                         Remove-Item $TeamsLog
                         Write-Host -ForegroundColor Green "Uninstall $Product finished!" -Verbose
@@ -12103,19 +12272,22 @@ If ($download -eq $False) {
                 #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
                 If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
                     Write-Host "Customize System for $Product Machine-Based Install"
-                    If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
-                    New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
+                    If ($WhatIf -eq '0') {
+                        If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
+                        New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
+                    }
                     Write-Host -ForegroundColor Green "Customize System for $Product Machine-Based Install finished!"
                 }
                 Try {
                     Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
-                    Install-MSI $InstallMSI $Arguments
-                    Start-Sleep 5
+                    If ($WhatIf -eq '0') {
+                        Install-MSI $InstallMSI $Arguments
+                        Start-Sleep 5
+                    }
                     Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
                     Remove-Item $TeamsLog
-                    #Remove public desktop shortcut (Thx to Kasper https://github.com/kaspersmjohansen)
-                    If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") {
-                        Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force
+                    If ($WhatIf -eq '0') {
+                        If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") { Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force }
                     }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -12126,20 +12298,24 @@ If ($download -eq $False) {
                     If ($MSTeamsNoAutoStart -eq 1) {
                         #Prevents MS Teams from starting at logon, better do this with WEM or similar
                         Write-Host "Customize $Product Autorun"
-                        If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
-                            If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
-                                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                        If ($WhatIf -eq '0') {
+                            If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
+                                If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                                    Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                                }
                             }
                         }
                         Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
                     }
                     Write-Host "Register $Product Add-In for Outlook"
                     # Register Teams add-in for Outlook - https://microsoftteams.uservoice.com/forums/555103-public/suggestions/38846044-fix-the-teams-meeting-addin-for-outlook
-                    $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
-                    $appX64DLL = $appDLLs[0]
-                    $appX86DLL = $appDLLs[1]
-                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`"" -ErrorAction SilentlyContinue
-                    Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`"" -ErrorAction SilentlyContinue
+                    If ($WhatIf -eq '0') {
+                        $appDLLs = (Get-ChildItem -Path "${Env:ProgramFiles(x86)}\Microsoft\TeamsMeetingAddin" -Include "Microsoft.Teams.AddinLoader.dll" -Recurse).FullName
+                        $appX64DLL = $appDLLs[0]
+                        $appX86DLL = $appDLLs[1]
+                        Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX64DLL`"" -ErrorAction SilentlyContinue
+                        Start-Process -FilePath "$env:WinDir\SysWOW64\regsvr32.exe" -ArgumentList "/s /n /i:user `"$appX86DLL`"" -ErrorAction SilentlyContinue
+                    }
                     Write-Host -ForegroundColor Green "Register $Product Add-In for Outlook finished!"
                     Write-Host -ForegroundColor Green "Customize $Product finished!"
                 } Catch {
@@ -12155,7 +12331,9 @@ If ($download -eq $False) {
                 Write-Output ""
             }
             If ($CleanUp -eq '1') {
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                If ($WhatIf -eq '0') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
                 Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
@@ -12187,11 +12365,13 @@ If ($download -eq $False) {
                 )
                 Try {
                     Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
-                    $null = Start-Process -FilePath "$PSScriptRoot\$Product\$TeamsInstaller" -ArgumentList $Options -PassThru -NoNewWindow
-                    while (Get-Process -Name $TeamsProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$TeamsInstaller" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $TeamsProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
-                    If (Test-Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk") {
-                        Remove-Item -Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk" -Force
+                    If ($WhatIf -eq '0') {
+                        If (Test-Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk") {Remove-Item -Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk" -Force}
                     }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -12201,9 +12381,11 @@ If ($download -eq $False) {
                     If ($MSTeamsNoAutoStart -eq 1) {
                         #Prevents MS Teams from starting at logon, better do this with WEM or similar
                         Write-Host "Customize $Product Autorun"
-                        If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
-                            If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
-                                Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                        If ($WhatIf -eq '0') {
+                            If (Test-Path -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run") {
+                                If (Test-RegistryValue2 -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Value "Teams") {
+                                    Remove-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" -Name "Teams" -Force
+                                }
                             }
                         }
                         Write-Host -ForegroundColor Green "Customize $Product Autorun finished!"
@@ -12221,7 +12403,9 @@ If ($download -eq $False) {
                 Write-Output ""
             }
             If ($CleanUp -eq '1') {
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                If ($WhatIf -eq '0') {
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
                 Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
@@ -12264,8 +12448,10 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $MSVisualStudioEditionClear Edition $Version"
-                $null = Start-Process -FilePath "$PSScriptRoot\$Product\VS-Setup.exe" -ArgumentList $Options -PassThru -NoNewWindow
-                while (Get-Process -Name setup -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                If ($WhatIf -eq '0') {
+                    $null = Start-Process -FilePath "$PSScriptRoot\$Product\VS-Setup.exe" -ArgumentList $Options -PassThru -NoNewWindow
+                    while (Get-Process -Name setup -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioEditionClear Edition (Error: $($Error[0]))"
@@ -12280,7 +12466,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12314,8 +12502,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear $Version"
-                $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
-                while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                If ($WhatIf -eq '0') {
+                    $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                    while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear (Error: $($Error[0]))"
@@ -12330,7 +12520,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12368,7 +12560,9 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear $Version"
-                Install-MSI $InstallMSI $Arguments
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                }
                 Get-Content $FirefoxLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $FirefoxLog
             } Catch {
@@ -12383,7 +12577,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12416,7 +12612,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Install-MSI $InstallMSI $Arguments
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                }
                 Get-Content $mRemoteLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $mRemoteLog
             } Catch {
@@ -12424,7 +12622,9 @@ If ($download -eq $False) {
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
-            If (Test-Path -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk" -Force}
+            If ($WhatIf -eq '0') {
+                If (Test-Path -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk" -Force}
+            }
         }
         # Stop, if no new version is available
         Else {
@@ -12432,7 +12632,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12458,7 +12660,9 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Start-Process "$PSScriptRoot\$Product\$NmapInstaller"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$NmapInstaller"
+                }
                 $p = Get-Process Nmap-setup
                 If ($p) {
                     $p.WaitForExit()
@@ -12477,7 +12681,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12503,7 +12709,9 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $NotepadPlusPlusArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" -ArgumentList /S -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" -ArgumentList /S -NoNewWindow
+                }
                 $p = Get-Process NotePadPlusPlus_$NotepadPlusPlusArchitectureClear
 		        If ($p) {
                     $p.WaitForExit()
@@ -12522,7 +12730,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12559,8 +12769,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $openJDKArchitectureClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
                 Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $openJDKLog
             } Catch {
@@ -12575,7 +12787,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12609,7 +12823,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $OracleJava8ArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
+                }
                 $p = Get-Process OracleJava8_$OracleJava8ArchitectureClear
                 If ($p) {
                     $p.WaitForExit()
@@ -12628,7 +12844,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12661,7 +12879,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Start-Process "$PSScriptRoot\$Product\paint.net.install.exe" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\paint.net.install.exe" -ArgumentList $Options -NoNewWindow
+                }
                 $p = Get-Process paint.net.install
                 If ($p) {
                     $p.WaitForExit()
@@ -12680,7 +12900,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12710,7 +12932,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $PeaZipArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$PeaZipInstaller" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$PeaZipInstaller" -ArgumentList $Options -NoNewWindow
+                }
                 $p = Get-Process $PeaZipProcess
                 If ($p) {
                     $p.WaitForExit()
@@ -12729,7 +12953,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12767,12 +12993,14 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $PuttyChannelClear $PuTTYArchitectureClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
-                Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $PuTTYLog
-                If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY.lnk" -Force}
-                If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk" -Force}
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                    Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $PuTTYLog
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY.lnk" -Force}
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk" -Force}
+                }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -12785,7 +13013,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12816,7 +13046,9 @@ If ($download -eq $False) {
                     )
                     Try {
                         Write-Host "Starting install of $Product $Version"
-                        Install-MSI $InstallMSI $Arguments
+                        If ($WhatIf -eq '0') {
+                            Install-MSI $InstallMSI $Arguments
+                        }
                         Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
                         Remove-Item $RemoteDesktopManagerLog
                     } Catch {
@@ -12831,7 +13063,9 @@ If ($download -eq $False) {
                     Write-Output ""
                 }
                 If ($CleanUp -eq '1') {
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    If ($WhatIf -eq '0') {
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
                     Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                     DS_WriteLog "-" "" $LogFile
                     Write-Output ""
@@ -12858,7 +13092,9 @@ If ($download -eq $False) {
                     )
                     Try {
                         Write-Host "Starting install of $Product $Version"
-                        Install-MSI $InstallMSI $Arguments
+                        If ($WhatIf -eq '0') {
+                            Install-MSI $InstallMSI $Arguments
+                        }
                         Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
                         Remove-Item $RemoteDesktopManagerLog
                     } Catch {
@@ -12873,7 +13109,9 @@ If ($download -eq $False) {
                     Write-Output ""
                 }
                 If ($CleanUp -eq '1') {
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    If ($WhatIf -eq '0') {
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
                     Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                     DS_WriteLog "-" "" $LogFile
                     Write-Output ""
@@ -12905,7 +13143,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Start-Process "$PSScriptRoot\$Product\$ShareXInstaller" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$ShareXInstaller" -ArgumentList $Options -NoNewWindow
+                }
                 $p = Get-Process ShareX-setup
                 If ($p) {
                     $p.WaitForExit()
@@ -12924,7 +13164,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12967,8 +13209,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $SlackArchitectureClear $SlackPlatformClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
                 Get-Content $SlackLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $SlackLog
             } Catch {
@@ -12983,7 +13227,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }            
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13013,11 +13259,18 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $SumatraPDFArchitectureClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$SumatraPDFInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$SumatraPDFInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
-                    If (Test-Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk") {
-                        Remove-Item -Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk" -Force
+                    If ($WhatIf -eq '0') {
+                        If (Test-Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk") {
+                            Remove-Item -Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk" -Force
+                        }
                     }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
@@ -13025,7 +13278,9 @@ If ($download -eq $False) {
                     # Disable auto update
                     Write-Host "Disable auto update"
                     Try {
-                        (Get-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt" -ErrorAction SilentlyContinue) | ForEach-Object { $_ -replace "CheckForUpdates = true" , "CheckForUpdates = false" } | Set-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt"
+                        If ($WhatIf -eq '0') {
+                            (Get-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt" -ErrorAction SilentlyContinue) | ForEach-Object { $_ -replace "CheckForUpdates = true" , "CheckForUpdates = false" } | Set-Content "$env:LOCALAPPDATA\SumatraPDF\SumatraPDF-settings.txt"
+                        }
                         Write-Host -ForegroundColor Green "Disable auto update $Product finished!"
                     } Catch {
                         Write-Host -ForegroundColor Red "Error disable auto update (Error: $($Error[0]))"
@@ -13047,7 +13302,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13073,12 +13330,19 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Start-Process "$PSScriptRoot\$Product\$TeamViewerInstaller" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$TeamViewerInstaller" -ArgumentList $Options -NoNewWindow
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 $p = Get-Process TeamViewer-setup
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
-                    If (Test-Path -Path "$env:PUBLIC\Desktop\Teamviewer.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Teamviewer.lnk" -Force}
+                    If ($WhatIf -eq '0') {
+                        If (Test-Path -Path "$env:PUBLIC\Desktop\Teamviewer.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Teamviewer.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13093,7 +13357,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13140,11 +13406,13 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
-                Get-Content $TechSmithCamtasiaLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $TechSmithCamtasiaLog
-                If (Test-Path -Path "$env:PUBLIC\Desktop\Camtasia*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Camtasia*.lnk" -Force}
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                    Get-Content $TechSmithCamtasiaLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $TechSmithCamtasiaLog
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\Camtasia*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Camtasia*.lnk" -Force}
+                }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -13157,7 +13425,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13191,8 +13461,10 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Start-Sleep 25
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
                 Get-Content $TechSmithSnagItLog | Add-Content $LogFile -Encoding ASCI
                 Remove-Item $TechSmithSnagItLog
             } Catch {
@@ -13207,7 +13479,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13231,7 +13505,9 @@ If ($download -eq $False) {
                     Write-Host -ForegroundColor Green "Update available"
                     Try {
                         Write-Host "Starting install of $Product $Version"
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow
+                        If ($WhatIf -eq '0') {
+                            Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow
+                        }
                         $p = Get-Process TreeSize_Free
                         If ($p) {
                             $p.WaitForExit()
@@ -13250,7 +13526,9 @@ If ($download -eq $False) {
                     Write-Output ""
                 }
                 If ($CleanUp -eq '1') {
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    If ($WhatIf -eq '0') {
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
                     Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                     DS_WriteLog "-" "" $LogFile
                     Write-Output ""
@@ -13270,7 +13548,9 @@ If ($download -eq $False) {
                     Write-Host -ForegroundColor Green "Update available"
                     Try {
                         Write-Host "Starting install of $Product $Version"
-                        Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow
+                        If ($WhatIf -eq '0') {
+                            Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow
+                        }
                         $p = Get-Process TreeSize_Professional
                         If ($p) {
                             $p.WaitForExit()
@@ -13289,7 +13569,9 @@ If ($download -eq $False) {
                     Write-Output ""
                 }
                 If ($CleanUp -eq '1') {
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    If ($WhatIf -eq '0') {
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
                     Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
                     DS_WriteLog "-" "" $LogFile
                     Write-Output ""
@@ -13317,7 +13599,9 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $Version"
-                Start-Process "$PSScriptRoot\$Product\$uberAgentInstaller" -NoNewWindow -Wait
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$uberAgentInstaller" -NoNewWindow -Wait
+                }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13332,7 +13616,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13367,10 +13653,12 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                Install-MSI $InstallMSI $Arguments
-                Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $VLCLog
-                If (Test-Path -Path "$env:PUBLIC\Desktop\VLC media player.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force}
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
+                    Remove-Item $VLCLog
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\VLC media player.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force}
+                }
             } Catch {
                 DS_WriteLog "E" "An error occurred installing $Product (Error: $($Error[0]))" $LogFile 
             }
@@ -13383,7 +13671,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13415,7 +13705,13 @@ If ($download -eq $False) {
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$VMWareToolsInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$VMWareToolsInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    Write-Host -ForegroundColor Yellow "System needs to reboot after installation!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13434,7 +13730,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13464,7 +13762,9 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                Start-Process "$PSScriptRoot\$Product\$WinMergeInstaller" -ArgumentList $Options -NoNewWindow
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$WinMergeInstaller" -ArgumentList $Options -NoNewWindow
+                }
                 $p = Get-Process $WinMergeProcess
                 If ($p) {
                     $p.WaitForExit()
@@ -13483,7 +13783,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13510,11 +13812,18 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\WinSCP.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\WinSCP.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
-                    If (Test-Path -Path "$env:PUBLIC\Desktop\WinSCP.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\WinSCP.lnk" -Force}
+                    If ($WhatIf -eq '0') {
+                        If (Test-Path -Path "$env:PUBLIC\Desktop\WinSCP.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\WinSCP.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13529,7 +13838,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13560,7 +13871,12 @@ If ($download -eq $False) {
             )
             Try {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
-                $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$WiresharkInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                If ($WhatIf -eq '0') {
+                    $inst = Start-Process -FilePath "$PSScriptRoot\$Product\$WiresharkInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
+                }
+                else{
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13578,7 +13894,9 @@ If ($download -eq $False) {
             Write-Output ""
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -13612,11 +13930,13 @@ If ($download -eq $False) {
                 )
                 Try {
                     Write-Host "Starting install of $Product $Version"
-                    Install-MSI $InstallMSI $Arguments
-                    Start-Sleep 25
-                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $ZoomLog
-                    If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force}
+                    If ($WhatIf -eq '0') {
+                        Install-MSI $InstallMSI $Arguments
+                        Start-Sleep 25
+                        Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                        Remove-Item $ZoomLog
+                        If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force}
+                    }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
@@ -13654,11 +13974,13 @@ If ($download -eq $False) {
                 )
                 Try {
                     Write-Host "Starting install of $Product $Version"
-                    Install-MSI $InstallMSI $Arguments
-                    Start-Sleep 25
-                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $ZoomLog
-                    If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom.lnk" -Force}
+                    If ($WhatIf -eq '0') {
+                        Install-MSI $InstallMSI $Arguments
+                        Start-Sleep 25
+                        Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
+                        Remove-Item $ZoomLog
+                        If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom.lnk" -Force}
+                    }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
@@ -13698,8 +14020,10 @@ If ($download -eq $False) {
                 )
                 Try {
                     Write-Host "Starting install of $Product $Version"
-                    Install-MSI $InstallMSI $Arguments
-                    Start-Sleep 25
+                    If ($WhatIf -eq '0') {
+                        Install-MSI $InstallMSI $Arguments
+                        Start-Sleep 25
+                    }
                     Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
                     Remove-Item $ZoomLog
                 } Catch {
@@ -13715,7 +14039,9 @@ If ($download -eq $False) {
             }
         }
         If ($CleanUp -eq '1') {
-            Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
