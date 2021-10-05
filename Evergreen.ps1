@@ -99,6 +99,8 @@ the script checks the version number and will update the package.
   2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download / Add CleanUp Function
   2021-09-28        Add WhatIf Function to Download section / Add OpenFileDialog Function / Add Own Microsoft 365 Apps XML File
   2021-09-29        Add WhatIf Function to Install section / Kill -List Hardcoded Function
+  2021-10-04        Add PDF Forge & Merge Function / Add PDF Forge & Merge Download
+  2021-10-05        Correction Copy custom XML
 
 
 .PARAMETER download
@@ -489,6 +491,38 @@ Function Get-MicrosoftTeamsUser() {
         Write-Output -InputObject $PSObjectx64beta
         Write-Output -InputObject $PSObjectx86dev
         Write-Output -InputObject $PSObjectx64dev
+    }
+}
+
+# Function PDF Split & Merge Download
+#========================================================================================================================================
+Function Get-PDFsam() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://pdfsam.org/en/download-pdfsam-basic/"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "Download PDFsam Basic v.{5}"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split()[3].Trim("v")
+        $appx64URL = "https://github.com/torakiki/pdfsam/releases/download/v$appVersion/pdfsam-$appVersion.msi"
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Channel      = "Stable"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+
+        Write-Output -InputObject $PSObjectx64
+        
     }
 }
 
@@ -3022,6 +3056,14 @@ $inputXML = @"
         $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
+                Switch ($MS365AppsChannel) {
+                    0 { $MS365AppsChannelClear = 'Insiders'}
+                    1 { $MS365AppsChannelClear = 'Monthly'}
+                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
+                    3 { $MS365AppsChannelClear = 'Deferred'}
+                    4 { $MS365AppsChannelClear = 'Targeted'}
+                    5 { $MS365AppsChannelClear = 'Broad'}
+                }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
             }
@@ -3256,6 +3298,14 @@ $inputXML = @"
         $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
+                Switch ($MS365AppsChannel) {
+                    0 { $MS365AppsChannelClear = 'Insiders'}
+                    1 { $MS365AppsChannelClear = 'Monthly'}
+                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
+                    3 { $MS365AppsChannelClear = 'Deferred'}
+                    4 { $MS365AppsChannelClear = 'Targeted'}
+                    5 { $MS365AppsChannelClear = 'Broad'}
+                }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
             }
@@ -3508,6 +3558,14 @@ $inputXML = @"
         $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
+                Switch ($MS365AppsChannel) {
+                    0 { $MS365AppsChannelClear = 'Insiders'}
+                    1 { $MS365AppsChannelClear = 'Monthly'}
+                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
+                    3 { $MS365AppsChannelClear = 'Deferred'}
+                    4 { $MS365AppsChannelClear = 'Targeted'}
+                    5 { $MS365AppsChannelClear = 'Broad'}
+                }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
             }
@@ -3741,6 +3799,14 @@ $inputXML = @"
         $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
+                Switch ($MS365AppsChannel) {
+                    0 { $MS365AppsChannelClear = 'Insiders'}
+                    1 { $MS365AppsChannelClear = 'Monthly'}
+                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
+                    3 { $MS365AppsChannelClear = 'Deferred'}
+                    4 { $MS365AppsChannelClear = 'Targeted'}
+                    5 { $MS365AppsChannelClear = 'Broad'}
+                }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
             }
@@ -8546,6 +8612,45 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download PDF Split & Merge
+    If ($PDFsam -eq 1) {
+        $Product = "PDF Split & Merge"
+        $PackageName = "PDFsam"
+        $PDFsamD = Get-PDFsam
+        $Version = $PDFsamD.Version
+        $URL = $PDFsamD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download PeaZip
     If ($PeaZip -eq 1) {
         $Product = "PeaZip"
@@ -13020,6 +13125,66 @@ If ($download -eq $False) {
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install PDF Split & Merge
+    If ($PDFsam -eq 1) {
+        $Product = "PDF Split & Merge"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $PDFsamD.Version
+        }
+        $PDFsamV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $openJDKLog = "$LogTemp\OpenJDK.log"
+        If (!$OpenJDKV) {
+            $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $OpenJDKInstaller = "OpenJDK" + "$openJDKArchitectureClear" + ".msi"
+        If ($Version) {$Version = $Version -replace ".-"}
+        $InstallMSI = "$PSScriptRoot\$Product\$OpenJDKInstaller"
+        Write-Host -ForegroundColor Magenta "Install $Product $openJDKArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $OpenJDKV"
+        If ($OpenJDKV -lt $Version) {
+            DS_WriteLog "I" "Installing $Product $openJDKArchitectureClear" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
+                "/qn"
+                "INSTALLLEVEL=3"
+                "UPDATE_NOTIFIER=0"
+                "/L*V $openJDKLog"
+            )
+            Try {
+                Write-Host "Starting install of $Product $openJDKArchitectureClear $Version"
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Start-Sleep 25
+                }
+                Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $openJDKLog
+            } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
