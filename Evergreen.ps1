@@ -7,7 +7,7 @@ To update or download a software package just select a LastSetting.txt file (Wit
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 .NOTES
-  Version:          2.00
+  Version:          2.01
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
   // NOTE: Purpose/Change
@@ -100,7 +100,8 @@ the script checks the version number and will update the package.
   2021-09-28        Add WhatIf Function to Download section / Add OpenFileDialog Function / Add Own Microsoft 365 Apps XML File
   2021-09-29        Add WhatIf Function to Install section / Kill -List Hardcoded Function
   2021-10-04        Add PDF Forge & Merge Function / Add PDF Forge & Merge Download
-  2021-10-05        Correction Copy custom XML
+  2021-10-05        Correction Copy custom XML / Add PDF Forge & Merge Install / Add Autodesk DWG TrueView Function / Add MindView 7 Function / Add Autodesk DWG TrueView Download and Install / Add MindView 7 Download and Install
+  2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
 
 
 .PARAMETER download
@@ -522,6 +523,98 @@ Function Get-PDFsam() {
         }
 
         Write-Output -InputObject $PSObjectx64
+        
+    }
+}
+
+# Function Autodesk DWG TrueView Download
+#========================================================================================================================================
+Function Get-DWGTrueView() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.autodesk.de/viewers"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "DWGTrueView_.{4}"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split("_")[1]
+        
+        $regexAppURL = "https://efulfillment.*DWGTrueView_" + "$appVersion" + ".*_English_64bit_dlm.sfx.exe"
+        $webURL = $webRequest.RawContent | Select-String -Pattern $regexAppURL -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appx64URL = $webURL.Split('"')[0]
+
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Language      = "English"
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+
+        Write-Output -InputObject $PSObjectx64
+        
+    }
+}
+
+# Function MindView 7 Download
+#========================================================================================================================================
+Function Get-MindView7() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.matchware.com/de/mindview-servicepacks"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "MindView 7.*"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webVersion = $webVersion.Split("(")[1]
+        $appVersion = $webVersion.Split(")")[0]
+        
+        $appx64URLDE = "https://link.matchware.com/mindview7_ge"
+        $appx64URLEN = "https://link.matchware.com/mindview7_en"
+        $appx64URLFR = "https://link.matchware.com/mindview7_fr"
+        $appx64URLDK = "https://link.matchware.com/mindview7_dk"
+
+        $PSObjectx64de = [PSCustomObject] @{
+            Version      = $appVersion
+            Language      = "German"
+            URI          = $appx64URLDE
+        }
+
+        $PSObjectx64en = [PSCustomObject] @{
+            Version      = $appVersion
+            Language      = "English"
+            URI          = $appx64URLEN
+        }
+
+        $PSObjectx64fr = [PSCustomObject] @{
+            Version      = $appVersion
+            Language      = "French"
+            URI          = $appx64URLFR
+        }
+
+        $PSObjectx64dk = [PSCustomObject] @{
+            Version      = $appVersion
+            Language      = "Danish"
+            URI          = $appx64URLDK
+        }
+
+        Write-Output -InputObject $PSObjectx64de
+        Write-Output -InputObject $PSObjectx64en
+        Write-Output -InputObject $PSObjectx64fr
+        Write-Output -InputObject $PSObjectx64dk
         
     }
 }
@@ -987,7 +1080,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.00"
+$eVersion = "2.01"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1141,637 +1234,652 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="920" Width="900"
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="920" Width="940"
         Icon="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
         WindowStartupLocation="CenterScreen">
     <TabControl Grid.Column="1">
         <TabItem Header="General">
-            <Grid x:Name="General_Grid" Margin="0,0,0,1" VerticalAlignment="Stretch">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="13*"/>
-                    <ColumnDefinition Width="234*"/>
-                    <ColumnDefinition Width="586*"/>
-                </Grid.ColumnDefinitions>
-                <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-                <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
-                <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="124,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="140,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="227,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="261,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" ToolTip="If this is selectable at download!">
-                    <ListBoxItem Content="x64"/>
-                    <ListBoxItem Content="x86"/>
-                </ComboBox>
-                <Label x:Name="Label_SelectMachine" Content="Select Machine Type" HorizontalAlignment="Left" Margin="343,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Machine" HorizontalAlignment="Left" Margin="373,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
-                    <ListBoxItem Content="Virtual"/>
-                    <ListBoxItem Content="Physical"/>
-                </ComboBox>
-                <Label x:Name="Label_Explanation" Content="Selected globally, can be defined individually via Detail tab." HorizontalAlignment="Left" Margin="153,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2" />
-                <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_1Password" Content="1Password" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,138,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
-                <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_CiscoWebexTeams" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_CitrixFiles" Content="Citrix Files" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,258,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,254,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
-                    <ListBoxItem Content="Current Release"/>
-                    <ListBoxItem Content="Long Term Service Release"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,275,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
-                    <ListBoxItem Content=".Net 3.5"/>
-                    <ListBoxItem Content=".Net 4.5"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_ControlUpConsole" Content="ControlUp Console" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Only Download"/>
-                <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="215,315,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Client"/>
-                    <ListBoxItem Content="Host"/>
-                    <ListBoxItem Content="Console"/>
-                    <ListBoxItem Content="Client + Host"/>
-                    <ListBoxItem Content="Host + Console"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,338,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_GitForWindows" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_ImageGlass" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_LogMeInGoToMeeting" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="15,538,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,558,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="215,553,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Current"/>
-                    <ListBoxItem Content="LTS (Long Term Support)"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,578,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="215,574,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Insiders / First Release Current"/>
-                    <ListBoxItem Content="Monthly / Current"/>
-                    <ListBoxItem Content="Monthly Enterprise"/>
-                    <ListBoxItem Content="Deferred"/>
-                    <ListBoxItem Content="Targeted / First Release Deferred"/>
-                    <ListBoxItem Content="Broad"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,598,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSAVDRemoteDesktop" HorizontalAlignment="Left" Margin="215,595,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Insider"/>
-                    <ListBoxItem Content="Public"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSAzureCLI" Content="Microsoft Azure CLI" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,638,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="215,636,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Insider"/>
-                    <ListBoxItem Content="Stable"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,658,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="215,656,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Developer"/>
-                    <ListBoxItem Content="Beta"/>
-                    <ListBoxItem Content="Stable"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSEdgeWebView2" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,696,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Preview"/>
-                    <ListBoxItem Content="Production"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,732,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="Insider Ring"/>
-                    <ListBoxItem Content="Production Ring"/>
-                    <ListBoxItem Content="Enterprise Ring"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,778,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="374,94,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-                    <ListBoxItem Content="Stable"/>
-                    <ListBoxItem Content="LTS (Long Term Support)"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="170,138,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-                <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="170,158,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-                <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,178,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
-                <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,175,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
-                    <ListBoxItem Content="Continuous Ring"/>
-                    <ListBoxItem Content="Exploration Ring"/>
-                    <ListBoxItem Content="Preview Ring"/>
-                    <ListBoxItem Content="General Ring"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="170,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="374,196,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-                    <ListBoxItem Content="Enterprise Edition"/>
-                    <ListBoxItem Content="Professional Edition"/>
-                    <ListBoxItem Content="Community Edition"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="374,217,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
-                    <ListBoxItem Content="Insider"/>
-                    <ListBoxItem Content="Stable"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="374,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                    <ListBoxItem Content="Current"/>
-                    <ListBoxItem Content="ESR"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="170,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="170,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
-                <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="170,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="170,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="170,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="374,394,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                    <ListBoxItem Content="Pre-Release"/>
-                    <ListBoxItem Content="Stable"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="374,415,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                    <ListBoxItem Content="Free"/>
-                    <ListBoxItem Content="Enterprise"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="170,438,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
-                <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="170,458,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="170,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="170,538,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="170,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="374,575,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                    <ListBoxItem Content="Free"/>
-                    <ListBoxItem Content="Professional"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="170,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="170,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="170,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="170,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="170,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="170,718,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="374,715,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                    <ListBoxItem Content="Client"/>
-                    <ListBoxItem Content="Client + Citrix Plugin"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,796,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,826,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-            </Grid>
+            <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="General_Grid" Margin="0,0,0,1" VerticalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="13*"/>
+                        <ColumnDefinition Width="234*"/>
+                        <ColumnDefinition Width="586*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                    <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                    <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="124,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="140,30,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="2" ToolTip="If this is selectable at download!">
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="227,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="261,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" ToolTip="If this is selectable at download!">
+                        <ListBoxItem Content="x64"/>
+                        <ListBoxItem Content="x86"/>
+                    </ComboBox>
+                    <Label x:Name="Label_SelectMachine" Content="Select Machine Type" HorizontalAlignment="Left" Margin="343,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Machine" HorizontalAlignment="Left" Margin="373,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+                        <ListBoxItem Content="Virtual"/>
+                        <ListBoxItem Content="Physical"/>
+                    </ComboBox>
+                    <Label x:Name="Label_Explanation" Content="Selected globally, can be defined individually via Detail tab." HorizontalAlignment="Left" Margin="153,52,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2" />
+                    <Label x:Name="Label_Software" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_1Password" Content="1Password" HorizontalAlignment="Left" Margin="15,98,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_7Zip" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_AdobeProDC" Content="Adobe Pro DC" HorizontalAlignment="Left" Margin="15,138,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Update Only!"/>
+                    <CheckBox x:Name="Checkbox_AdobeReaderDC" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,158,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_AutodeskDWGTrueView" Content="Autodesk DWG TrueView" HorizontalAlignment="Left" Margin="15,178,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_BISF" Content="BIS-F" HorizontalAlignment="Left" Margin="15,198,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_CiscoWebexTeams" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_CitrixFiles" Content="Citrix Files" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_CitrixHypervisorTools" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,258,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <CheckBox x:Name="Checkbox_CitrixWorkspaceApp" Content="Citrix Workspace App" HorizontalAlignment="Left" Margin="15,278,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,274,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+                        <ListBoxItem Content="Current Release"/>
+                        <ListBoxItem Content="Long Term Service Release"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,295,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
+                        <ListBoxItem Content=".Net 3.5"/>
+                        <ListBoxItem Content=".Net 4.5"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_ControlUpConsole" Content="ControlUp Console" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,338,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="215,335,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Client"/>
+                        <ListBoxItem Content="Host"/>
+                        <ListBoxItem Content="Console"/>
+                        <ListBoxItem Content="Client + Host"/>
+                        <ListBoxItem Content="Host + Console"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="15,358,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,378,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,398,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_GIMP" Content="GIMP" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_GitForWindows" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,438,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_GoogleChrome" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,458,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_Greenshot" Content="Greenshot" HorizontalAlignment="Left" Margin="15,478,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_ImageGlass" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,498,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_IrfanView" Content="IrfanView" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_KeePass" Content="KeePass" HorizontalAlignment="Left" Margin="15,538,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_LogMeInGoToMeeting" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="15,558,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_MSDotNetFramework" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,578,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSDotNetFramework" HorizontalAlignment="Left" Margin="215,573,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Current"/>
+                        <ListBoxItem Content="LTS (Long Term Support)"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,598,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="215,594,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Insiders / First Release Current"/>
+                        <ListBoxItem Content="Monthly / Current"/>
+                        <ListBoxItem Content="Monthly Enterprise"/>
+                        <ListBoxItem Content="Deferred"/>
+                        <ListBoxItem Content="Targeted / First Release Deferred"/>
+                        <ListBoxItem Content="Broad"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSAVDRemoteDesktop" HorizontalAlignment="Left" Margin="215,615,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Insider"/>
+                        <ListBoxItem Content="Public"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSAzureCLI" Content="Microsoft Azure CLI" HorizontalAlignment="Left" Margin="15,638,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_MSAzureDataStudio" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,658,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSAzureDataStudio" HorizontalAlignment="Left" Margin="215,656,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Insider"/>
+                        <ListBoxItem Content="Stable"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSEdge" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,678,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSEdge" HorizontalAlignment="Left" Margin="215,676,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Developer"/>
+                        <ListBoxItem Content="Beta"/>
+                        <ListBoxItem Content="Stable"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSEdgeWebView2" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,716,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Preview"/>
+                        <ListBoxItem Content="Production"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,752,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Insider Ring"/>
+                        <ListBoxItem Content="Production Ring"/>
+                        <ListBoxItem Content="Enterprise Ring"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,778,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <CheckBox x:Name="Checkbox_MSPowerBIReportBuilder" Content="Microsoft Power BI Report Builder" HorizontalAlignment="Left" Margin="15,798,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <CheckBox x:Name="Checkbox_MSPowerShell" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="15,818,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSPowerShell" HorizontalAlignment="Left" Margin="215,816,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="Stable"/>
+                        <ListBoxItem Content="LTS (Long Term Support)"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                    <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="170,138,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,158,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,158,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+                    <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,155,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
+                        <ListBoxItem Content="Continuous Ring"/>
+                        <ListBoxItem Content="Exploration Ring"/>
+                        <ListBoxItem Content="Preview Ring"/>
+                        <ListBoxItem Content="General Ring"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="374,176,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                        <ListBoxItem Content="Enterprise Edition"/>
+                        <ListBoxItem Content="Professional Edition"/>
+                        <ListBoxItem Content="Community Edition"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="374,197,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                        <ListBoxItem Content="Insider"/>
+                        <ListBoxItem Content="Stable"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MindView7" Content="MindView 7" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="374,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Current"/>
+                        <ListBoxItem Content="ESR"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="170,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="170,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
+                    <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="170,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PDFsam" Content="PDF Split and Merge" HorizontalAlignment="Left" Margin="170,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="170,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="374,415,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Pre-Release"/>
+                        <ListBoxItem Content="Stable"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="170,438,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="374,436,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Free"/>
+                        <ListBoxItem Content="Enterprise"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="170,458,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="170,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="170,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="170,538,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="170,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="170,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="374,596,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Free"/>
+                        <ListBoxItem Content="Professional"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="170,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="170,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="170,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="170,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="170,718,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="170,738,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="374,735,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Client"/>
+                        <ListBoxItem Content="Client + Citrix Plugin"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,796,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,826,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                </Grid>
+            </ScrollViewer>
         </TabItem>
         <TabItem Header="Detail">
-            <Grid x:Name="Detail_Grid" Margin="0,0,0,1" VerticalAlignment="Stretch">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="13*"/>
-                    <ColumnDefinition Width="234*"/>
-                    <ColumnDefinition Width="586*"/>
-                </Grid.ColumnDefinitions>
-                <Image x:Name="Image_Logo_Detail" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-                <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <CheckBox x:Name="Checkbox_CleanUp" Content="CleanUp" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
-                <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
-                <Label x:Name="Label_Software_Detail" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <Label x:Name="Label_Architecture1_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="187,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="64" FontSize="10"/>
-                <Label x:Name="Label_Language1_Detail" Content="Language" HorizontalAlignment="Left" Margin="8,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
-                <CheckBox x:Name="Checkbox_7Zip_Detail" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_7Zip_Architecture" HorizontalAlignment="Left" Margin="215,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_AdobeReaderDC_Detail" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,143,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_AdobeReaderDC_Architecture" HorizontalAlignment="Left" Margin="215,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <ComboBox x:Name="Box_AdobeReaderDC_Language" HorizontalAlignment="Left" Margin="265,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_CiscoWebexTeams_Detail" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,168,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_CiscoWebexTeams_Architecture" HorizontalAlignment="Left" Margin="215,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_CitrixHypervisorTools_Detail" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,193,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_CitrixHypervisorTools_Architecture" HorizontalAlignment="Left" Margin="215,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_ControlUpAgent_Detail" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_ControlUpAgent_Architecture" HorizontalAlignment="Left" Margin="215,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_deviceTRUST_Detail" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,243,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_deviceTRUST_Architecture" HorizontalAlignment="Left" Margin="215,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_FoxitPDFEditor_Detail" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,268,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_FoxitPDFEditor_Language" HorizontalAlignment="Left" Margin="265,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_FoxitReader_Detail" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,293,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_FoxitReader_Language" HorizontalAlignment="Left" Margin="265,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_GitForWindows_Detail" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_GitForWindows_Architecture" HorizontalAlignment="Left" Margin="215,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_GoogleChrome_Detail" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,343,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_GoogleChrome_Architecture" HorizontalAlignment="Left" Margin="215,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_ImageGlass_Detail" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,368,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_ImageGlass_Architecture" HorizontalAlignment="Left" Margin="215,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_IrfanView_Detail" Content="IrfanView" HorizontalAlignment="Left" Margin="15,393,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_IrfanView_Architecture" HorizontalAlignment="Left" Margin="215,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <ComboBox x:Name="Box_IrfanView_Language" HorizontalAlignment="Left" Margin="265,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_KeePass_Detail" Content="KeePass" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_KeePass_Language" HorizontalAlignment="Left" Margin="265,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSDotNetFramework_Detail" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,443,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSDotNetFramework_Architecture" HorizontalAlignment="Left" Margin="215,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MS365Apps_Detail" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,468,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MS365Apps_Architecture" HorizontalAlignment="Left" Margin="215,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="265,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,493,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="265,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="265,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSEdgeWebView2_Detail" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSEdgeWebView2_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Danish"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="Finnish"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Norwegian"/>
-                    <ListBoxItem Content="Polish"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,693,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <Label x:Name="Label_Architecture2_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="442,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="64" FontSize="10"/>
-                <Label x:Name="Label_Language2_Detail" Content="Language" HorizontalAlignment="Left" Margin="514,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
-                <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="170,143,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-                <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Korean"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,168,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Firefox_Detail" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Firefox_Architecture" HorizontalAlignment="Left" Margin="470,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="Dutch"/>
-                    <ListBoxItem Content="English"/>
-                    <ListBoxItem Content="French"/>
-                    <ListBoxItem Content="German"/>
-                    <ListBoxItem Content="Italian"/>
-                    <ListBoxItem Content="Japanese"/>
-                    <ListBoxItem Content="Portuguese"/>
-                    <ListBoxItem Content="Russian"/>
-                    <ListBoxItem Content="Spanish"/>
-                    <ListBoxItem Content="Swedish"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_NotepadPlusPlus_Detail" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_NotepadPlusPlus_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_OpenJDK_Detail" Content="Open JDK" HorizontalAlignment="Left" Margin="170,268,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_OpenJDK_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,293,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="470,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_PeaZip_Detail" Content="PeaZip" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_PeaZip_Architecture" HorizontalAlignment="Left" Margin="470,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Putty_Detail" Content="PuTTY" HorizontalAlignment="Left" Margin="170,343,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Putty_Architecture" HorizontalAlignment="Left" Margin="470,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Slack_Detail" Content="Slack" HorizontalAlignment="Left" Margin="170,368,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_Slack_Architecture" HorizontalAlignment="Left" Margin="470,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_SumatraPDF_Detail" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,393,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                <ComboBox x:Name="Box_SumatraPDF_Architecture" HorizontalAlignment="Left" Margin="470,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_TechSmithSnagIt_Detail" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_TechSmithSnagIt_Architecture" HorizontalAlignment="Left" Margin="470,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_VLCPlayer_Detail" Content="VLC Player" HorizontalAlignment="Left" Margin="170,443,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_VLCPlayer_Architecture" HorizontalAlignment="Left" Margin="470,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_VMWareTools_Detail" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,468,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_VMWareTools_Architecture" HorizontalAlignment="Left" Margin="470,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_WinMerge_Detail" Content="WinMerge" HorizontalAlignment="Left" Margin="170,493,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_WinMerge_Architecture" HorizontalAlignment="Left" Margin="470,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="470,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
-                    <ListBoxItem Content="-"/>
-                    <ListBoxItem Content="x86"/>
-                    <ListBoxItem Content="x64"/>
-                </ComboBox>
-                <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,632,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                <TextBox HorizontalAlignment="Left" Height="40" Margin="172,663,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
-                <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,703,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
-                <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,633,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
-                <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
-            </Grid>
+            <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="Detail_Grid" Margin="0,0,0,1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="13*"/>
+                        <ColumnDefinition Width="234*"/>
+                        <ColumnDefinition Width="586*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="Image_Logo_Detail" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                    <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_CleanUp" Content="CleanUp" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                    <Label x:Name="Label_Software_Detail" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <Label x:Name="Label_Architecture1_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="187,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="64" FontSize="10"/>
+                    <Label x:Name="Label_Language1_Detail" Content="Language" HorizontalAlignment="Left" Margin="8,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
+                    <CheckBox x:Name="Checkbox_7Zip_Detail" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_7Zip_Architecture" HorizontalAlignment="Left" Margin="215,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_AdobeReaderDC_Detail" Content="Adobe Reader DC" HorizontalAlignment="Left" Margin="15,143,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_AdobeReaderDC_Architecture" HorizontalAlignment="Left" Margin="215,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_AdobeReaderDC_Language" HorizontalAlignment="Left" Margin="265,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_CiscoWebexTeams_Detail" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="15,168,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_CiscoWebexTeams_Architecture" HorizontalAlignment="Left" Margin="215,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_CitrixHypervisorTools_Detail" Content="Citrix Hypervisor Tools" HorizontalAlignment="Left" Margin="15,193,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_CitrixHypervisorTools_Architecture" HorizontalAlignment="Left" Margin="215,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_ControlUpAgent_Detail" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,218,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_ControlUpAgent_Architecture" HorizontalAlignment="Left" Margin="215,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_deviceTRUST_Detail" Content="deviceTRUST" HorizontalAlignment="Left" Margin="15,243,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_deviceTRUST_Architecture" HorizontalAlignment="Left" Margin="215,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_FoxitPDFEditor_Detail" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="15,268,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_FoxitPDFEditor_Language" HorizontalAlignment="Left" Margin="265,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_FoxitReader_Detail" Content="Foxit Reader" HorizontalAlignment="Left" Margin="15,293,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_FoxitReader_Language" HorizontalAlignment="Left" Margin="265,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_GitForWindows_Detail" Content="Git for Windows" HorizontalAlignment="Left" Margin="15,318,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_GitForWindows_Architecture" HorizontalAlignment="Left" Margin="215,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_GoogleChrome_Detail" Content="Google Chrome" HorizontalAlignment="Left" Margin="15,343,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_GoogleChrome_Architecture" HorizontalAlignment="Left" Margin="215,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_ImageGlass_Detail" Content="ImageGlass" HorizontalAlignment="Left" Margin="15,368,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_ImageGlass_Architecture" HorizontalAlignment="Left" Margin="215,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_IrfanView_Detail" Content="IrfanView" HorizontalAlignment="Left" Margin="15,393,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_IrfanView_Architecture" HorizontalAlignment="Left" Margin="215,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_IrfanView_Language" HorizontalAlignment="Left" Margin="265,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_KeePass_Detail" Content="KeePass" HorizontalAlignment="Left" Margin="15,418,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_KeePass_Language" HorizontalAlignment="Left" Margin="265,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSDotNetFramework_Detail" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,443,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSDotNetFramework_Architecture" HorizontalAlignment="Left" Margin="215,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MS365Apps_Detail" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,468,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Architecture" HorizontalAlignment="Left" Margin="215,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="265,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,493,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="265,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="265,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSEdgeWebView2_Detail" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSEdgeWebView2_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,693,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <Label x:Name="Label_Architecture2_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="442,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="64" FontSize="10"/>
+                    <Label x:Name="Label_Language2_Detail" Content="Language" HorizontalAlignment="Left" Margin="514,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
+                    <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="170,143,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                    <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,168,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MindView7_Detail" Content="MindView 7" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MindView7_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Firefox_Detail" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Firefox_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_NotepadPlusPlus_Detail" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,268,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_NotepadPlusPlus_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_OpenJDK_Detail" Content="Open JDK" HorizontalAlignment="Left" Margin="170,293,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_OpenJDK_Architecture" HorizontalAlignment="Left" Margin="470,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="470,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_PeaZip_Detail" Content="PeaZip" HorizontalAlignment="Left" Margin="170,343,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_PeaZip_Architecture" HorizontalAlignment="Left" Margin="470,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Putty_Detail" Content="PuTTY" HorizontalAlignment="Left" Margin="170,368,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Putty_Architecture" HorizontalAlignment="Left" Margin="470,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Slack_Detail" Content="Slack" HorizontalAlignment="Left" Margin="170,393,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_Slack_Architecture" HorizontalAlignment="Left" Margin="470,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_SumatraPDF_Detail" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_SumatraPDF_Architecture" HorizontalAlignment="Left" Margin="470,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_TechSmithSnagIt_Detail" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,443,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TechSmithSnagIt_Architecture" HorizontalAlignment="Left" Margin="470,443,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_VLCPlayer_Detail" Content="VLC Player" HorizontalAlignment="Left" Margin="170,468,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_VLCPlayer_Architecture" HorizontalAlignment="Left" Margin="470,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_VMWareTools_Detail" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,493,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_VMWareTools_Architecture" HorizontalAlignment="Left" Margin="470,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_WinMerge_Detail" Content="WinMerge" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_WinMerge_Architecture" HorizontalAlignment="Left" Margin="470,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="170,543,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="470,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,632,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <TextBox HorizontalAlignment="Left" Height="40" Margin="172,663,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
+                    <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,703,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
+                    <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,633,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
+                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                </Grid>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </Window>
@@ -1873,6 +1981,7 @@ $inputXML = @"
         $WPFBox_IrfanView_Language.SelectedIndex = $LastSetting[138] -as [int]
         $WPFBox_MSOffice2019_Language.SelectedIndex = $LastSetting[139] -as [int]
         $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex = $LastSetting[141] -as [int]
+        $WPFBox_MindView7_Language.SelectedIndex = $LastSetting[144] -as [int]
         Switch ($LastSetting[8]) {
             1 {
                 $WPFCheckbox_7ZIP.IsChecked = "True"
@@ -2212,6 +2321,22 @@ $inputXML = @"
                 $WPFCheckbox_MSEdgeWebView2_Detail.IsChecked = "True"
             }
         }
+        Switch ($LastSetting[142]) {
+            1 {
+                $WPFCheckbox_AutodeskDWGTrueView.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[143]) {
+            1 {
+                $WPFCheckbox_MindView7.IsChecked = "True"
+                $WPFCheckbox_MindView7_Detail.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[145]) {
+            1 {
+                $WPFCheckbox_PDFsam.IsChecked = "True"
+            }
+        }
     }
     
     #// MARK: Event Handler
@@ -2528,6 +2653,18 @@ $inputXML = @"
     $WPFCheckbox_MSVisualStudioCode_Detail.Add_Unchecked({
         $WPFCheckbox_MSVisualStudioCode.IsChecked = $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked
     })
+    $WPFCheckbox_MindView7.Add_Checked({
+        $WPFCheckbox_MindView7_Detail.IsChecked = $WPFCheckbox_MindView7.IsChecked
+    })
+    $WPFCheckbox_MindView7.Add_Unchecked({
+        $WPFCheckbox_MindView7_Detail.IsChecked = $WPFCheckbox_MindView7.IsChecked
+    })
+    $WPFCheckbox_MindView7_Detail.Add_Checked({
+        $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_MindView7_Detail.IsChecked
+    })
+    $WPFCheckbox_MindView7_Detail.Add_Unchecked({
+        $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_MindView7_Detail.IsChecked
+    })
     $WPFCheckbox_Firefox.Add_Checked({
         $WPFCheckbox_Firefox_Detail.IsChecked = $WPFCheckbox_Firefox.IsChecked
     })
@@ -2754,6 +2891,9 @@ $inputXML = @"
         $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AutodeskDWGTrueView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_PDFsam.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Checkbox SelectAll to Uncheck (AddScript)
@@ -2825,6 +2965,9 @@ $inputXML = @"
         $WPFCheckbox_TechSmithSnagIt.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinMerge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdgeWebView2.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_AutodeskDWGTrueView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_PDFsam.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Browse
@@ -2982,6 +3125,12 @@ $inputXML = @"
         Else {$Script:MS365Apps_Visio = 0}
         If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
         Else {$Script:MS365Apps_Project = 0}
+        If ($WPFCheckbox_AutodeskDWGTrueView.ischecked -eq $true) {$Script:AutodeskDWGTrueView = 1}
+        Else {$Script:AutodeskDWGTrueView = 0}
+        If ($WPFCheckbox_MindView7.ischecked -eq $true) {$Script:MindView7 = 1}
+        Else {$Script:MindView7 = 0}
+        If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
+        Else {$Script:PDFsam = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -3051,9 +3200,10 @@ $inputXML = @"
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
+        $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
         
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3224,6 +3374,12 @@ $inputXML = @"
         Else {$Script:MS365Apps_Visio = 0}
         If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
         Else {$Script:MS365Apps_Project = 0}
+        If ($WPFCheckbox_AutodeskDWGTrueView.ischecked -eq $true) {$Script:AutodeskDWGTrueView = 1}
+        Else {$Script:AutodeskDWGTrueView = 0}
+        If ($WPFCheckbox_MindView7.ischecked -eq $true) {$Script:MindView7 = 1}
+        Else {$Script:MindView7 = 0}
+        If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
+        Else {$Script:PDFsam = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -3293,9 +3449,10 @@ $inputXML = @"
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
+        $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
         
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3484,6 +3641,12 @@ $inputXML = @"
         Else {$Script:MS365Apps_Visio = 0}
         If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
         Else {$Script:MS365Apps_Project = 0}
+        If ($WPFCheckbox_AutodeskDWGTrueView.ischecked -eq $true) {$Script:AutodeskDWGTrueView = 1}
+        Else {$Script:AutodeskDWGTrueView = 0}
+        If ($WPFCheckbox_MindView7.ischecked -eq $true) {$Script:MindView7 = 1}
+        Else {$Script:MindView7 = 0}
+        If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
+        Else {$Script:PDFsam = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -3553,9 +3716,10 @@ $inputXML = @"
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
+        $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
 
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3725,6 +3889,12 @@ $inputXML = @"
         Else {$Script:MS365Apps_Visio = 0}
         If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
         Else {$Script:MS365Apps_Project = 0}
+        If ($WPFCheckbox_AutodeskDWGTrueView.ischecked -eq $true) {$Script:AutodeskDWGTrueView = 1}
+        Else {$Script:AutodeskDWGTrueView = 0}
+        If ($WPFCheckbox_MindView7.ischecked -eq $true) {$Script:MindView7 = 1}
+        Else {$Script:MindView7 = 0}
+        If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
+        Else {$Script:PDFsam = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Machine = $WPFBox_Machine.SelectedIndex
@@ -3794,9 +3964,10 @@ $inputXML = @"
         $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
+        $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
 
         # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Machine,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3983,6 +4154,10 @@ If ($file) {
         $MSOffice2019_Language = $FileSetting[139] -as [int]
         $MSEdgeWebView2 = $FileSetting[140] -as [int]
         $MSEdgeWebView2_Architecture = $FileSetting[141] -as [int]
+        $AutodeskDWGTrueView = $FileSetting[142] -as [int]
+        $MindView7 = $FileSetting[143] -as [int]
+        $MindView7_Language = $FileSetting[144] -as [int]
+        $PDFsam = $FileSetting[145] -as [int]
     }
     Write-Host "Unattended Mode."
     <#Else {
@@ -4596,7 +4771,7 @@ If ($file) {
 }
 Else {
     # Cleanup of the used variables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice2019_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture -ErrorAction SilentlyContinue
+    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Machine,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice2019_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -5360,6 +5535,32 @@ Switch ($MSVisualStudioCodeChannel) {
     1 { $MSVisualStudioCodeChannelClear = 'Stable'}
 }
 
+If ($MindView7_Language -ne "") {
+    Switch ($MindView7_Language) {
+        1 { $MindView7LanguageClear = 'Danish'}
+        2 { $MindView7LanguageClear = 'English'}
+        3 { $MindView7LanguageClear = 'French'}
+        4 { $MindView7LanguageClear = 'German'}
+    }
+}
+Else {
+    $MindView7LanguageClear = $LanguageClear
+    Switch ($LanguageClear) {
+        Dutch { $MindView7LanguageClear = 'English'}
+        Italian { $MindView7LanguageClear = 'English'}
+        Finnish { $MindView7LanguageClear = 'English'}
+        Norwegian { $MindView7LanguageClear = 'English'}
+        Polish { $MindView7LanguageClear = 'English'}
+        Portuguese { $MindView7LanguageClear = 'English'}
+        Swedish { $MindView7LanguageClear = 'English'}
+        Japanese { $MindView7LanguageClear = 'English'}
+        Korean { $MindView7LanguageClear = 'English'}
+        Polish { $MindView7LanguageClear = 'English'}
+        Russian { $MindView7LanguageClear = 'English'}
+        Spanish { $MindView7LanguageClear = 'English'}
+    }
+}
+
 If ($Firefox_Architecture -ne "") {
     Switch ($Firefox_Architecture) {
         1 { $FirefoxArchitectureClear = 'x86'}
@@ -5556,6 +5757,8 @@ If ($install -eq $False) {
     $LogFile = Join-path $LogDir $LogFileName
     $FWFileName = ("Firewall - $Date.log")
     $FWFile = Join-path $LogDir $FWFileName
+    $WhatIfFileName = ("WhatIf - $Date.log")
+    $WhatIfFile = Join-path $LogDir $WhatIfFileName
     $LogTemp = "$env:windir\Logs\Evergreen"
 
     # Create the log directories if they don't exist
@@ -5567,6 +5770,10 @@ If ($install -eq $False) {
     DS_WriteLog "I" "START SCRIPT - " $FWFile
     DS_WriteLog "-" "" $FWFile
 
+    # Create new log file (overwrite existing one)
+    New-Item $WhatIfFile -ItemType "file" -force | Out-Null
+    DS_WriteLog "I" "START SCRIPT - " $WhatIfFile
+    DS_WriteLog "-" "" $WhatIfFile
 
     #// Mark: Install / Update PowerShell module
     Write-Host -ForegroundColor DarkGray "Install / Update PowerShell module!"
@@ -5814,6 +6021,45 @@ If ($install -eq $False) {
                 Move-Item -Path "$PSScriptRoot\$Product\en-US\AcrobatReaderDC.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Autodesk DWG TrueView
+    If ($AutodeskDWGTrueView -eq 1) {
+        $Product = "Autodesk DWG TrueView"
+        $PackageName = "AutodeskDWGTrueView"
+        $AutodeskDWGTrueViewD = Get-DWGTrueView
+        $Version = $AutodeskDWGTrueViewD.Version
+        $URL = $AutodeskDWGTrueViewD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
         }
         Else {
@@ -8266,6 +8512,45 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download MindView 7
+    If ($MindView7 -eq 1) {
+        $Product = "MindView 7"
+        $PackageName = "MindView7-"
+        $MindView7D = Get-MindView7 | Where-Object { $_.Language -eq "$MindView7LanguageClear"}
+        $Version = $MindView7D.Version
+        $URL = $MindView7D.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "$MindView7LanguageClear" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MindView7LanguageClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $MindView7LanguageClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $MindView7LanguageClear $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download Mozilla Firefox
     If ($Firefox -eq 1) {
         $Product = "Mozilla Firefox"
@@ -9872,6 +10157,80 @@ If ($download -eq $False) {
             } Catch {
                 Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error customizing (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Autodesk DWG TrueView
+    If ($AutodeskDWGTrueView -eq 1) {
+        $Product = "Autodesk DWG TrueView"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $AutodeskDWGTrueViewD.Version
+        }
+        $DWGTrueView = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*DWG TrueView*"}).DisplayName | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$DWGTrueView) {
+            $DWGTrueView = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*DWG TrueView*"}).DisplayName | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        If ($DWGTrueView) {$DWGTrueViewV = $DWGTrueView.split(" ")[2]}
+        $AutodeskDWGTrueViewInstaller = "AutodeskDWGTrueView.exe"
+        $InstallMSI = "$PSScriptRoot\$Product\DWGTrueView_2022_English_64bit_dlm\x64\dwgviewr\DWGVIEWR.msi"
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $DWGTrueViewV"
+        If ($DWGTrueViewV -lt $Version) {
+            DS_WriteLog "I" "Unpacking $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "-suppresslaunch"
+                "-d"
+                "`"$PSScriptRoot\$Product`""
+            )
+            Try {
+                Write-Host "Starting unpacking of $Product $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$AutodeskDWGTrueViewInstaller" -ArgumentList $Options
+                }
+                $p = Get-Process AutodeskDWGTrueView
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Unpacking of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error unpacking $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error unpacking $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "I" "Installing $Product" $LogFile
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
+                "/qb ADSK_EULA_STATUS=#1 REBOOT=ReallySuppress ADSK_SETUP_EXE=1"
+            )
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\DWG TrueView*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\DWG TrueView*.lnk" -Force}
+                }
+            } Catch {
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -12744,6 +13103,60 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install MindView 7
+    If ($MindView7 -eq 1) {
+        $Product = "MindView 7"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MindView7LanguageClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $MindView7D.Version
+        }
+        $MindView7V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*MindView 7*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$MindView7V) {
+            $MindView7V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*MindView 7*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $MindView7Installer = "MindView7-" + "$MindView7LanguageClear" + "." + "exe"
+        $MindView7Process = "MindView7-" + "$MindView7LanguageClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $MindView7LanguageClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $MindView7V"
+        If ($MindView7V -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            DS_WriteLog "I" "Install $Product $Product $MindView7LanguageClear" $LogFile
+            $Options = @(
+                "/quiet"
+            )
+            Try {
+                Write-Host "Starting install of $Product $MindView7LanguageClear $Version"
+                If ($WhatIf -eq '0') {
+                    $null = Start-Process "$PSScriptRoot\$Product\$MindView7Installer" -ArgumentList $Options -NoNewWindow -PassThru
+                    while (Get-Process -Name $MindView7Process -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\MindView*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\MindView*.lnk" -Force}
+                }
+                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $MindView7LanguageClear (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Mozilla Firefox
     If ($Firefox -eq 1) {
         $Product = "Mozilla Firefox"
@@ -13154,36 +13567,34 @@ If ($download -eq $False) {
         If (!($Version)) {
             $Version = $PDFsamD.Version
         }
-        $PDFsamV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-        $openJDKLog = "$LogTemp\OpenJDK.log"
-        If (!$OpenJDKV) {
-            $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $PDFsamV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PDFsam*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $PDFsamLog = "$LogTemp\PDFsam.log"
+        If (!$PDFsamV) {
+            $PDFsamV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PDFsam*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $OpenJDKInstaller = "OpenJDK" + "$openJDKArchitectureClear" + ".msi"
-        If ($Version) {$Version = $Version -replace ".-"}
-        $InstallMSI = "$PSScriptRoot\$Product\$OpenJDKInstaller"
-        Write-Host -ForegroundColor Magenta "Install $Product $openJDKArchitectureClear"
+        $PDFsamInstaller = "PDFsam.msi"
+        $InstallMSI = "$PSScriptRoot\$Product\$PDFsamInstaller"
+        Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $OpenJDKV"
-        If ($OpenJDKV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $openJDKArchitectureClear" $LogFile
+        Write-Host "Current Version:  $PDFsamV"
+        If ($PDFsamV -lt $Version) {
+            DS_WriteLog "I" "Installing $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
                 "`"$InstallMSI`""
                 "/qn"
-                "INSTALLLEVEL=3"
-                "UPDATE_NOTIFIER=0"
-                "/L*V $openJDKLog"
+                "/L*V $PDFsamLog"
             )
             Try {
-                Write-Host "Starting install of $Product $openJDKArchitectureClear $Version"
+                Write-Host "Starting install of $Product $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk" -Force}
                 }
-                Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $openJDKLog
+                Get-Content $PDFsamLog | Add-Content $LogFile -Encoding ASCI
+                Remove-Item $PDFsamLog
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
