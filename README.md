@@ -13,4 +13,4 @@ The documentation can be found at https://www.deyda.net/index.php/en/evergreen-s
   \
   \
   \
-![https://www.deyda.net](/img/Logo_DEYDA_with_url.png)
+![https://www.deyda.net](/img/Deyda-header.png)
