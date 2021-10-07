@@ -102,7 +102,7 @@ the script checks the version number and will update the package.
   2021-10-04        Add PDF Forge & Merge Function / Add PDF Forge & Merge Download
   2021-10-05        Correction Copy custom XML / Add PDF Forge & Merge Install / Add Autodesk DWG TrueView Function / Add MindView 7 Function / Add Autodesk DWG TrueView Download and Install / Add MindView 7 Download and Install
   2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
-  2021-10-07        Correction Techsmith Camtasia Version
+  2021-10-07        Correction Techsmith Camtasia Version / Correction WhatIf Mode
 
 
 .PARAMETER download
@@ -9993,7 +9993,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$7ZipInstaller" -ArgumentList /S
                 }
-                $p = Get-Process 7-Zip_$7ZipArchitectureClear
+                $p = Get-Process 7-Zip_$7ZipArchitectureClear -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -10124,7 +10124,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$AdobeReaderInstaller" -ArgumentList $Options
                 }
-                $p = Get-Process Adobe_Reader_DC_$AdobeArchitectureClear$AdobeLanguageClear
+                $p = Get-Process Adobe_Reader_DC_$AdobeArchitectureClear$AdobeLanguageClear -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -10209,7 +10209,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$AutodeskDWGTrueViewInstaller" -ArgumentList $Options
                 }
-                $p = Get-Process AutodeskDWGTrueView
+                $p = Get-Process AutodeskDWGTrueView -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Unpacking of the new version $Version finished!"
@@ -10372,8 +10372,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $WebexLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $WebexLog
+                Get-Content $WebexLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $WebexLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -10429,8 +10429,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $CitrixFilesLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $CitrixFilesLog
+                Get-Content $CitrixFilesLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $CitrixFilesLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -10487,8 +10487,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $CitrixHypLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $CitrixHypLog
+                Get-Content $CitrixHypLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $CitrixHypLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -10628,8 +10628,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $ControlUpAgentLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $ControlUpAgentLog
+                Get-Content $ControlUpAgentLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $ControlUpAgentLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -10707,8 +10707,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Start-Process -FilePath "$PSScriptRoot\$Product\$deviceTRUSTClientInstaller" -ArgumentList $Options -PassThru -Wait -ErrorAction Stop | Out-Null
                     }
-                    Get-Content $deviceTRUSTClientLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $deviceTRUSTClientLog
+                    Get-Content $deviceTRUSTClientLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $deviceTRUSTClientLog -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 } Catch {
                     Write-Host -ForegroundColor Red "Error installing $Product Client (Error: $($Error[0]))"
@@ -10737,8 +10737,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                     }
-                    Get-Content $deviceTRUSTLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $deviceTRUSTLog
+                    Get-Content $deviceTRUSTLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $deviceTRUSTLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product Host (Error: $($Error[0]))" $LogFile
                 }
@@ -10765,8 +10765,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                     }
-                    Get-Content $deviceTRUSTLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $deviceTRUSTLog
+                    Get-Content $deviceTRUSTLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $deviceTRUSTLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product Console (Error: $($Error[0]))" $LogFile
                 }
@@ -10880,8 +10880,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $FoxitPDFEditorLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $FoxitPDFEditorLog
+                Get-Content $FoxitPDFEditorLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $FoxitPDFEditorLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
                 }
@@ -10941,8 +10941,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $FoxitLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $FoxitLog
+                Get-Content $FoxitLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $FoxitLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
                 }
@@ -11151,8 +11151,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $ChromeLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $ChromeLog
+                Get-Content $ChromeLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $ChromeLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Google Chrome.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Google Chrome.lnk" -Force}
                 }
@@ -11293,8 +11293,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $ImageGlassLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $ImageGlassLog
+                Get-Content $ImageGlassLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $ImageGlassLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\ImageGlass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\ImageGlass.lnk" -Force}
                 }
@@ -11436,8 +11436,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $KeePassLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $KeePassLog
+                Get-Content $KeePassLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $KeePassLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\KeePass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\KeePass.lnk" -Force}
                 }
@@ -11499,8 +11499,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                     }
-                    Get-Content $LogMeInGoToMeetingLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $LogMeInGoToMeetingLog
+                    Get-Content $LogMeInGoToMeetingLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $LogMeInGoToMeetingLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
@@ -11551,8 +11551,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                     }
-                    Get-Content $LogMeInGoToMeetingLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $LogMeInGoToMeetingLog
+                    Get-Content $LogMeInGoToMeetingLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $LogMeInGoToMeetingLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
@@ -11750,8 +11750,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $MSAVDRemoteDesktopLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $MSAVDRemoteDesktopLog
+                Get-Content $MSAVDRemoteDesktopLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $MSAVDRemoteDesktopLog -ErrorAction SilentlyContinue
             } catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -11806,8 +11806,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $MSAzureCLILog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $MSAzureCLILog
+                Get-Content $MSAzureCLILog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $MSAzureCLILog -ErrorAction SilentlyContinue
             } catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -11923,8 +11923,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $EdgeLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $EdgeLog
+                Get-Content $EdgeLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $EdgeLog -ErrorAction SilentlyContinue
             } catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -12561,8 +12561,8 @@ If ($download -eq $False) {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                 }
-                Get-Content $MSPowerBIReportBuilderLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $MSPowerBIReportBuilderLog
+                Get-Content $MSPowerBIReportBuilderLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $MSPowerBIReportBuilderLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -12620,8 +12620,8 @@ If ($download -eq $False) {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                 }
-                Get-Content $MSPowerShellLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $MSPowerShellLog
+                Get-Content $MSPowerShellLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $MSPowerShellLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -12813,8 +12813,8 @@ If ($download -eq $False) {
                             Start-Process -FilePath msiexec.exe -ArgumentList "/X $UninstallTeams /qn /L*V $TeamsLog"
                             Start-Sleep 20
                         }
-                        Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
-                        Remove-Item $TeamsLog
+                        Get-Content $TeamsLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                        Remove-Item $TeamsLog -ErrorAction SilentlyContinue
                         Write-Host -ForegroundColor Green "Uninstall $Product finished!" -Verbose
                         DS_WriteLog "I" "Uninstall $Product finished!" $LogFile
                     } Catch {
@@ -12849,8 +12849,8 @@ If ($download -eq $False) {
                         Install-MSI $InstallMSI $Arguments
                         Start-Sleep 5
                     }
-                    Get-Content $TeamsLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $TeamsLog
+                    Get-Content $TeamsLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $TeamsLog -ErrorAction SilentlyContinue
                     If ($WhatIf -eq '0') {
                         If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") { Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force }
                     }
@@ -13195,8 +13195,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $FirefoxLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $FirefoxLog
+                Get-Content $FirefoxLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $FirefoxLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear (Error: $($Error[0]))" $LogFile
             }
@@ -13250,8 +13250,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
-                Get-Content $mRemoteLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $mRemoteLog
+                Get-Content $mRemoteLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $mRemoteLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -13301,7 +13301,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$NmapInstaller"
                 }
-                $p = Get-Process Nmap-setup
+                $p = Get-Process Nmap-setup -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13353,7 +13353,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$NotepadPlusPlusInstaller" -ArgumentList /S -NoNewWindow
                 }
-                $p = Get-Process NotePadPlusPlus_$NotepadPlusPlusArchitectureClear
+                $p = Get-Process NotePadPlusPlus_$NotepadPlusPlusArchitectureClear -ErrorAction SilentlyContinue
 		        If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13417,8 +13417,8 @@ If ($download -eq $False) {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                 }
-                Get-Content $openJDKLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $openJDKLog
+                Get-Content $openJDKLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $openJDKLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -13473,7 +13473,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
                 }
-                $p = Get-Process OracleJava8_$OracleJava8ArchitectureClear
+                $p = Get-Process OracleJava8_$OracleJava8ArchitectureClear -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13532,7 +13532,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\paint.net.install.exe" -ArgumentList $Options -NoNewWindow
                 }
-                $p = Get-Process paint.net.install
+                $p = Get-Process paint.net.install -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13594,8 +13594,8 @@ If ($download -eq $False) {
                     Start-Sleep 25
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk" -Force}
                 }
-                Get-Content $PDFsamLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $PDFsamLog
+                Get-Content $PDFsamLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $PDFsamLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -13646,7 +13646,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$PeaZipInstaller" -ArgumentList $Options -NoNewWindow
                 }
-                $p = Get-Process $PeaZipProcess
+                $p = Get-Process $PeaZipProcess -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13710,8 +13710,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
-                    Get-Content $PuTTYLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $PuTTYLog
+                    Get-Content $PuTTYLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $PuTTYLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY.lnk" -Force}
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk" -Force}
                 }
@@ -13766,8 +13766,8 @@ If ($download -eq $False) {
                         If ($WhatIf -eq '0') {
                             Install-MSI $InstallMSI $Arguments
                         }
-                        Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
-                        Remove-Item $RemoteDesktopManagerLog
+                        Get-Content $RemoteDesktopManagerLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                        Remove-Item $RemoteDesktopManagerLog -ErrorAction SilentlyContinue
                     } Catch {
                         DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile       
                     }
@@ -13815,8 +13815,8 @@ If ($download -eq $False) {
                         If ($WhatIf -eq '0') {
                             Install-MSI $InstallMSI $Arguments
                         }
-                        Get-Content $RemoteDesktopManagerLog | Add-Content $LogFile -Encoding ASCI
-                        Remove-Item $RemoteDesktopManagerLog
+                        Get-Content $RemoteDesktopManagerLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                        Remove-Item $RemoteDesktopManagerLog -ErrorAction SilentlyContinue
                     } Catch {
                         DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile       
                     }
@@ -13869,7 +13869,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$ShareXInstaller" -ArgumentList $Options -NoNewWindow
                 }
-                $p = Get-Process ShareX-setup
+                $p = Get-Process ShareX-setup -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13939,8 +13939,8 @@ If ($download -eq $False) {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                 }
-                Get-Content $SlackLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $SlackLog
+                Get-Content $SlackLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $SlackLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product $SlackArchitectureClear $SlackPlatformClear (Error: $($Error[0]))" $LogFile
             }
@@ -14068,7 +14068,7 @@ If ($download -eq $False) {
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
-                $p = Get-Process TeamViewer-setup
+                $p = Get-Process TeamViewer-setup -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -14144,8 +14144,8 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
-                    Get-Content $TechSmithCamtasiaLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $TechSmithCamtasiaLog
+                    Get-Content $TechSmithCamtasiaLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $TechSmithCamtasiaLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Camtasia*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Camtasia*.lnk" -Force}
                 }
             } Catch {
@@ -14203,8 +14203,8 @@ If ($download -eq $False) {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                 }
-                Get-Content $TechSmithSnagItLog | Add-Content $LogFile -Encoding ASCI
-                Remove-Item $TechSmithSnagItLog
+                Get-Content $TechSmithSnagItLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                Remove-Item $TechSmithSnagItLog -ErrorAction SilentlyContinue
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -14249,7 +14249,7 @@ If ($download -eq $False) {
                         If ($WhatIf -eq '0') {
                             Start-Process "$PSScriptRoot\$Product\TreeSize_Free.exe" -ArgumentList /VerySilent -NoNewWindow
                         }
-                        $p = Get-Process TreeSize_Free
+                        $p = Get-Process TreeSize_Free -ErrorAction SilentlyContinue
                         If ($p) {
                             $p.WaitForExit()
                             Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -14295,7 +14295,7 @@ If ($download -eq $False) {
                         If ($WhatIf -eq '0') {
                             Start-Process "$PSScriptRoot\$Product\TreeSize_Professional.exe" -ArgumentList /VerySilent -NoNewWindow
                         }
-                        $p = Get-Process TreeSize_Professional
+                        $p = Get-Process TreeSize_Professional -ErrorAction SilentlyContinue
                         If ($p) {
                             $p.WaitForExit()
                             Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -14405,8 +14405,8 @@ If ($download -eq $False) {
                 Write-Host "Starting install of $Product $ArchitectureClear $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
-                    Get-Content $VLCLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $VLCLog
+                    Get-Content $VLCLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $VLCLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\VLC media player.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force}
                 }
             } Catch {
@@ -14521,7 +14521,7 @@ If ($download -eq $False) {
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$WinMergeInstaller" -ArgumentList $Options -NoNewWindow
                 }
-                $p = Get-Process $WinMergeProcess
+                $p = Get-Process $WinMergeProcess -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -14698,8 +14698,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                         Start-Sleep 25
-                        Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                        Remove-Item $ZoomLog
+                        Get-Content $ZoomLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                        Remove-Item $ZoomLog -ErrorAction SilentlyContinue
                         If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom VDI.lnk" -Force}
                     }
                 } Catch {
@@ -14745,8 +14745,8 @@ If ($download -eq $False) {
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                         Start-Sleep 25
-                        Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                        Remove-Item $ZoomLog
+                        Get-Content $ZoomLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                        Remove-Item $ZoomLog -ErrorAction SilentlyContinue
                         If (Test-Path -Path "$env:PUBLIC\Desktop\Zoom.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Zoom.lnk" -Force}
                     }
                 } Catch {
@@ -14795,8 +14795,8 @@ If ($download -eq $False) {
                         Install-MSI $InstallMSI $Arguments
                         Start-Sleep 25
                     }
-                    Get-Content $ZoomLog | Add-Content $LogFile -Encoding ASCI
-                    Remove-Item $ZoomLog
+                    Get-Content $ZoomLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $ZoomLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
                 }
