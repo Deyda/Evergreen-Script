@@ -102,6 +102,7 @@ the script checks the version number and will update the package.
   2021-10-04        Add PDF Forge & Merge Function / Add PDF Forge & Merge Download
   2021-10-05        Correction Copy custom XML / Add PDF Forge & Merge Install / Add Autodesk DWG TrueView Function / Add MindView 7 Function / Add Autodesk DWG TrueView Download and Install / Add MindView 7 Download and Install
   2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
+  2021-10-07        Correction Techsmith Camtasia Version
 
 
 .PARAMETER download
@@ -14111,8 +14112,8 @@ If ($download -eq $False) {
         If (!$TechSmithCamtasiaV) {
             $TechSmithCamtasiaV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Camtasia*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $TechSmithCamtasiaSplit = $TechSmithCamtasiaV.split(".")
-        $TechSmithCamtasiaStrings = ([regex]::Matches($TechSmithCamtasiaV, "\." )).count
+        If ($TechSmithCamtasiaV) {$TechSmithCamtasiaSplit = $TechSmithCamtasiaV.split(".")}
+        If ($TechSmithCamtasiaSplit) {$TechSmithCamtasiaStrings = ([regex]::Matches($TechSmithCamtasiaV, "\." )).count}
         Switch ($TechSmithCamtasiaStrings) {
             1 {
                 $TechSmithCamtasiaVN = $TechSmithCamtasiaSplit[0] + "." + $TechSmithCamtasiaSplit[1]
