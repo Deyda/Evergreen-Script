@@ -1279,7 +1279,7 @@ $inputXML = @"
                         <ListBoxItem Content="x86"/>
                     </ComboBox>
                     <Label x:Name="Label_SelectInstaller" Content="Select Installer Type" HorizontalAlignment="Left" Margin="343,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Installer" HorizontalAlignment="Left" Margin="373,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+                    <ComboBox x:Name="Box_Installer" HorizontalAlignment="Left" Margin="346,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
                         <ListBoxItem Content="Machine Based"/>
                         <ListBoxItem Content="User Based"/>
                     </ComboBox>
