@@ -7296,7 +7296,7 @@ If ($install -eq $False) {
                     If ($MS365Apps_Project -eq '1') {
                         Write-Host "Add Microsoft Project to install.xml for Machine-Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","VisioProRetail")
+                        $Node2.SetAttribute("ID","ProjectProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                             $Node3.SetAttribute("ID","MatchOS")
                             $Node3.SetAttribute("Fallback","en-us")
