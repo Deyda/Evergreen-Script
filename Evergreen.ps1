@@ -104,6 +104,7 @@ the script checks the version number and will update the package.
   2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
   2021-10-07        Correction Techsmith Camtasia Version / Correction WhatIf Mode
   2021-10-08        Change Machine Type to Installer Label
+  2021-10-14        Correction Visio / Project Typo
 
 
 .PARAMETER download
@@ -7296,7 +7297,7 @@ If ($install -eq $False) {
                     If ($MS365Apps_Project -eq '1') {
                         Write-Host "Add Microsoft Project to install.xml for Machine-Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","VisioProRetail")
+                        $Node2.SetAttribute("ID","ProjectProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                             $Node3.SetAttribute("ID","MatchOS")
                             $Node3.SetAttribute("Fallback","en-us")
