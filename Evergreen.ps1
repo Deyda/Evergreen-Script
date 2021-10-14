@@ -104,7 +104,7 @@ the script checks the version number and will update the package.
   2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
   2021-10-07        Correction Techsmith Camtasia Version / Correction WhatIf Mode
   2021-10-08        Change Machine Type to Installer Label
-  2021-10-14        Correction Visio / Project Typo
+  2021-10-14        Correction Visio / Project Typo / Fix Microsoft365 Apps Channels
 
 
 .PARAMETER download
@@ -1332,12 +1332,12 @@ $inputXML = @"
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MS365Apps" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,598,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <ComboBox x:Name="Box_MS365Apps" HorizontalAlignment="Left" Margin="215,594,0,0" VerticalAlignment="Top" SelectedIndex="4" Grid.Column="1" Grid.ColumnSpan="2">
-                        <ListBoxItem Content="Insiders / First Release Current"/>
-                        <ListBoxItem Content="Monthly / Current"/>
-                        <ListBoxItem Content="Monthly Enterprise"/>
-                        <ListBoxItem Content="Deferred"/>
-                        <ListBoxItem Content="Targeted / First Release Deferred"/>
-                        <ListBoxItem Content="Broad"/>
+                        <ListBoxItem Content="Beta Channel"/>
+                        <ListBoxItem Content="Current Channel (Preview)"/>
+                        <ListBoxItem Content="Current Channel"/>
+                        <ListBoxItem Content="Semi-Annual Channel (Preview)"/>
+                        <ListBoxItem Content="Monthly Enterprise Channel"/>
+                        <ListBoxItem Content="Semi-Annual Channel"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1" />
                     <ComboBox x:Name="Box_MSAVDRemoteDesktop" HorizontalAlignment="Left" Margin="215,615,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
@@ -3210,12 +3210,12 @@ $inputXML = @"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Insiders'}
-                    1 { $MS365AppsChannelClear = 'Monthly'}
-                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
-                    3 { $MS365AppsChannelClear = 'Deferred'}
-                    4 { $MS365AppsChannelClear = 'Targeted'}
-                    5 { $MS365AppsChannelClear = 'Broad'}
+                    0 { $MS365AppsChannelClear = 'Beta Channel'}
+                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                    2 { $MS365AppsChannelClear = 'Current Channel'}
+                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
@@ -3459,12 +3459,12 @@ $inputXML = @"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Insiders'}
-                    1 { $MS365AppsChannelClear = 'Monthly'}
-                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
-                    3 { $MS365AppsChannelClear = 'Deferred'}
-                    4 { $MS365AppsChannelClear = 'Targeted'}
-                    5 { $MS365AppsChannelClear = 'Broad'}
+                    0 { $MS365AppsChannelClear = 'Beta Channel'}
+                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                    2 { $MS365AppsChannelClear = 'Current Channel'}
+                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
@@ -3726,12 +3726,12 @@ $inputXML = @"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Insiders'}
-                    1 { $MS365AppsChannelClear = 'Monthly'}
-                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
-                    3 { $MS365AppsChannelClear = 'Deferred'}
-                    4 { $MS365AppsChannelClear = 'Targeted'}
-                    5 { $MS365AppsChannelClear = 'Broad'}
+                    0 { $MS365AppsChannelClear = 'Beta Channel'}
+                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                    2 { $MS365AppsChannelClear = 'Current Channel'}
+                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
@@ -3974,12 +3974,12 @@ $inputXML = @"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Insiders'}
-                    1 { $MS365AppsChannelClear = 'Monthly'}
-                    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
-                    3 { $MS365AppsChannelClear = 'Deferred'}
-                    4 { $MS365AppsChannelClear = 'Targeted'}
-                    5 { $MS365AppsChannelClear = 'Broad'}
+                    0 { $MS365AppsChannelClear = 'Beta Channel'}
+                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                    2 { $MS365AppsChannelClear = 'Current Channel'}
+                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
@@ -5173,21 +5173,21 @@ Else {
 }
 
 Switch ($MS365AppsChannel) {
-    0 { $MS365AppsChannelClear = 'Insiders'}
-    1 { $MS365AppsChannelClear = 'Monthly'}
-    2 { $MS365AppsChannelClear = 'MonthlyEnterprise'}
-    3 { $MS365AppsChannelClear = 'Deferred'}
-    4 { $MS365AppsChannelClear = 'Targeted'}
-    5 { $MS365AppsChannelClear = 'Broad'}
+    0 { $MS365AppsChannelClear = 'Beta Channel'}
+    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+    2 { $MS365AppsChannelClear = 'Current Channel'}
+    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
 }
 
 Switch ($MS365AppsChannel) {
-    0 { $MS365AppsChannelClearDL = 'Monthly (Targeted)'}
-    1 { $MS365AppsChannelClearDL = 'Monthly'}
-    2 { $MS365AppsChannelClearDL = 'Monthly Enterprise'}
-    3 { $MS365AppsChannelClearDL = 'Semi-Annual Channel (Targeted)'}
-    4 { $MS365AppsChannelClearDL = 'Semi-Annual Channel'}
-    5 { $MS365AppsChannelClearDL = 'Semi-Annual Channel'}
+    0 { $MS365AppsChannelClearDL = 'BetaChannel'}
+    1 { $MS365AppsChannelClearDL = 'CurrentPreview'}
+    2 { $MS365AppsChannelClearDL = 'Current'}
+    3 { $MS365AppsChannelClearDL = 'SemiAnnualPreview'}
+    4 { $MS365AppsChannelClearDL = 'MonthlyEnterprise'}
+    5 { $MS365AppsChannelClearDL = 'SemiAnnual'}
 }
 
 If ($MS365Apps_Project_Language -ne "") {
@@ -7214,7 +7214,7 @@ If ($install -eq $False) {
     If ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         $PackageName = "setup_" + "$MS365AppsChannelClear"
-        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClear"}
+        $MS365AppsD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MS365AppsChannelClearDL"}
         $Version = $MS365AppsD.Version
         $URL = $MS365AppsD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
