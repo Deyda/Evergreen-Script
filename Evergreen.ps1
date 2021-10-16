@@ -11298,6 +11298,7 @@ If ($download -eq $False) {
                 }
                 Get-Content $ImageGlassLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $ImageGlassLog -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 10
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\ImageGlass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\ImageGlass.lnk" -Force}
                 }
