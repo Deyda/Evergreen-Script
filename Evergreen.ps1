@@ -105,6 +105,7 @@ the script checks the version number and will update the package.
   2021-10-07        Correction Techsmith Camtasia Version / Correction WhatIf Mode
   2021-10-08        Change Machine Type to Installer Label
   2021-10-14        Correction Visio / Project Typo / Fix Microsoft365 Apps Channels
+  2021-10-17        Correction Microsoft Teams Machine Based Download
 
 
 .PARAMETER download
@@ -8345,10 +8346,10 @@ If ($install -eq $False) {
         If ($Installer -eq '0') {
             $Product = "Microsoft Teams Machine Based"
             If ($MSTeamsRingClear -eq 'Continuous Deployment' -or $MSTeamsRingClear -eq 'Exploration') {
-                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" }
+                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI" }
             }
             Else {
-                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
             }
             $Version = $TeamsD.Version
             $TeamsSplit = $Version.split(".")
@@ -8399,7 +8400,7 @@ If ($install -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Machine -eq '1') {
+        If ($Installer -eq '1') {
             $Product = "Microsoft Teams User Based"
             $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             $Version = $TeamsD.Version
