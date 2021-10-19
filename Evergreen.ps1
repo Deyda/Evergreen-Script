@@ -8346,19 +8346,21 @@ If ($install -eq $False) {
         If ($Installer -eq '0') {
             $Product = "Microsoft Teams Machine Based"
             If ($MSTeamsRingClear -eq 'Continuous Deployment' -or $MSTeamsRingClear -eq 'Exploration') {
-                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI" }
+                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
             }
             Else {
-                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             }
             $Version = $TeamsD.Version
-            $TeamsSplit = $Version.split(".")
-            $TeamsStrings = ([regex]::Matches($Version, "\." )).count
-            $TeamsStringLast = ([regex]::Matches($TeamsSplit[$TeamsStrings], "." )).count
-            If ($TeamsStringLast -lt "5") {
-                $TeamsSplit[$TeamsStrings] = "0" + $TeamsSplit[$TeamsStrings]
+            If ($Version) {
+                $TeamsSplit = $Version.split(".")
+                $TeamsStrings = ([regex]::Matches($Version, "\." )).count
+                $TeamsStringLast = ([regex]::Matches($TeamsSplit[$TeamsStrings], "." )).count
+                If ($TeamsStringLast -lt "5") {
+                    $TeamsSplit[$TeamsStrings] = "0" + $TeamsSplit[$TeamsStrings]
+                }
+                $NewVersion = $TeamsSplit[0] + "." + $TeamsSplit[1] + "." + $TeamsSplit[2] + "." + $TeamsSplit[3]
             }
-            $NewVersion = $TeamsSplit[0] + "." + $TeamsSplit[1] + "." + $TeamsSplit[2] + "." + $TeamsSplit[3]
             $URL = $TeamsD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
