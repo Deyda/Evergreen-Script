@@ -6,10 +6,12 @@ Download and Install several Software with the Evergreen module from Aaron Parke
 To update or download a software package just select a LastSetting.txt file (With parameter -file) or select your Software out of the GUI.
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
+
 .NOTES
-  Version:          2.02
+  Version:          2.03
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
+
   // NOTE: Purpose/Change
   2021-01-29        Initial Version
   2021-01-30        Error solved: No installation without parameters / Add WinSCP Install
@@ -99,44 +101,36 @@ the script checks the version number and will update the package.
   2021-09-27        Change PeaZip, PuTTY, Slack, VLC Player, VMWare Tools, TechSmith SnagIt, WinMerge, Wireshark and Sumatra PDF to new variables / Add Microsoft Project and Microsoft Visio to install.xml creation / Correction Sumatra PDF Reader download link / Change Microsoft Teams download / Add CleanUp Function
   2021-09-28        Add WhatIf Function to Download section / Add OpenFileDialog Function / Add Own Microsoft 365 Apps XML File
   2021-09-29        Add WhatIf Function to Install section / Kill -List Hardcoded Function
-  2021-10-04        Add PDF Forge & Merge Function / Add PDF Forge & Merge Download
-  2021-10-05        Correction Copy custom XML / Add PDF Forge & Merge Install / Add Autodesk DWG TrueView Function / Add MindView 7 Function / Add Autodesk DWG TrueView Download and Install / Add MindView 7 Download and Install
+  2021-10-04        Add PDF Split & Merge Function / Add PDF Split & Merge Download
+  2021-10-05        Correction Copy custom XML / Add PDF Split & Merge Install / Add Autodesk DWG TrueView Function / Add MindView 7 Function / Add Autodesk DWG TrueView Download and Install / Add MindView 7 Download and Install
   2021-10-06        Add Autodesk DWG TrueView, MindView 7 and PDF Split & Merge to GUI and LastSetting.txt
   2021-10-07        Correction Techsmith Camtasia Version / Correction WhatIf Mode
   2021-10-08        Change Machine Type to Installer Label
   2021-10-14        Correction Visio / Project Typo / Fix Microsoft365 Apps Channels
   2021-10-17        Correction Microsoft Teams Machine Based Download
+  2021-10-18        Add GUIfile Parameter / Add Mode and Global Information / Add Single Install Type Definition for LogMeInGoToMeeting, Microsoft 365 Apps, Microsoft Visual Studio Code, Microsoft Azure Data Studio, Microsoft OneDrive, Microsoft Teams and Microsoft Office
+  2021-10-19        Add Single Install Type Definition for Slack and Zoom / Add Microsoft Office 2021 LTSC / Change Microsoft Office and Microsoft 365 Apps ADMX Architecture / Add Open-Shell Menu Download and Install / Add pdfforge PDFCreator Download Function / Add pdfforge PDFCreator Download and Install / Add Total Commander Download Function / Add Total Commander Download and Install
 
-
-.PARAMETER download
-
-Only download the software packages in unattended mode (-file).
-
-.PARAMETER install
-
-Only install the software packages in unattended mode (-file).
 
 .PARAMETER file
 
-Path to GUI file (LastSetting.txt) for software selection in unattended mode.
+Path to file (LastSetting.txt) for software selection in unattended mode.
 
-.EXAMPLE
+.PARAMETER GUIfile
 
-.\Evergreen.ps1 -file LastSettings.txt -download
-
-Download the selected Software out of the file.
-
-.EXAMPLE
-
-.\Evergreen.ps1 -file LastSettings.txt -install
-
-Install the selected Software out of the file.
+Path to GUI file (LastSetting.txt) for software selection in GUI mode.
 
 .EXAMPLE
 
 .\Evergreen.ps1 -file LastSetting.txt
 
-Download and install the selected Software out of the file LastSettings.txt.
+Download and / or Install the selected Software out of the file.
+
+.EXAMPLE
+
+.\Evergreen.ps1 -GUIfile LastSetting.txt
+
+Start the GUI with the options out of the file.
 
 .EXAMPLE
 
@@ -153,13 +147,13 @@ Param (
             HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
         )]
-        [switch]$download,
+        [string]$download,
 
         [Parameter(
             HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
         )]
-        [switch]$install,
+        [string]$install,
 
         [Parameter(
             HelpMessage='File with Software Selection',
@@ -167,6 +161,12 @@ Param (
         )]
         [string]$file,
     
+        [Parameter(
+            HelpMessage='File with Software Selection for GUI',
+            ValuefromPipelineByPropertyName = $true
+        )]
+        [string]$GUIfile,
+
         [Parameter(
             HelpMessage='Not used anymore',
             ValuefromPipelineByPropertyName = $true
@@ -274,11 +274,6 @@ Filter Get-FileSize {
 # Function IrfanView Download
 #========================================================================================================================================
 Function Get-IrfanView {
-    <#
-        .NOTES
-            Author: Trond Eirik Haavarstein
-            Twitter: @xenappblog
-    #>
     [OutputType([System.Management.Automation.PSObject])]
     [CmdletBinding()]
     Param ()
@@ -563,6 +558,104 @@ Function Get-DWGTrueView() {
 
         Write-Output -InputObject $PSObjectx64
         
+    }
+}
+
+# Function Total Commander Download
+#========================================================================================================================================
+Function Get-TotalCommander() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.ghisler.com/ddownload.htm"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "Total Commander Version .{5}"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersion.Split(" ")[3]
+        $URLappVersionSplit = $appVersion.Split(".")
+        $URLappVersion = $URLappVersionSplit[0] + $URLappVersionSplit[1]
+        
+        $appx64URL = "https://totalcommander.ch/win/tcmd" + "$URLappVersion" + "x64.exe"
+        $appx32URL = "https://totalcommander.ch/win/tcmd" + "$URLappVersion" + "x32.exe"
+        
+        $PSObjectx64 = [PSCustomObject] @{
+            Version      = $appVersion
+            Architecture = "x64"
+            URI          = $appx64URL
+        }
+
+        $PSObjectx32 = [PSCustomObject] @{
+            Version      = $appVersion
+            Architecture = "x86"
+            URI          = $appx32URL
+        }
+
+        Write-Output -InputObject $PSObjectx64
+        Write-Output -InputObject $PSObjectx32
+    }
+}
+
+# Function pdfforge PDFCreator
+#========================================================================================================================================
+Function Get-pdfforgePDFCreator() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersionFree = "https://download.pdfforge.org/download/pdfcreator"
+    $appURLVersionProfessional = "https://download.pdfforge.org/download/pdfcreator-professional"
+    $appURLVersionTerminal = "https://download.pdfforge.org/download/pdfcreator-terminal-server"
+    Try {
+        $webRequestFree = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersionFree) -SessionVariable websession
+        $webRequestProfessional = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersionProfessional) -SessionVariable websession
+        $webRequestTerminal = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersionTerminal) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "Stable Release.{6}"
+
+        $webVersionFree = $webRequestFree.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersionFree = $webVersionFree.Split(" ")[2]
+        $webURLFree = "https://download.pdfforge.org/download/pdfcreator/PDFCreator-stable?download"
+
+        $webVersionProfessional = $webRequestProfessional.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersionProfessional = $webVersionProfessional.Split(" ")[2]
+        $webURLProfessional = "https://download.pdfforge.org/download/pdfcreator-professional/PDFCreatorProfessional-stable?download"
+
+        $webVersionTerminal = $webRequestTerminal.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersionTerminal = $webVersionTerminal.Split(" ")[2]
+        $webURLTerminal = "https://download.pdfforge.org/download/pdfcreator-terminal-server/PDFCreatorTerminalServer-stable?download"
+
+        $PSObjectFree = [PSCustomObject] @{
+            Version      = $appVersionFree
+            Channel      = "Free"
+            URI          = $webURLFree
+        }
+
+        $PSObjectProfessional = [PSCustomObject] @{
+            Version      = $appVersionProfessional
+            Channel      = "Professional"
+            URI          = $webURLProfessional
+        }
+
+        $PSObjectTerminal = [PSCustomObject] @{
+            Version      = $appVersionTerminal
+            Channel      = "Terminal Server"
+            URI          = $webURLTerminal
+        }
+
+        Write-Output -InputObject $PSObjectFree
+        Write-Output -InputObject $PSObjectProfessional
+        Write-Output -InputObject $PSObjectTerminal
     }
 }
 
@@ -1084,7 +1177,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.02"
+$eVersion = "2.03"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1238,7 +1331,7 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="920" Width="940"
+        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="980" Width="940"
         Icon="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
         WindowStartupLocation="CenterScreen">
     <TabControl Grid.Column="1">
@@ -1250,10 +1343,10 @@ $inputXML = @"
                         <ColumnDefinition Width="234*"/>
                         <ColumnDefinition Width="586*"/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="Image_Logo" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
-                    <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="271,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                    <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="366,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                    <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="502,804,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                    <Image x:Name="Image_Logo" Height="100" Margin="510,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                    <Button x:Name="Button_Start" Content="Start" HorizontalAlignment="Left" Margin="291,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Cancel" Content="Cancel" HorizontalAlignment="Left" Margin="386,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Save" Content="Save" HorizontalAlignment="Left" Margin="522,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt or -GUIFile Parameter file"/>
                     <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="103,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
@@ -1275,13 +1368,13 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="227,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="261,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" ToolTip="If this is selectable at download!">
+                    <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="234,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="264,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" ToolTip="If this is selectable at download!">
                         <ListBoxItem Content="x64"/>
                         <ListBoxItem Content="x86"/>
                     </ComboBox>
-                    <Label x:Name="Label_SelectInstaller" Content="Select Installer Type" HorizontalAlignment="Left" Margin="343,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Installer" HorizontalAlignment="Left" Margin="346,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
+                    <Label x:Name="Label_SelectInstaller" Content="Select Installer Type" HorizontalAlignment="Left" Margin="353,3,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Installer" HorizontalAlignment="Left" Margin="359,30,0,0" VerticalAlignment="Top" SelectedIndex="0" RenderTransformOrigin="0.864,0.591" Grid.Column="2" ToolTip="If this is different at install!">
                         <ListBoxItem Content="Machine Based"/>
                         <ListBoxItem Content="User Based"/>
                     </ComboBox>
@@ -1359,13 +1452,17 @@ $inputXML = @"
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSEdgeWebView2" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,698,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_MSFSlogix" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,716,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="215,713,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="Preview"/>
                         <ListBoxItem Content="Production"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSOffice2019" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <CheckBox x:Name="Checkbox_MSOffice" Content="Microsoft Office" HorizontalAlignment="Left" Margin="15,738,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOffice" HorizontalAlignment="Left" Margin="215,734,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="2019"/>
+                        <ListBoxItem Content="2021 LTSC"/>
+                    </ComboBox>
                     <CheckBox x:Name="Checkbox_MSOneDrive" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,758,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,752,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MSOneDrive" HorizontalAlignment="Left" Margin="215,755,0,0" VerticalAlignment="Top" SelectedIndex="2" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="Insider Ring"/>
                         <ListBoxItem Content="Production Ring"/>
                         <ListBoxItem Content="Enterprise Ring"/>
@@ -1377,77 +1474,85 @@ $inputXML = @"
                         <ListBoxItem Content="Stable"/>
                         <ListBoxItem Content="LTS (Long Term Support)"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="170,98,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-                    <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="170,138,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left" ToolTip="Only Download"/>
-                    <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,158,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="505,158,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
-                    <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="374,155,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSPowerToys" Content="Microsoft PowerToys" HorizontalAlignment="Left" Margin="15,838,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio" Content="Microsoft SQL Server Management Studio" Margin="190,98,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
+                    <CheckBox x:Name="Checkbox_MSSysinternals" Content="Microsoft Sysinternals" Margin="190,118,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_MSTeams" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="190,138,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_MSTeams_No_AutoStart" Content="No AutoStart" HorizontalAlignment="Left" Margin="535,138,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Delete the HKLM Run entry to AutoStart Microsoft Teams"/>
+                    <ComboBox x:Name="Box_MSTeams" HorizontalAlignment="Left" Margin="394,135,0,0" VerticalAlignment="Top" SelectedIndex="3" Grid.Column="2">
                         <ListBoxItem Content="Continuous Ring"/>
                         <ListBoxItem Content="Exploration Ring"/>
                         <ListBoxItem Content="Preview Ring"/>
                         <ListBoxItem Content="General Ring"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="170,178,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="374,176,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="190,158,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="394,156,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
                         <ListBoxItem Content="Enterprise Edition"/>
                         <ListBoxItem Content="Professional Edition"/>
                         <ListBoxItem Content="Community Edition"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="374,197,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="190,178,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="394,177,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
                         <ListBoxItem Content="Insider"/>
                         <ListBoxItem Content="Stable"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MindView7" Content="MindView 7" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="374,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MindView7" Content="MindView 7" HorizontalAlignment="Left" Margin="190,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="190,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="394,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Current"/>
                         <ListBoxItem Content="ESR"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="170,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="170,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
-                    <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="170,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PDFsam" Content="PDF Split and Merge" HorizontalAlignment="Left" Margin="170,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="170,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="374,415,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="190,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="190,258,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
+                    <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="190,278,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="190,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OpenShellMenu" Content="Open-Shell Menu" HorizontalAlignment="Left" Margin="190,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="190,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="190,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PDFForgeCreator" Content="pdfforge PDFCreator" HorizontalAlignment="Left" Margin="190,378,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No Silent Installation!"/>
+                    <ComboBox x:Name="Box_pdfforgePDFCreator" HorizontalAlignment="Left" Margin="394,375,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="Free"/>
+                        <ListBoxItem Content="Professional"/>
+                        <ListBoxItem Content="Terminal Server"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_PDFsam" Content="PDF Split and Merge" HorizontalAlignment="Left" Margin="190,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="190,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="190,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="394,435,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Pre-Release"/>
                         <ListBoxItem Content="Stable"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="170,438,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="374,436,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="190,458,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="394,456,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Free"/>
                         <ListBoxItem Content="Enterprise"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="170,458,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
-                    <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="170,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="170,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="170,538,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="170,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="170,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="374,596,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="190,478,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="190,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="190,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="190,538,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="190,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="190,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="190,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TotalCommander" Content="Total Commander" HorizontalAlignment="Left" Margin="190,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="190,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="394,636,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Free"/>
                         <ListBoxItem Content="Professional"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="170,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="170,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="170,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="170,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="170,718,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="170,738,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="374,735,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="190,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="190,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="190,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="190,718,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="190,738,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="190,758,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="190,778,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="394,775,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Client"/>
                         <ListBoxItem Content="Client + Citrix Plugin"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,796,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,826,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,851,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="322,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -1459,16 +1564,17 @@ $inputXML = @"
                         <ColumnDefinition Width="234*"/>
                         <ColumnDefinition Width="586*"/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="Image_Logo_Detail" Height="100" Margin="497,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
+                    <Image x:Name="Image_Logo_Detail" Height="100" Margin="510,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
                     <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_CleanUp" Content="CleanUp" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="271,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                    <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="366,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
-                    <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="502,764,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt"/>
+                    <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="291,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="386,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+                    <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="522,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt or -GUIFile Parameter file"/>
                     <Label x:Name="Label_Software_Detail" Content="Select Software" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <Label x:Name="Label_Architecture1_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="187,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="64" FontSize="10"/>
-                    <Label x:Name="Label_Language1_Detail" Content="Language" HorizontalAlignment="Left" Margin="8,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
+                    <Label x:Name="Label_Architecture_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="187,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="64" FontSize="10"/>
+                    <Label x:Name="Label_Language_Detail" Content="Language" HorizontalAlignment="Left" Margin="260,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="75" FontSize="10" Grid.ColumnSpan="2"/>
+                    <Label x:Name="Label_InstallerType_Detail" Content="Installer Type" HorizontalAlignment="Left" Margin="320,90,0,0" VerticalAlignment="Top" Grid.Column="1" Width="75" FontSize="10" Grid.ColumnSpan="2"/>
                     <CheckBox x:Name="Checkbox_7Zip_Detail" Content="7 Zip" HorizontalAlignment="Left" Margin="15,118,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <ComboBox x:Name="Box_7Zip_Architecture" HorizontalAlignment="Left" Margin="215,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
@@ -1617,19 +1723,25 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSDotNetFramework_Detail" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,443,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                    <ComboBox x:Name="Box_MSDotNetFramework_Architecture" HorizontalAlignment="Left" Margin="215,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_LogMeInGoToMeeting_Detail" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="15,443,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_LogMeInGoToMeeting_Installer" HorizontalAlignment="Left" Margin="68,443,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="XenApp"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSDotNetFramework_Detail" Content="Microsoft .Net Framework" HorizontalAlignment="Left" Margin="15,468,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSDotNetFramework_Architecture" HorizontalAlignment="Left" Margin="215,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MS365Apps_Detail" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,468,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MS365Apps_Architecture" HorizontalAlignment="Left" Margin="215,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MS365Apps_Detail" Content="Microsoft 365 Apps" HorizontalAlignment="Left" Margin="15,493,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Architecture" HorizontalAlignment="Left" Margin="215,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="265,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="265,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
@@ -1647,8 +1759,13 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,493,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="265,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MS365Apps_Installer" HorizontalAlignment="Left" Margin="68,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="265,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
@@ -1666,8 +1783,8 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,518,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="265,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="265,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
@@ -1685,76 +1802,93 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,543,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                    <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1" />
+                    <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,568,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MSAzureDataStudio_Detail" Content="Microsoft Azure Data Studio" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSAzureDataStudio_Installer" HorizontalAlignment="Left" Margin="68,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSEdge_Detail" Content="Microsoft Edge" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSEdge_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSEdgeWebView2_Detail" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,593,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSEdgeWebView2_Architecture" HorizontalAlignment="Left" Margin="215,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MSEdgeWebView2_Detail" Content="Microsoft Edge WebView2" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSEdgeWebView2_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,618,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="x86"/>
-                        <ListBoxItem Content="x64"/>
-                    </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSOffice2019_Detail" Content="Microsoft Office 2019" HorizontalAlignment="Left" Margin="15,643,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSOffice2019_Architecture" HorizontalAlignment="Left" Margin="215,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="x86"/>
-                        <ListBoxItem Content="x64"/>
-                    </ComboBox>
-                    <ComboBox x:Name="Box_MSOffice2019_Language" HorizontalAlignment="Left" Margin="265,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="Danish"/>
-                        <ListBoxItem Content="Dutch"/>
-                        <ListBoxItem Content="English"/>
-                        <ListBoxItem Content="Finnish"/>
-                        <ListBoxItem Content="French"/>
-                        <ListBoxItem Content="German"/>
-                        <ListBoxItem Content="Italian"/>
-                        <ListBoxItem Content="Japanese"/>
-                        <ListBoxItem Content="Korean"/>
-                        <ListBoxItem Content="Norwegian"/>
-                        <ListBoxItem Content="Polish"/>
-                        <ListBoxItem Content="Portuguese"/>
-                        <ListBoxItem Content="Russian"/>
-                        <ListBoxItem Content="Spanish"/>
-                        <ListBoxItem Content="Swedish"/>
-                    </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="x86"/>
-                        <ListBoxItem Content="x64"/>
-                    </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="15,693,0,0" VerticalAlignment="Top" Grid.Column="1" />
-                    <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="215,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MSFSLogix_Detail" Content="Microsoft FSLogix" HorizontalAlignment="Left" Margin="15,668,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSFSLogix_Architecture" HorizontalAlignment="Left" Margin="215,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
                     <Label x:Name="Label_Architecture2_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="442,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="64" FontSize="10"/>
                     <Label x:Name="Label_Language2_Detail" Content="Language" HorizontalAlignment="Left" Margin="514,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
-                    <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="170,118,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <Label x:Name="Label_InstallerType2_Detail" Content="Installer Type" HorizontalAlignment="Left" Margin="575,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="Checkbox_MSOffice_Detail" Content="Microsoft Office" HorizontalAlignment="Left" Margin="179,118,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSOffice_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="170,143,0,0" VerticalAlignment="Top" Grid.Column="2" HorizontalAlignment="Left"/>
-                    <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MSOffice_Language" HorizontalAlignment="Left" Margin="520,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_MSOffice_Installer" HorizontalAlignment="Left" Margin="585,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="179,143,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="470,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_MSOneDrive_Installer" HorizontalAlignment="Left" Margin="585,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="179,168,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="179,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="179,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="French"/>
@@ -1766,33 +1900,43 @@ $inputXML = @"
                         <ListBoxItem Content="Russian"/>
                         <ListBoxItem Content="Spanish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="170,168,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="179,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="170,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2" Grid.ColumnSpan="2">
+                    <ComboBox x:Name="Box_MSTeams_Installer" HorizontalAlignment="Left" Margin="585,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="179,268,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MindView7_Detail" Content="MindView 7" HorizontalAlignment="Left" Margin="170,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MindView7_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ComboBox x:Name="Box_MSVisualStudioCode_Installer" HorizontalAlignment="Left" Margin="585,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MindView7_Detail" Content="MindView 7" HorizontalAlignment="Left" Margin="179,293,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MindView7_Language" HorizontalAlignment="Left" Margin="520,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_Firefox_Detail" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="170,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Firefox_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_Firefox_Detail" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="179,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Firefox_Architecture" HorizontalAlignment="Left" Margin="470,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="520,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
@@ -1805,83 +1949,100 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_NotepadPlusPlus_Detail" Content="Notepad ++" HorizontalAlignment="Left" Margin="170,268,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_NotepadPlusPlus_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_NotepadPlusPlus_Detail" Content="Notepad ++" HorizontalAlignment="Left" Margin="179,343,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_NotepadPlusPlus_Architecture" HorizontalAlignment="Left" Margin="470,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_OpenJDK_Detail" Content="Open JDK" HorizontalAlignment="Left" Margin="170,293,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_OpenJDK_Architecture" HorizontalAlignment="Left" Margin="470,292,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_OpenJDK_Detail" Content="Open JDK" HorizontalAlignment="Left" Margin="179,368,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_OpenJDK_Architecture" HorizontalAlignment="Left" Margin="470,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="170,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="470,317,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="179,393,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="470,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_PeaZip_Detail" Content="PeaZip" HorizontalAlignment="Left" Margin="170,343,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_PeaZip_Architecture" HorizontalAlignment="Left" Margin="470,342,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_PeaZip_Detail" Content="PeaZip" HorizontalAlignment="Left" Margin="179,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_PeaZip_Architecture" HorizontalAlignment="Left" Margin="470,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_Putty_Detail" Content="PuTTY" HorizontalAlignment="Left" Margin="170,368,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Putty_Architecture" HorizontalAlignment="Left" Margin="470,367,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_Putty_Detail" Content="PuTTY" HorizontalAlignment="Left" Margin="179,443,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Putty_Architecture" HorizontalAlignment="Left" Margin="470,442,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_Slack_Detail" Content="Slack" HorizontalAlignment="Left" Margin="170,393,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_Slack_Architecture" HorizontalAlignment="Left" Margin="470,392,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_Slack_Detail" Content="Slack" HorizontalAlignment="Left" Margin="179,468,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_Slack_Architecture" HorizontalAlignment="Left" Margin="470,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_SumatraPDF_Detail" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="170,418,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_SumatraPDF_Architecture" HorizontalAlignment="Left" Margin="470,417,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ComboBox x:Name="Box_Slack_Installer" HorizontalAlignment="Left" Margin="585,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_SumatraPDF_Detail" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="179,493,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_SumatraPDF_Architecture" HorizontalAlignment="Left" Margin="470,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_TechSmithSnagIt_Detail" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="170,443,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_TechSmithSnagIt_Architecture" HorizontalAlignment="Left" Margin="470,443,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_TechSmithSnagIt_Detail" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="179,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TechSmithSnagIt_Architecture" HorizontalAlignment="Left" Margin="470,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_VLCPlayer_Detail" Content="VLC Player" HorizontalAlignment="Left" Margin="170,468,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_VLCPlayer_Architecture" HorizontalAlignment="Left" Margin="470,467,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_TotalCommander_Detail" Content="Total Commander" HorizontalAlignment="Left" Margin="179,543,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TotalCommander_Architecture" HorizontalAlignment="Left" Margin="470,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_VMWareTools_Detail" Content="VMWare Tools" HorizontalAlignment="Left" Margin="170,493,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_VMWareTools_Architecture" HorizontalAlignment="Left" Margin="470,492,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_VLCPlayer_Detail" Content="VLC Player" HorizontalAlignment="Left" Margin="179,568,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_VLCPlayer_Architecture" HorizontalAlignment="Left" Margin="470,567,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_WinMerge_Detail" Content="WinMerge" HorizontalAlignment="Left" Margin="170,518,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_WinMerge_Architecture" HorizontalAlignment="Left" Margin="470,517,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_VMWareTools_Detail" Content="VMWare Tools" HorizontalAlignment="Left" Margin="179,593,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_VMWareTools_Architecture" HorizontalAlignment="Left" Margin="470,592,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="170,543,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="470,542,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_WinMerge_Detail" Content="WinMerge" HorizontalAlignment="Left" Margin="179,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_WinMerge_Architecture" HorizontalAlignment="Left" Margin="470,617,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,632,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <TextBox HorizontalAlignment="Left" Height="40" Margin="172,663,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
-                    <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,703,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
-                    <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,633,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
-                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="280,786,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="179,643,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="470,642,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Zoom_Detail" Content="Zoom" HorizontalAlignment="Left" Margin="179,668,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Zoom_Installer" HorizontalAlignment="Left" Margin="585,667,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Machine Based"/>
+                        <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,732,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <TextBox HorizontalAlignment="Left" Height="40" Margin="172,763,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
+                    <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,803,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
+                    <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,733,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
+                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="322,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -1911,12 +2072,13 @@ $inputXML = @"
     } | out-null
 
     # Set Variable
-    $Script:install = $true
-    $Script:download = $true
+    #$Script:install = $true
+    #$Script:download = $true
 
-    # Read LastSettings.txt to get the settings of the last session. (AddScript)
-    If (Test-Path "$PSScriptRoot\LastSetting.txt" -PathType leaf) {
-        $LastSetting = Get-Content "$PSScriptRoot\LastSetting.txt"
+    # Read LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
+    If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
+    If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+        $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
         $WPFBox_Language.SelectedIndex = $LastSetting[0] -as [int]
         $WPFBox_Architecture.SelectedIndex = $LastSetting[1] -as [int]
         $WPFBox_CitrixWorkspaceApp.SelectedIndex = $LastSetting[2] -as [int]
@@ -1961,7 +2123,7 @@ $inputXML = @"
         $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex = $LastSetting[114] -as [int]
         $WPFBox_MSEdge_Architecture.SelectedIndex = $LastSetting[115] -as [int]
         $WPFBox_MSFSLogix_Architecture.SelectedIndex = $LastSetting[116] -as [int]
-        $WPFBox_MSOffice2019_Architecture.SelectedIndex = $LastSetting[117] -as [int]
+        $WPFBox_MSOffice_Architecture.SelectedIndex = $LastSetting[117] -as [int]
         $WPFBox_MSOneDrive_Architecture.SelectedIndex = $LastSetting[118] -as [int]
         $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex = $LastSetting[119] -as [int]
         $WPFBox_MSPowerShell_Architecture.SelectedIndex = $LastSetting[120] -as [int]
@@ -1983,9 +2145,22 @@ $inputXML = @"
         $WPFBox_WinMerge_Architecture.SelectedIndex = $LastSetting[136] -as [int]
         $WPFBox_Wireshark_Architecture.SelectedIndex = $LastSetting[137] -as [int]
         $WPFBox_IrfanView_Language.SelectedIndex = $LastSetting[138] -as [int]
-        $WPFBox_MSOffice2019_Language.SelectedIndex = $LastSetting[139] -as [int]
+        $WPFBox_MSOffice_Language.SelectedIndex = $LastSetting[139] -as [int]
         $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex = $LastSetting[141] -as [int]
         $WPFBox_MindView7_Language.SelectedIndex = $LastSetting[144] -as [int]
+        $WPFBox_MSOffice.SelectedIndex = $LastSetting[146] -as [int]
+        $WPFBox_LogMeInGoToMeeting_Installer.SelectedIndex = $LastSetting[150] -as [int]
+        $WPFBox_MSAzureDataStudio_Installer.SelectedIndex = $LastSetting[151] -as [int]
+        $WPFBox_MSVisualStudioCode_Installer.SelectedIndex = $LastSetting[152] -as [int]
+        $WPFBox_MS365Apps_Installer.SelectedIndex = $LastSetting[153] -as [int]
+        $WPFBox_MSOffice_Installer.SelectedIndex = $LastSetting[154] -as [int]
+        $WPFBox_MSTeams_Installer.SelectedIndex = $LastSetting[155] -as [int]
+        $WPFBox_Zoom_Installer.SelectedIndex = $LastSetting[156] -as [int]
+        $WPFBox_MSOneDrive_Installer.SelectedIndex = $LastSetting[157] -as [int]
+        $WPFBox_Slack_Installer.SelectedIndex = $LastSetting[158] -as [int]
+        $WPFBox_pdfforgePDFCreator.SelectedIndex = $LastSetting[159] -as [int]
+        $WPFBox_TotalCommander_Architecture.SelectedIndex = $LastSetting[160] -as [int]
+
         Switch ($LastSetting[8]) {
             1 {
                 $WPFCheckbox_7ZIP.IsChecked = "True"
@@ -2066,8 +2241,8 @@ $inputXML = @"
         }
         Switch ($LastSetting[24]) {
             1 {
-                $WPFCheckbox_MSOffice2019.IsChecked = "True"
-                $WPFCheckbox_MSOffice2019_Detail.IsChecked = "True"
+                $WPFCheckbox_MSOffice.IsChecked = "True"
+                $WPFCheckbox_MSOffice_Detail.IsChecked = "True"
             }
         }
         Switch ($LastSetting[25]) {
@@ -2120,9 +2295,11 @@ $inputXML = @"
         }
         Switch ($LastSetting[34]) {
             True { $WPFCheckbox_Download.IsChecked = "True"}
+            1 { $WPFCheckbox_Download.IsChecked = "True"}
         }
         Switch ($LastSetting[35]) {
             True { $WPFCheckbox_Install.IsChecked = "True"}
+            1 { $WPFCheckbox_Install.IsChecked = "True"}
         }
         Switch ($LastSetting[36]) {
             1 {
@@ -2341,6 +2518,22 @@ $inputXML = @"
                 $WPFCheckbox_PDFsam.IsChecked = "True"
             }
         }
+        Switch ($LastSetting[147]) {
+            1 {
+                $WPFCheckbox_OpenShellMenu.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[148]) {
+            1 {
+                $WPFCheckbox_PDFForgeCreator.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[149]) {
+            1 {
+                $WPFCheckbox_TotalCommander.IsChecked = "True"
+                $WPFCheckbox_TotalCommander_Detail.IsChecked = "True"
+            }
+        }
     }
     
     #// MARK: Event Handler
@@ -2501,6 +2694,18 @@ $inputXML = @"
     $WPFCheckbox_KeePass_Detail.Add_Unchecked({
         $WPFCheckbox_KeePass.IsChecked = $WPFCheckbox_KeePass_Detail.IsChecked
     })
+    $WPFCheckbox_LogMeInGoToMeeting.Add_Checked({
+        $WPFCheckbox_LogMeInGoToMeeting_Detail.IsChecked = $WPFCheckbox_LogMeInGoToMeeting.IsChecked
+    })
+    $WPFCheckbox_LogMeInGoToMeeting.Add_Unchecked({
+        $WPFCheckbox_LogMeInGoToMeeting_Detail.IsChecked = $WPFCheckbox_LogMeInGoToMeeting.IsChecked
+    })
+    $WPFCheckbox_LogMeInGoToMeeting_Detail.Add_Checked({
+        $WPFCheckbox_LogMeInGoToMeeting.IsChecked = $WPFCheckbox_LogMeInGoToMeeting_Detail.IsChecked
+    })
+    $WPFCheckbox_LogMeInGoToMeeting_Detail.Add_Unchecked({
+        $WPFCheckbox_LogMeInGoToMeeting.IsChecked = $WPFCheckbox_LogMeInGoToMeeting_Detail.IsChecked
+    })
     $WPFCheckbox_MSDotNetFramework.Add_Checked({
         $WPFCheckbox_MSDotNetFramework_Detail.IsChecked = $WPFCheckbox_MSDotNetFramework.IsChecked
     })
@@ -2536,6 +2741,18 @@ $inputXML = @"
     })
     $WPFCheckbox_MSAVDRemoteDesktop_Detail.Add_Unchecked({
         $WPFCheckbox_MSAVDRemoteDesktop.IsChecked = $WPFCheckbox_MSAVDRemoteDesktop_Detail.IsChecked
+    })
+    $WPFCheckbox_MSAzureDataStudio.Add_Checked({
+        $WPFCheckbox_MSAzureDataStudio_Detail.IsChecked = $WPFCheckbox_MSAzureDataStudio.IsChecked
+    })
+    $WPFCheckbox_MSAzureDataStudio.Add_Unchecked({
+        $WPFCheckbox_MSAzureDataStudio_Detail.IsChecked = $WPFCheckbox_MSAzureDataStudio.IsChecked
+    })
+    $WPFCheckbox_MSAzureDataStudio_Detail.Add_Checked({
+        $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_MSAzureDataStudio_Detail.IsChecked
+    })
+    $WPFCheckbox_MSAzureDataStudio_Detail.Add_Unchecked({
+        $WPFCheckbox_MSAzureDataStudio.IsChecked = $WPFCheckbox_MSAzureDataStudio_Detail.IsChecked
     })
     $WPFCheckbox_MSEdge.Add_Checked({
         $WPFCheckbox_MSEdge_Detail.IsChecked = $WPFCheckbox_MSEdge.IsChecked
@@ -2573,17 +2790,17 @@ $inputXML = @"
     $WPFCheckbox_MSFSLogix_Detail.Add_Unchecked({
         $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_MSFSLogix_Detail.IsChecked
     })
-    $WPFCheckbox_MSOffice2019.Add_Checked({
-        $WPFCheckbox_MSOffice2019_Detail.IsChecked = $WPFCheckbox_MSOffice2019.IsChecked
+    $WPFCheckbox_MSOffice.Add_Checked({
+        $WPFCheckbox_MSOffice_Detail.IsChecked = $WPFCheckbox_MSOffice.IsChecked
     })
-    $WPFCheckbox_MSOffice2019.Add_Unchecked({
-        $WPFCheckbox_MSOffice2019_Detail.IsChecked = $WPFCheckbox_MSOffice2019.IsChecked
+    $WPFCheckbox_MSOffice.Add_Unchecked({
+        $WPFCheckbox_MSOffice_Detail.IsChecked = $WPFCheckbox_MSOffice.IsChecked
     })
-    $WPFCheckbox_MSOffice2019_Detail.Add_Checked({
-        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_MSOffice2019_Detail.IsChecked
+    $WPFCheckbox_MSOffice_Detail.Add_Checked({
+        $WPFCheckbox_MSOffice.IsChecked = $WPFCheckbox_MSOffice_Detail.IsChecked
     })
-    $WPFCheckbox_MSOffice2019_Detail.Add_Unchecked({
-        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_MSOffice2019_Detail.IsChecked
+    $WPFCheckbox_MSOffice_Detail.Add_Unchecked({
+        $WPFCheckbox_MSOffice.IsChecked = $WPFCheckbox_MSOffice_Detail.IsChecked
     })
     $WPFCheckbox_MSOneDrive.Add_Checked({
         $WPFCheckbox_MSOneDrive_Detail.IsChecked = $WPFCheckbox_MSOneDrive.IsChecked
@@ -2777,6 +2994,18 @@ $inputXML = @"
     $WPFCheckbox_Slack_Detail.Add_Unchecked({
         $WPFCheckbox_Slack.IsChecked = $WPFCheckbox_Slack_Detail.IsChecked
     })
+    $WPFCheckbox_TotalCommander.Add_Checked({
+        $WPFCheckbox_TotalCommander_Detail.IsChecked = $WPFCheckbox_TotalCommander.IsChecked
+    })
+    $WPFCheckbox_TotalCommander.Add_Unchecked({
+        $WPFCheckbox_TotalCommander_Detail.IsChecked = $WPFCheckbox_TotalCommander.IsChecked
+    })
+    $WPFCheckbox_TotalCommander_Detail.Add_Checked({
+        $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_TotalCommander_Detail.IsChecked
+    })
+    $WPFCheckbox_TotalCommander_Detail.Add_Unchecked({
+        $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_TotalCommander_Detail.IsChecked
+    })
     $WPFCheckbox_VLCPlayer.Add_Checked({
         $WPFCheckbox_VLCPlayer_Detail.IsChecked = $WPFCheckbox_VLCPlayer.IsChecked
     })
@@ -2825,6 +3054,18 @@ $inputXML = @"
     $WPFCheckbox_Wireshark_Detail.Add_Unchecked({
         $WPFCheckbox_Wireshark.IsChecked = $WPFCheckbox_Wireshark_Detail.IsChecked
     })
+    $WPFCheckbox_Zoom.Add_Checked({
+        $WPFCheckbox_Zoom_Detail.IsChecked = $WPFCheckbox_Zoom.IsChecked
+    })
+    $WPFCheckbox_Zoom.Add_Unchecked({
+        $WPFCheckbox_Zoom_Detail.IsChecked = $WPFCheckbox_Zoom.IsChecked
+    })
+    $WPFCheckbox_Zoom_Detail.Add_Checked({
+        $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_Zoom_Detail.IsChecked
+    })
+    $WPFCheckbox_Zoom_Detail.Add_Unchecked({
+        $WPFCheckbox_Zoom.IsChecked = $WPFCheckbox_Zoom_Detail.IsChecked
+    })
 
     # Checkbox SelectAll (AddScript)
     $WPFCheckbox_SelectAll.Add_Checked({
@@ -2845,11 +3086,12 @@ $inputXML = @"
         $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
-        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOffice.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_NotePadPlusPlus.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OpenShellMenu.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_OracleJava8.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TreeSize.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_VLCPlayer.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -2898,6 +3140,8 @@ $inputXML = @"
         $WPFCheckbox_AutodeskDWGTrueView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDFsam.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_PDFForgeCreator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Checkbox SelectAll to Uncheck (AddScript)
@@ -2919,7 +3163,7 @@ $inputXML = @"
         $WPFCheckbox_MS365Apps.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSEdge.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSFSLogix.IsChecked = $WPFCheckbox_SelectAll.IsChecked
-        $WPFCheckbox_MSOffice2019.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSOffice.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSOneDrive.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_NotePadPlusPlus.IsChecked = $WPFCheckbox_SelectAll.IsChecked
@@ -2972,6 +3216,9 @@ $inputXML = @"
         $WPFCheckbox_AutodeskDWGTrueView.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_MindView7.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDFsam.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OpenShellMenu.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_PDFForgeCreator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Browse
@@ -2981,10 +3228,10 @@ $inputXML = @"
 
     # Button Start (AddScript)
     $WPFButton_Start.Add_Click({
-        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
-        Else {$Script:install = $true}
-        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
-        Else {$Script:download = $true}
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:Download = 1}
+        Else {$Script:Download = 0}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:Install = 1}
+        Else {$Script:Install = 0}
         If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
         Else {$Script:7ZIP = 0}
         If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
@@ -3021,8 +3268,8 @@ $inputXML = @"
         Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
         Else {$Script:MSEdgeWebView2 = 0}
-        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
-        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOffice.ischecked -eq $true) {$Script:MSOffice = 1}
+        Else {$Script:MSOffice = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
         Else {$Script:MSOneDrive = 0}
         If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
@@ -3135,6 +3382,12 @@ $inputXML = @"
         Else {$Script:MindView7 = 0}
         If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
         Else {$Script:PDFsam = 0}
+        If ($WPFCheckbox_OpenShellMenu.ischecked -eq $true) {$Script:OpenShellMenu = 1}
+        Else {$Script:OpenShellMenu = 0}
+        If ($WPFCheckbox_PDFForgeCreator.ischecked -eq $true) {$Script:PDFForgeCreator = 1}
+        Else {$Script:PDFForgeCreator = 0}
+        If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
+        Else {$Script:TotalCommander = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3179,7 +3432,7 @@ $inputXML = @"
         $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
         $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
         $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
-        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOffice_Architecture = $WPFBox_MSOffice_Architecture.SelectedIndex
         $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
         $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
         $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
@@ -3201,13 +3454,25 @@ $inputXML = @"
         $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
         $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
-        $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
+        $Script:MSOffice_Language = $WPFBox_MSOffice_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
+        $Script:MSOfficeVersion = $WPFBox_MSOffice.SelectedIndex
+        $Script:LogMeInGoToMeeting_Installer = $WPFBox_LogMeInGoToMeeting_Installer.SelectedIndex
+        $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
+        $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
+        $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
+        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
+        $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
+        $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
+        $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
+        $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
+        $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
+        $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
         
-        # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3230,10 +3495,10 @@ $inputXML = @"
 
     # Button Start Detail (AddScript)
     $WPFButton_Start_Detail.Add_Click({
-        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
-        Else {$Script:install = $true}
-        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
-        Else {$Script:download = $true}
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:Download = 1}
+        Else {$Script:Download = 0}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:Install = 1}
+        Else {$Script:Install = 0}
         If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
         Else {$Script:7ZIP = 0}
         If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
@@ -3270,8 +3535,8 @@ $inputXML = @"
         Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
         Else {$Script:MSEdgeWebView2 = 0}
-        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
-        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOffice.ischecked -eq $true) {$Script:MSOffice = 1}
+        Else {$Script:MSOffice = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
         Else {$Script:MSOneDrive = 0}
         If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
@@ -3384,6 +3649,12 @@ $inputXML = @"
         Else {$Script:MindView7 = 0}
         If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
         Else {$Script:PDFsam = 0}
+        If ($WPFCheckbox_OpenShellMenu.ischecked -eq $true) {$Script:OpenShellMenu = 1}
+        Else {$Script:OpenShellMenu = 0}
+        If ($WPFCheckbox_PDFForgeCreator.ischecked -eq $true) {$Script:PDFForgeCreator = 1}
+        Else {$Script:PDFForgeCreator = 0}
+        If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
+        Else {$Script:TotalCommander = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3428,7 +3699,7 @@ $inputXML = @"
         $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
         $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
         $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
-        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOffice_Architecture = $WPFBox_MSOffice_Architecture.SelectedIndex
         $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
         $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
         $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
@@ -3450,13 +3721,25 @@ $inputXML = @"
         $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
         $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
-        $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
+        $Script:MSOffice_Language = $WPFBox_MSOffice_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
+        $Script:MSOfficeVersion = $WPFBox_MSOffice.SelectedIndex
+        $Script:LogMeInGoToMeeting_Installer = $WPFBox_LogMeInGoToMeeting_Installer.SelectedIndex
+        $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
+        $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
+        $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
+        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
+        $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
+        $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
+        $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
+        $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
+        $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
+        $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
         
-        # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3497,10 +3780,10 @@ $inputXML = @"
 
     # Button Save (AddScript)
     $WPFButton_Save.Add_Click({
-        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
-        Else {$Script:install = $true}
-        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
-        Else {$Script:download = $true}
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:Download = 1}
+        Else {$Script:Download = 0}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:Install = 1}
+        Else {$Script:Install = 0}
         If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
         Else {$Script:7ZIP = 0}
         If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
@@ -3537,8 +3820,8 @@ $inputXML = @"
         Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
         Else {$Script:MSEdgeWebView2 = 0}
-        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
-        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOffice.ischecked -eq $true) {$Script:MSOffice = 1}
+        Else {$Script:MSOffice = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
         Else {$Script:MSOneDrive = 0}
         If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
@@ -3651,6 +3934,12 @@ $inputXML = @"
         Else {$Script:MindView7 = 0}
         If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
         Else {$Script:PDFsam = 0}
+        If ($WPFCheckbox_OpenShellMenu.ischecked -eq $true) {$Script:OpenShellMenu = 1}
+        Else {$Script:OpenShellMenu = 0}
+        If ($WPFCheckbox_PDFForgeCreator.ischecked -eq $true) {$Script:PDFForgeCreator = 1}
+        Else {$Script:PDFForgeCreator = 0}
+        If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
+        Else {$Script:TotalCommander = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3695,7 +3984,7 @@ $inputXML = @"
         $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
         $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
         $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
-        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOffice_Architecture = $WPFBox_MSOffice_Architecture.SelectedIndex
         $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
         $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
         $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
@@ -3717,13 +4006,25 @@ $inputXML = @"
         $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
         $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
-        $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
+        $Script:MSOffice_Language = $WPFBox_MSOffice_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
+        $Script:MSOfficeVersion = $WPFBox_MSOffice.SelectedIndex
+        $Script:LogMeInGoToMeeting_Installer = $WPFBox_LogMeInGoToMeeting_Installer.SelectedIndex
+        $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
+        $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
+        $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
+        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
+        $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
+        $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
+        $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
+        $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
+        $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
+        $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
 
-        # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3745,10 +4046,10 @@ $inputXML = @"
 
     # Button Save Detail (AddScript)
     $WPFButton_Save_Detail.Add_Click({
-        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:install = $false}
-        Else {$Script:install = $true}
-        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:download = $false}
-        Else {$Script:download = $true}
+        If ($WPFCheckbox_Download.IsChecked -eq $True) {$Script:Download = 1}
+        Else {$Script:Download = 0}
+        If ($WPFCheckbox_Install.IsChecked -eq $True) {$Script:Install = 1}
+        Else {$Script:Install = 0}
         If ($WPFCheckbox_7Zip.IsChecked -eq $true) {$Script:7ZIP = 1}
         Else {$Script:7ZIP = 0}
         If ($WPFCheckbox_AdobeProDC.IsChecked -eq $true) {$Script:AdobeProDC = 1}
@@ -3785,8 +4086,8 @@ $inputXML = @"
         Else {$Script:MSEdge = 0}
         If ($WPFCheckbox_MSEdgeWebView2.ischecked -eq $true) {$Script:MSEdgeWebView2 = 1}
         Else {$Script:MSEdgeWebView2 = 0}
-        If ($WPFCheckbox_MSOffice2019.ischecked -eq $true) {$Script:MSOffice2019 = 1}
-        Else {$Script:MSOffice2019 = 0}
+        If ($WPFCheckbox_MSOffice.ischecked -eq $true) {$Script:MSOffice = 1}
+        Else {$Script:MSOffice = 0}
         If ($WPFCheckbox_MSOneDrive.ischecked -eq $true) {$Script:MSOneDrive = 1}
         Else {$Script:MSOneDrive = 0}
         If ($WPFCheckbox_MSTeams.ischecked -eq $true) {$Script:MSTeams = 1}
@@ -3899,6 +4200,12 @@ $inputXML = @"
         Else {$Script:MindView7 = 0}
         If ($WPFCheckbox_PDFsam.ischecked -eq $true) {$Script:PDFsam = 1}
         Else {$Script:PDFsam = 0}
+        If ($WPFCheckbox_OpenShellMenu.ischecked -eq $true) {$Script:OpenShellMenu = 1}
+        Else {$Script:OpenShellMenu = 0}
+        If ($WPFCheckbox_PDFForgeCreator.ischecked -eq $true) {$Script:PDFForgeCreator = 1}
+        Else {$Script:PDFForgeCreator = 0}
+        If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
+        Else {$Script:TotalCommander = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3943,7 +4250,7 @@ $inputXML = @"
         $Script:MSAVDRemoteDesktop_Architecture = $WPFBox_MSAVDRemoteDesktop_Architecture.SelectedIndex
         $Script:MSEdge_Architecture = $WPFBox_MSEdge_Architecture.SelectedIndex
         $Script:MSFSLogix_Architecture = $WPFBox_MSFSLogix_Architecture.SelectedIndex
-        $Script:MSOffice2019_Architecture = $WPFBox_MSOffice2019_Architecture.SelectedIndex
+        $Script:MSOffice_Architecture = $WPFBox_MSOffice_Architecture.SelectedIndex
         $Script:MSOneDrive_Architecture = $WPFBox_MSOneDrive_Architecture.SelectedIndex
         $Script:MSPowerBIDesktop_Architecture = $WPFBox_MSPowerBIDesktop_Architecture.SelectedIndex
         $Script:MSPowerShell_Architecture = $WPFBox_MSPowerShell_Architecture.SelectedIndex
@@ -3965,13 +4272,25 @@ $inputXML = @"
         $Script:WinMerge_Architecture = $WPFBox_WinMerge_Architecture.SelectedIndex
         $Script:Wireshark_Architecture = $WPFBox_Wireshark_Architecture.SelectedIndex
         $Script:IrfanView_Language = $WPFBox_IrfanView_Language.SelectedIndex
-        $Script:MSOffice2019_Language = $WPFBox_MSOffice2019_Language.SelectedIndex
+        $Script:MSOffice_Language = $WPFBox_MSOffice_Language.SelectedIndex
         $Script:MS365Apps_Path = $WPFTextBox_Filename.Text
         $Script:MSEdgeWebView2_Architecture = $WPFBox_MSEdgeWebView2_Architecture.SelectedIndex
         $Script:MindView7_Language = $WPFBox_MindView7_Language.SelectedIndex
+        $Script:MSOfficeVersion = $WPFBox_MSOffice.SelectedIndex
+        $Script:LogMeInGoToMeeting_Installer = $WPFBox_LogMeInGoToMeeting_Installer.SelectedIndex
+        $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
+        $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
+        $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
+        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
+        $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
+        $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
+        $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
+        $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
+        $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
+        $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
 
-        # Write LastSettings.txt to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice2019,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$WPFCheckbox_Download.IsChecked,$WPFCheckbox_Install.IsChecked,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice2019_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice2019_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam | out-file -filepath "$PSScriptRoot\LastSetting.txt"
+        # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -4010,8 +4329,8 @@ Write-Host -Foregroundcolor DarkGray "Software selection"
 
 #// MARK: Define and reset variables
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
-$Script:install = $install
-$Script:download = $download
+#$Script:Install = $Install
+#$Script:Download = $Download
 
 # Define the variables for the unattended install or download (Parameter -file) (AddScript)
 If ($file) {
@@ -4053,7 +4372,7 @@ If ($file) {
         $mRemoteNG = $FileSetting[21] -as [int]
         $MS365Apps = $FileSetting[22] -as [int]
         $MSEdge = $FileSetting[23] -as [int]
-        $MSOffice2019 = $FileSetting[24] -as [int]
+        $MSOffice = $FileSetting[24] -as [int]
         $MSOneDrive = $FileSetting[25] -as [int]
         $MSTeams = $FileSetting[26] -as [int]
         $NotePadPlusPlus = $FileSetting[27] -as [int]
@@ -4063,6 +4382,10 @@ If ($file) {
         $VLCPlayer = $FileSetting[31] -as [int]
         $VMWareTools = $FileSetting[32] -as [int]
         $WinSCP = $FileSetting[33] -as [int]
+        $Download = $FileSetting[34] -as [int]
+        If ($FileSetting[34] -eq "True") {$Download = "1"}
+        $Install = $FileSetting[35] -as [int]
+        If ($FileSetting[35] -eq "True") {$Install = "1"}
         $IrfanView = $FileSetting[36] -as [int]
         $MSTeamsNoAutoStart = $FileSetting[37] -as [int]
         $deviceTRUST = $FileSetting[38] -as [int]
@@ -4133,7 +4456,7 @@ If ($file) {
         $MSAVDRemoteDesktop_Architecture = $FileSetting[114] -as [int]
         $MSEdge_Architecture = $FileSetting[115] -as [int]
         $MSFSLogix_Architecture = $FileSetting[116] -as [int]
-        $MSOffice2019_Architecture = $FileSetting[117] -as [int]
+        $MSOffice_Architecture = $FileSetting[117] -as [int]
         $MSOneDrive_Architecture = $FileSetting[118] -as [int]
         $MSPowerBIDesktop_Architecture = $FileSetting[119] -as [int]
         $MSPowerShell_Architecture = $FileSetting[120] -as [int]
@@ -4155,627 +4478,34 @@ If ($file) {
         $WinMerge_Architecture = $FileSetting[136] -as [int]
         $Wireshark_Architecture = $FileSetting[137] -as [int]
         $IrfanView_Language = $FileSetting[138] -as [int]
-        $MSOffice2019_Language = $FileSetting[139] -as [int]
+        $MSOffice_Language = $FileSetting[139] -as [int]
         $MSEdgeWebView2 = $FileSetting[140] -as [int]
         $MSEdgeWebView2_Architecture = $FileSetting[141] -as [int]
         $AutodeskDWGTrueView = $FileSetting[142] -as [int]
         $MindView7 = $FileSetting[143] -as [int]
         $MindView7_Language = $FileSetting[144] -as [int]
         $PDFsam = $FileSetting[145] -as [int]
+        $MSOfficeVersion = $FileSetting[146] -as [int]
+        $OpenShellMenu = $FileSetting[147] -as [int]
+        $PDFForgeCreator = $FileSetting[148] -as [int]
+        $TotalCommander = $FileSetting[149] -as [int]
+        $LogMeInGoToMeeting_Installer = $FileSetting[150] -as [int]
+        $MSAzureDataStudio_Installer = $FileSetting[151] -as [int]
+        $MSVisualStudioCode_Installer = $FileSetting[152] -as [int]
+        $MS365Apps_Installer = $FileSetting[153] -as [int]
+        $MSOffice_Installer = $FileSetting[154] -as [int]
+        $MSTeams_Installer = $FileSetting[155] -as [int]
+        $Zoom_Installer = $FileSetting[156] -as [int]
+        $MSOneDrive_Installer = $FileSetting[157] -as [int]
+        $Slack_Installer = $FileSetting[158] -as [int]
+        $pdfforgePDFCreatorChannel = $FileSetting[159] -as [int]
+        $TotalCommander_Architecture = $FileSetting[160] -as [int]
     }
     Write-Host "Unattended Mode."
-    <#Else {
-        # Define the variables for the unattended install or download (Parameter -list without Parameter -file) (AddScript)
-        # Select Language (If this is selectable at download)
-        # 0 = Danish
-        # 1 = Dutch
-        # 2 = English
-        # 3 = Finnish
-        # 4 = French
-        # 5 = German
-        # 6 = Italian
-        # 7 = Japanese
-        # 8 = Korean
-        # 9 = Norwegian
-        # 10 = Polish
-        # 11 = Portuguese
-        # 12 = Russian
-        # 13 = Spanish
-        # 14 = Swedish
-        $Language = 2
-
-        # Select Architecture (If this is selectable at download)
-        # 0 = x64
-        # 1 = x86
-        $Architecture = 0
-
-        # Select Installer Type (If this is selectable at install or download)
-        # 0 = Machine Based
-        # 1 = User Based
-        $Installer = 0
-
-        # Software Release / Ring / Channel / Type / Architecture / Language ?!
-        # 7 Zip Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $7Zip_Architecture = 0
-
-        # Adobe Reader DC Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $AdobeReaderDC_Architecture = 0
-
-        # Adobe Reader DC Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Russian
-        # 13 = Spanish
-        # 14 = Swedish
-        $AdobeReaderDC_Language = 0
-
-        # Cisco Webex Teams Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $CiscoWebexTeams_Architecture = 0
-
-        # Citrix Hypervisor Tools Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $CitrixHypervisorTools_Architecture = 0
-
-        # Citrix Workspace App
-        # 0 = Current Release
-        # 1 = Long Term Service Release
-        $CitrixWorkspaceAppRelease = 1
-
-        # ControlUp Agent Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $ControlUpAgent_Architecture = 0
-
-        # ControlUp Agent
-        # 0 = .Net 3.5 Framework
-        # 1 = .Net 4.5 Framework
-        $ControlUpAgentFramework = 1
-
-        # deviceTRUST Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $deviceTRUST_Architecture = 0
-
-        # deviceTRUST
-        # 0 = Client
-        # 1 = Host
-        # 2 = Console
-        # 3 = Client + Host
-        # 4 = Host + Console
-        $deviceTRUSTPackage = 1
-
-        # Foxit PDF Editor Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Korean
-        # 9 = Norwegian
-        # 10 = Polish
-        # 11 = Portuguese
-        # 12 = Russian
-        # 13 = Spanish
-        # 14 = Swedish
-        $FoxitPDFEditor_Language = 0
-
-        # Foxit Reader Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Norwegian
-        # 9 = Polish
-        # 10 = Portuguese
-        # 11 = Russian
-        # 12 = Spanish
-        # 13 = Swedish
-        $FoxitReader_Language = 0
-
-        # Git for Windows Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $GitForWindows_Architecture = 0
-
-        # Google Chrome Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $GoogleChrome_Architecture = 0
-
-        # ImageGlass Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $ImageGlass_Architecture = 0
-
-        # IrfanView Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $IrfanView_Architecture = 0
-
-        # IrfanView Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Russian
-        # 13 = Spanish
-        # 14 = Swedish
-        $IrfanView_Language = 0
-
-        # KeePass Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Portuguese
-        # 13 = Russian
-        # 14 = Spanish
-        # 15 = Swedish
-        $KeePass_Language = 0
-
-        # Microsoft .Net Framework Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSDotNetFramework_Architecture = 0
-
-        # Microsoft .Net Framework
-        # 0 = Current Channel
-        # 1 = LTS (Long Term Support) Channel
-        $MSDotNetFrameworkChannel = 1
-
-        # Microsoft 365 Apps Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MS365Apps_Architecture = 0
-
-        # Microsoft 365 Apps Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Portuguese
-        # 13 = Russian
-        # 14 = Spanish
-        # 15 = Swedish
-        $MS365Apps_Language = 0
-        
-        # Microsoft 365 Apps
-        # 0 = Current (Preview) Channel
-        # 1 = Current Channel
-        # 2 = Monthly Enterprise Channel
-        # 3 = Semi-Annual Enterprise (Preview) Channel
-        # 4 = Semi-Annual Enterprise Channel
-        $MS365AppsChannel = 4
-
-        # Microsoft 365 Apps Visio Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Portuguese
-        # 13 = Russian
-        # 14 = Spanish
-        # 15 = Swedish
-        $MS365Apps_Visio_Language = 0
-
-        # Microsoft 365 Apps Project Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Portuguese
-        # 13 = Russian
-        # 14 = Spanish
-        # 15 = Swedish
-        $MS365Apps_Project_Language = 0
-
-        # Microsoft AVD Remote Desktop Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSAVDRemoteDesktop_Architecture = 0
-
-        # Microsoft AVD Remote Desktop
-        # 0 = Insider Channel
-        # 1 = Public Channel
-        $MSAVDRemoteDesktopChannel = 1
-
-        # Microsoft Azure Data Studio
-        # 0 = Insider Channel
-        # 1 = Stable Channel
-        $MSAzureDataStudioChannel = 1
-
-        # Microsoft Edge Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSEdge_Architecture = 0
-
-        # Microsoft Edge
-        # 0 = Developer Channel
-        # 1 = Beta Channel
-        # 2 = Stable Channel
-        $MSEdgeChannel = 2
-
-        # Microsoft FSLogix Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSFSLogix_Architecture = 0
-
-        # Microsoft FSLogix
-        # 0 = Preview Channel
-        # 1 = Production Channel
-        $MSFSLogixChannel = 1
-
-        # Microsoft Office 2019 Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSOffice2019_Architecture = 0
-
-        # Microsoft Office 2019 Language
-        # 0 = Global Language
-        # 1 = Danish
-        # 2 = Dutch
-        # 3 = English
-        # 4 = Finnish
-        # 5 = French
-        # 6 = German
-        # 7 = Italian
-        # 8 = Japanese
-        # 9 = Korean
-        # 10 = Norwegian
-        # 11 = Polish
-        # 12 = Portuguese
-        # 13 = Russian
-        # 14 = Spanish
-        # 15 = Swedish
-        $MSOffice2019_Language = 0
-
-        # Microsoft OneDrive Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSOneDrive_Architecture = 0
-
-        # Microsoft OneDrive
-        # 0 = Insider Ring
-        # 1 = Production Ring
-        # 2 = Enterprise Ring
-        $MSOneDriveRing = 2
-
-        # Microsoft Power BI Desktop Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSPowerBIDesktop_Architecture = 0
-
-        # Microsoft PowerShell Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSPowerShell_Architecture = 0
-
-        # Microsoft PowerShell
-        # 0 = Stable Release
-        # 1 = LTS (Long Term Support) Release
-        $MSPowerShellRelease = 1
-
-        # Microsoft SQL Server Management Studio Language
-        # 0 = Global Language
-        # 1 = English
-        # 2 = French
-        # 3 = German
-        # 4 = Italian
-        # 5 = Japanese
-        # 6 = Korean
-        # 7 = Portuguese
-        # 8 = Russian
-        # 9 = Spanish
-        $MSSQLServerManagementStudio_Language = 0
-
-        # Microsoft Teams Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSTeams_Architecture = 0
-
-        # Microsoft Teams
-        # 0 = Developer Ring
-        # 1 = Exploration Ring
-        # 2 = Preview Ring
-        # 3 = General Ring
-        $MSTeamsRing = 3
-
-        # Microsoft Teams AutoStart
-        # 0 = AutoStart Microsoft Teams
-        # 1 = No AutoStart (Delete HKLM Registry Entry)
-        $MSTeamsNoAutoStart = 0
-
-        # Microsoft Visual Studio
-        # 0 = Enterprise Edition
-        # 1 = Professional Edition
-        # 2 = Community Edition
-        $MSVisualStudioEdition = 1
-
-        # Microsoft Visual Studio Code Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $MSVisualStudioCode_Architecture = 0
-
-        # Microsoft Visual Studio Code
-        # 0 = Insider Channel
-        # 1 = Stable Channel
-        $MSVisualStudioCodeChannel = 1
-
-        # Mozilla Firefox Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $Firefox_Architecture = 0
-
-        # Mozilla Firefox Language
-        # 0 = Global Language
-        # 1 = Dutch
-        # 2 = English
-        # 3 = French
-        # 4 = German
-        # 5 = Italian
-        # 6 = Japanese
-        # 7 = Portuguese
-        # 8 = Russian
-        # 9 = Spanish
-        # 10 = Swedish
-        $Firefox_Language = 0
-
-        # Mozilla Firefox
-        # 0 = Current
-        # 1 = ESR
-        $FirefoxChannel = 0
-
-        # Notepad ++ Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $NotePadPlusPlus_Architecture = 0
-
-        # Open JDK Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $OpenJDK_Architecture = 0
-
-        # Oracle Java 8 Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $OracleJava8_Architecture = 0
-
-        # PeaZip Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $PeaZip_Architecture = 0
-
-        # PuTTY Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $Putty_Architecture = 0
-
-        # PuTTY
-        # 0 = Pre-Release
-        # 1 = Stable
-        $PuttyChannel = 1
-
-        # Remote Desktop Manager
-        # 0 = Free
-        # 1 = Enterprise
-        $RemoteDesktopManagerType = 0
-
-        # Slack Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $Slack_Architecture = 0
-
-        # SumatraPDF Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $SumatraPDF_Architecture = 0
-
-        # TechSmith SnagIt Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $TechSmithSnagIt_Architecture = 0
-
-        # TreeSize
-        # 0 = Free
-        # 1 = Professional
-        $TreeSizeType = 0
-
-        # VLC Player Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $VLCPlayer_Architecture = 0
-
-        # VMWareTools Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $VMWareTools_Architecture = 0
-
-        # WinMerge Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $WinMerge_Architecture = 0
-
-        # Wireshark Architecture
-        # 0 = Global Architecture
-        # 1 = x86
-        # 2 = x64
-        $Wireshark_Architecture = 0
-
-        # Zoom
-        # 0 = Installer
-        # 1 = Installer + Citrix Plugin
-        $ZoomCitrixClient = 1
-
-        # Select Software
-        # 0 = Not selected
-        # 1 = Selected
-        $1Password = 0
-        $7ZIP = 0
-        $AdobeProDC = 0 # Only Update @ the moment
-        $AdobeReaderDC = 0
-        $BISF = 0
-        $CiscoWebexTeams = 0
-        $CitrixFiles = 0
-        $Citrix_Hypervisor_Tools = 0
-        $Citrix_WorkspaceApp = 0
-        $ControlUpAgent = 0
-        $ControlUpConsole = 0
-        $deviceTRUST = 0
-        $Filezilla = 0
-        $Firefox = 0
-        $FoxitPDFEditor = 0
-        $Foxit_Reader = 0
-        $GIMP = 0
-        $GitForWindows = 0
-        $GoogleChrome = 0
-        $Greenshot = 0
-        $ImageGlass = 0
-        $IrfanView = 0
-        $KeePass = 0
-        $LogMeInGoToMeeting = 0
-        $mRemoteNG = 0
-        $MSDotNetFramework = 0
-        $MS365Apps = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-        $MS365Apps_Visio = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-        $MS365Apps_Project = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-        $MSAVDRemoteDesktop = 0
-        $MSAzureCLI = 0
-        $MSAzureDataStudio = 0
-        $MSEdge = 0
-        $MSFSLogix = 0
-        $MSOffice2019 = 0 # Automatically created install.xml is used. Please replace this file if you want to change the installation.
-        $MSOneDrive = 0
-        $MSPowerBIDesktop = 0
-        $MSPowerShell = 0
-        $MSPowerToys = 0
-        $MSSQLServerManagementStudio = 0
-        $MSSysinternals = 0
-        $MSTeams = 0
-        $MSVisualStudio = 0
-        $MSVisualStudioCode = 0
-        $NMap = 0
-        $NotePadPlusPlus = 0
-        $OpenJDK = 0
-        $OracleJava8 = 0
-        $PaintDotNet = 0
-        $Putty = 0
-        $RDAnalyzer = 0
-        $RemoteDesktopManager = 0
-        $ShareX = 0
-        $Slack = 0
-        $SumatraPDF = 0
-        $TeamViewer = 0
-        $TechSmithCamtasia = 0
-        $TechSmithSnagit = 0
-        $TreeSize = 0
-        $uberAgent = 0
-        $VLCPlayer = 0
-        $VMWareTools = 0
-        $WinSCP = 0
-        $Wireshark = 0
-        $Zoom = 0
-    }#>
 }
 Else {
     # Cleanup of the used variables (AddScript)
-    Clear-Variable -name 7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice2019,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice2019_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice2019_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam -ErrorAction SilentlyContinue
+    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSOffice_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -4818,6 +4548,11 @@ Switch ($Language) {
     12 { $LanguageClear = 'Russian'}
     13 { $LanguageClear = 'Spanish'}
     14 { $LanguageClear = 'Swedish'}
+}
+
+Switch ($Installer) {
+    0 { $InstallerClear = 'Machine Based'}
+    1 { $InstallerClear = 'User Based'}
 }
 
 If ($7Zip_Architecture -ne "") {
@@ -5106,6 +4841,16 @@ Else {
     $KeePassLanguageClear = $LanguageClear
 }
 
+If ($LogMeInGoToMeeting_Installer -ne "") {
+    Switch ($LogMeInGoToMeeting_Installer) {
+        1 { $LogMeInGoToMeetingInstallerClear = 'Machine Based'}
+        2 { $LogMeInGoToMeetingInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $LogMeInGoToMeetingInstallerClear = $InstallerClear
+}
+
 If ($MSDotNetFramework_Architecture -ne "") {
     Switch ($MSDotNetFramework_Architecture) {
         1 { $MSDotNetFrameworkArchitectureClear = 'x86'}
@@ -5123,14 +4868,26 @@ Switch ($MSDotNetFrameworkChannel) {
 
 If ($MS365Apps_Architecture -ne "") {
     Switch ($MS365Apps_Architecture) {
-        1 { $MS365AppsArchitectureClear = '32'}
-        2 { $MS365AppsArchitectureClear = '64'}
+        1 { 
+            $MS365AppsArchitectureClear = '32'
+            $MS365AppsArchitecturePolicyClear = 'x86'
+        }
+        2 {
+            $MS365AppsArchitectureClear = '64'
+            $MS365AppsArchitecturePolicyClear = 'x64'
+        }
     }
 }
 Else {
     Switch ($Architecture) {
-        0 { $MS365AppsArchitectureClear = '64'}
-        1 { $MS365AppsArchitectureClear = '32'}
+        0 { 
+            $MS365AppsArchitectureClear = '64'
+            $MS365AppsArchitecturePolicyClear = 'x64'
+        }
+        1 { 
+            $MS365AppsArchitectureClear = '32'
+            $MS365AppsArchitecturePolicyClear = 'x86'
+        }
     }
 }
 
@@ -5171,6 +4928,15 @@ Else {
         13 { $MS365AppsLanguageClear = 'es-ES'}
         14 { $MS365AppsLanguageClear = 'sv-SE'}
     }
+}
+If ($MS365Apps_Installer -ne "") {
+    Switch ($MS365Apps_Installer) {
+        1 { $MS365AppsInstallerClear = 'Machine Based'}
+        2 { $MS365AppsInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MS365AppsInstallerClear = $InstallerClear
 }
 
 Switch ($MS365AppsChannel) {
@@ -5274,7 +5040,17 @@ Switch ($MSAzureDataStudioChannel) {
     1 { $MSAzureDataStudioChannelClear = 'Stable'}
 }
 
-If ($Installer -eq 0) {
+If ($MSAzureDataStudio_Installer -ne "") {
+    Switch ($MSAzureDataStudio_Installer) {
+        1 { $MSAzureDataStudioInstallerClear = 'Machine Based'}
+        2 { $MSAzureDataStudioInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MSAzureDataStudioInstallerClear = $InstallerClear
+}
+
+If ($MSAzureDataStudioInstallerClear -eq "Machine Based") {
     Switch ($Architecture) {
         0 { $MSAzureDataStudioPlatformClear = 'win32-x64'}
         1 { $MSAzureDataStudioPlatformClear = 'win32'}
@@ -5282,7 +5058,7 @@ If ($Installer -eq 0) {
     $MSAzureDataStudioModeClear = 'Per Machine'
 }
 
-If ($Installer -eq 1) {
+If ($MSAzureDataStudioInstallerClear -eq "User Based") {
     Switch ($Architecture) {
         0 { $MSAzureDataStudioPlatformClear = 'win32-x64-user'}
         1 { $MSAzureDataStudioPlatformClear = 'win32-user'}
@@ -5346,56 +5122,101 @@ Switch ($MSFSLogixChannel) {
     1 { $MSFSLogixChannelClear = 'Production'}
 }
 
-If ($MSOffice2019_Architecture -ne "") {
-    Switch ($MSOffice2019_Architecture) {
-        1 { $MSOffice2019ArchitectureClear = '32'}
-        2 { $MSOffice2019ArchitectureClear = '64'}
+If ($MSOffice_Installer -ne "") {
+    Switch ($MSOffice_Installer) {
+        1 { $MSOfficeInstallerClear = 'Machine Based'}
+        2 { $MSOfficeInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MSOfficeInstallerClear = $InstallerClear
+}
+
+If ($MSOffice_Architecture -ne "") {
+    Switch ($MSOffice_Architecture) {
+        1 { 
+            $MSOfficeArchitectureClear = '32'
+            $MSOfficeArchitecturePolicyClear = 'x86'
+        }
+        2 { 
+            $MSOfficeArchitectureClear = '64'
+            $MSOfficeArchitecturePolicyClear = 'x64'
+    }
     }
 }
 Else {
     Switch ($Architecture) {
-        0 { $MSOffice2019ArchitectureClear = '64'}
-        1 { $MSOffice2019ArchitectureClear = '32'}
+        0 { 
+            $MSOfficeArchitectureClear = '64'
+            $MSOfficeArchitecturePolicyClear = 'x64'
+        }
+        1 { 
+            $MSOfficeArchitectureClear = '32'
+            $MSOfficeArchitecturePolicyClear = 'x86'
+        }
     }
 }
 
-If ($MSOffice2019_Language -ne "") {
-    Switch ($MSOffice2019_Language) {
-        1 { $MSOffice2019LanguageClear = 'da-DK'}
-        2 { $MSOffice2019LanguageClear = 'nl-NL'}
-        3 { $MSOffice2019LanguageClear = 'en-US'}
-        4 { $MSOffice2019LanguageClear = 'fi-FI'}
-        5 { $MSOffice2019LanguageClear = 'fr-FR'}
-        6 { $MSOffice2019LanguageClear = 'de-DE'}
-        7 { $MSOffice2019LanguageClear = 'it-IT'}
-        8 { $MSOffice2019LanguageClear = 'ja-JP'}
-        9 { $MSOffice2019LanguageClear = 'ko-KR'}
-        10 { $MSOffice2019LanguageClear = 'nb-NO'}
-        11 { $MSOffice2019LanguageClear = 'pl-PL'}
-        12 { $MSOffice2019LanguageClear = 'pt-PT'}
-        13 { $MSOffice2019LanguageClear = 'ru-RU'}
-        14 { $MSOffice2019LanguageClear = 'es-ES'}
-        15 { $MSOffice2019LanguageClear = 'sv-SE'}
+If ($MSOffice_Language -ne "") {
+    Switch ($MSOffice_Language) {
+        1 { $MSOfficeLanguageClear = 'da-DK'}
+        2 { $MSOfficeLanguageClear = 'nl-NL'}
+        3 { $MSOfficeLanguageClear = 'en-US'}
+        4 { $MSOfficeLanguageClear = 'fi-FI'}
+        5 { $MSOfficeLanguageClear = 'fr-FR'}
+        6 { $MSOfficeLanguageClear = 'de-DE'}
+        7 { $MSOfficeLanguageClear = 'it-IT'}
+        8 { $MSOfficeLanguageClear = 'ja-JP'}
+        9 { $MSOfficeLanguageClear = 'ko-KR'}
+        10 { $MSOfficeLanguageClear = 'nb-NO'}
+        11 { $MSOfficeLanguageClear = 'pl-PL'}
+        12 { $MSOfficeLanguageClear = 'pt-PT'}
+        13 { $MSOfficeLanguageClear = 'ru-RU'}
+        14 { $MSOfficeLanguageClear = 'es-ES'}
+        15 { $MSOfficeLanguageClear = 'sv-SE'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MSOffice2019LanguageClear = 'da-DK'}
-        1 { $MSOffice2019LanguageClear = 'nl-NL'}
-        2 { $MSOffice2019LanguageClear = 'en-US'}
-        3 { $MSOffice2019LanguageClear = 'fi-FI'}
-        4 { $MSOffice2019LanguageClear = 'fr-FR'}
-        5 { $MSOffice2019LanguageClear = 'de-DE'}
-        6 { $MSOffice2019LanguageClear = 'it-IT'}
-        7 { $MSOffice2019LanguageClear = 'ja-JP'}
-        8 { $MSOffice2019LanguageClear = 'ko-KR'}
-        9 { $MSOffice2019LanguageClear = 'nb-NO'}
-        10 { $MSOffice2019LanguageClear = 'pl-PL'}
-        11 { $MSOffice2019LanguageClear = 'pt-PT'}
-        12 { $MSOffice2019LanguageClear = 'ru-RU'}
-        13 { $MSOffice2019LanguageClear = 'es-ES'}
-        14 { $MSOffice2019LanguageClear = 'sv-SE'}
+        0 { $MSOfficeLanguageClear = 'da-DK'}
+        1 { $MSOfficeLanguageClear = 'nl-NL'}
+        2 { $MSOfficeLanguageClear = 'en-US'}
+        3 { $MSOfficeLanguageClear = 'fi-FI'}
+        4 { $MSOfficeLanguageClear = 'fr-FR'}
+        5 { $MSOfficeLanguageClear = 'de-DE'}
+        6 { $MSOfficeLanguageClear = 'it-IT'}
+        7 { $MSOfficeLanguageClear = 'ja-JP'}
+        8 { $MSOfficeLanguageClear = 'ko-KR'}
+        9 { $MSOfficeLanguageClear = 'nb-NO'}
+        10 { $MSOfficeLanguageClear = 'pl-PL'}
+        11 { $MSOfficeLanguageClear = 'pt-PT'}
+        12 { $MSOfficeLanguageClear = 'ru-RU'}
+        13 { $MSOfficeLanguageClear = 'es-ES'}
+        14 { $MSOfficeLanguageClear = 'sv-SE'}
     }
+}
+
+Switch ($MSOfficeVersion) {
+    0 {
+        $MSOfficeVersionClear = 'PerpetualVL2019'
+        $MSOfficeChannelClear = '2019'
+        $MSOfficeProductIDClear = 'ProPlus2019Volume'
+    }
+    1 {
+        $MSOfficeVersionClear = 'PerpetualVL2021'
+        $MSOfficeChannelClear = '2021 LTSC'
+        $MSOfficeProductIDClear = 'ProPlus2021Volume'
+    }
+}
+
+If ($MSOneDrive_Installer -ne "") {
+    Switch ($MSOneDrive_Installer) {
+        1 { $MSOneDriveInstallerClear = 'Machine Based'}
+        2 { $MSOneDriveInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MSOneDriveInstallerClear = $InstallerClear
 }
 
 If ($MSOneDrive_Architecture -ne "") {
@@ -5469,6 +5290,16 @@ Else {
     }
 }
 
+If ($MSTeams_Installer -ne "") {
+    Switch ($MSTeams_Installer) {
+        1 { $MSTeamsInstallerClear = 'Machine Based'}
+        2 { $MSTeamsInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MSTeamsInstallerClear = $InstallerClear
+}
+
 If ($MSTeams_Architecture -ne "") {
     Switch ($MSTeams_Architecture) {
         1 { $MSTeamsArchitectureClear = 'x86'}
@@ -5502,7 +5333,17 @@ Else {
     $MSVisualStudioCodeArchitectureClear = $ArchitectureClear
 }
 
-If ($Installer -eq 0) {
+If ($MSVisualStudioCode_Installer -ne "") {
+    Switch ($MSVisualStudioCode_Installer) {
+        1 { $MSVisualStudioCodeInstallerClear = 'Machine Based'}
+        2 { $MSVisualStudioCodeInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $MSVisualStudioCodeInstallerClear = $InstallerClear
+}
+
+If ($MSVisualStudioCodeInstallerClear -eq "Machine Based") {
     If ($MSVisualStudioCode_Architecture -ne "") {
         Switch ($MSVisualStudioCode_Architecture) {
             1 { $MSVisualStudioCodePlatformClear = 'win32'}
@@ -5518,7 +5359,7 @@ If ($Installer -eq 0) {
     $MSVisualStudioCodeModeClear = 'Per Machine'
 }
 
-If ($Installer -eq 1) {
+If ($MSVisualStudioCodeInstallerClear -eq "User Based") {
     If ($MSVisualStudioCode_Architecture -ne "") {
         Switch ($MSVisualStudioCode_Architecture) {
             1 { $MSVisualStudioCodePlatformClear = 'win32-user'}
@@ -5644,6 +5485,12 @@ Else {
     $OracleJava8ArchitectureClear = $ArchitectureClear
 }
 
+Switch ($pdfforgePDFCreatorChannel) {
+    0 { $pdfforgePDFCreatorChannelClear = 'Free'}
+    1 { $pdfforgePDFCreatorChannelClear = 'Professional'}
+    2 { $pdfforgePDFCreatorChannelClear = 'Terminal Server'}
+}
+
 If ($PeaZip_Architecture -ne "") {
     Switch ($PeaZip_Architecture) {
         1 { $PeaZipArchitectureClear = 'x86'}
@@ -5669,12 +5516,29 @@ Switch ($PuttyChannel) {
     1 { $PuttyChannelClear = 'Stable'}
 }
 
-Switch ($Installer) {
+If ($Slack_Installer -ne "") {
+    Switch ($Slack_Installer) {
+        1 { $SlackInstallerClear = 'Machine Based'}
+        2 { $SlackInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $SlackInstallerClear = $InstallerClear
+}
+
+If ($SlackInstallerClear -eq 'Machine Based') {
+    $SlackInstallerID = '0'
+} 
+else {
+    $SlackInstallerID = '1'
+}
+
+Switch ($SlackInstallerID) {
     0 { $SlackPlatformClear = 'PerMachine'}
     1 { $SlackPlatformClear = 'PerUser'}
 }
 
-Switch ($Installer) {
+Switch ($SlackInstallerID) {
     0 { 
         If ($Slack_Architecture -ne "") {
             Switch ($Slack_Architecture) {
@@ -5707,6 +5571,16 @@ If ($TechSmithSnagIt_Architecture -ne "") {
 }
 Else {
     $TechSmithSnagItArchitectureClear = $ArchitectureClear
+}
+
+If ($TotalCommander_Architecture -ne "") {
+    Switch ($TotalCommander_Architecture) {
+        1 { $TotalCommanderArchitectureClear = 'x86'}
+        2 { $TotalCommanderArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $TotalCommanderArchitectureClear = $ArchitectureClear
 }
 
 If ($VLCPlayer_Architecture -ne "") {
@@ -5749,10 +5623,37 @@ Else {
     $WiresharkArchitectureClear = $ArchitectureClear
 }
 
+If ($Zoom_Installer -ne "") {
+    Switch ($Zoom_Installer) {
+        1 { $ZoomInstallerClear = 'Machine Based'}
+        2 { $ZoomInstallerClear = 'User Based'}
+    }
+}
+Else {
+    $ZoomInstallerClear = $InstallerClear
+}
+
 Write-Host -ForegroundColor Green "Software selection done."
 Write-Output ""
 
-If ($install -eq $False) {
+Write-Host -ForegroundColor DarkGray "Selected Global Mode."
+Write-Host "Global Language is $LanguageClear."
+Write-Host "Global Architecture is $ArchitectureClear."
+Write-Host "Global Installer Type is $InstallerClear."
+Write-Output ""
+
+Write-Host -ForegroundColor DarkGray "Selected Options."
+If ($Download -eq "1") { Write-Host -ForegroundColor Green "Download Option Enabled." }
+Else { Write-Host "Download Option Disabled." }
+If ($Install -eq "1") { Write-Host -ForegroundColor Green "Install Option Enabled." }
+Else { Write-Host "Install Option Disabled." }
+If ($WhatIf) { Write-Host -ForegroundColor Green "What If Option Enabled." }
+Else { Write-Host "What If Option Disabled." }
+If ($CleanUp) { Write-Host -ForegroundColor Green "Clean Up Option Enabled." }
+Else { Write-Host "Clean Up Option Disabled." }
+Write-Output ""
+
+If ($Download -eq "1") {
     # Logging
     # Global variables
     # $StartDir = $PSScriptRoot # the directory path of the script currently being executed
@@ -7098,7 +6999,7 @@ If ($install -eq $False) {
 
     #// Mark: Download LogMeIn GoToMeeting
     If ($LogMeInGoToMeeting -eq 1) {
-        If ($Installer -eq '0') {
+        If ($LogMeInGoToMeetingInstallerClear -eq 'Machine Based') {
             $Product = "LogMeIn GoToMeeting XenApp"
             $PackageName = "GoToMeeting-Setup"
             $LogMeInGoToMeetingD = Get-EvergreenApp -Name LogMeInGoToMeeting | Where-Object { $_.Type -eq "XenAppLatest" }
@@ -7134,7 +7035,7 @@ If ($install -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($LogMeInGoToMeetingInstallerClear -eq 'User Based') {
             $Product = "LogMeIn GoToMeeting"
             $PackageName = "GoToMeeting-Setup"
             $LogMeInGoToMeetingD = Get-EvergreenApp -Name LogMeInGoToMeeting | Where-Object { $_.Type -eq "Latest" }
@@ -7253,8 +7154,8 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Green "Create remove.xml finished!"
             }
             If (!(Test-Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml" -PathType leaf)) {
-                If ($Installer -eq '0') {
-                    Write-Host "Create install.xml for Machine-Based Install"
+                If ($MS365AppsInstallerClear -eq 'Machine Based') {
+                    Write-Host "Create install.xml for Machine Based Install"
                     [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
                     [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
                         $XML.appendChild($Root) | out-null
@@ -7278,7 +7179,7 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","OneDrive")
                     If ($MS365Apps_Visio -eq '1') {
-                        Write-Host "Add Microsoft Visio to install.xml for Machine-Based Install"
+                        Write-Host "Add Microsoft Visio to install.xml for Machine Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                         $Node2.SetAttribute("ID","VisioProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -7296,7 +7197,7 @@ If ($install -eq $False) {
                             $Node3.SetAttribute("ID","OneDrive")
                     }
                     If ($MS365Apps_Project -eq '1') {
-                        Write-Host "Add Microsoft Project to install.xml for Machine-Based Install"
+                        Write-Host "Add Microsoft Project to install.xml for Machine Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                         $Node2.SetAttribute("ID","ProjectProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -7328,10 +7229,10 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
                         $Node1.SetAttribute("Enabled","FALSE")
                         $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
-                    Write-Host -ForegroundColor Green "Create install.xml for Machine-Based Install finished!"
+                    Write-Host -ForegroundColor Green "Create install.xml for Machine Based Install finished!"
                 }
-                If ($Installer -eq '1') {
-                    Write-Host "Create install.xml for User-Based Install"
+                If ($MS365AppsInstallerClear -eq 'User Based') {
+                    Write-Host "Create install.xml for User Based Install"
                     [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
                     [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
                         $XML.appendChild($Root) | out-null
@@ -7355,7 +7256,7 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","OneDrive")
                     If ($MS365Apps_Visio -eq '1') {
-                        Write-Host "Add Microsoft Visio to install.xml for User-Based Install"
+                        Write-Host "Add Microsoft Visio to install.xml for User Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                         $Node2.SetAttribute("ID","VisioProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -7373,7 +7274,7 @@ If ($install -eq $False) {
                             $Node3.SetAttribute("ID","OneDrive")
                     }
                     If ($MS365Apps_Project -eq '1') {
-                        Write-Host "Add Microsoft Project to install.xml for User-Based Install"
+                        Write-Host "Add Microsoft Project to install.xml for User Based Install"
                         [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
                         $Node2.SetAttribute("ID","ProjectProRetail")
                         [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
@@ -7405,7 +7306,7 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
                         $Node1.SetAttribute("Enabled","FALSE")
                         $XML.Save("$PSScriptRoot\$Product\$MS365AppsChannelClear\install.xml")
-                    Write-Host -ForegroundColor Green "Create install.xml for User-Based Install finished!"
+                    Write-Host -ForegroundColor Green "Create install.xml for User Based Install finished!"
                 }
             }
         }
@@ -7426,7 +7327,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Green "Download of the new version $Version setup file finished!"
             Write-Output ""
             $PackageNameP = "admintemplates-office"
-            $MS365AppsPD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$ArchitectureClear"}
+            $MS365AppsPD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$MS365AppsArchitecturePolicyClear"}
             $Version = $MS365AppsPD.Version
             $URL = $MS365AppsPD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
@@ -7895,13 +7796,13 @@ If ($install -eq $False) {
         }
     }
 
-    #// Mark: Download Microsoft Office 2019
-    If ($MSOffice2019 -eq 1) {
-        $Product = "Microsoft Office 2019"
+    #// Mark: Download Microsoft Office
+    If ($MSOffice -eq 1) {
+        $Product = "Microsoft Office " + $MSOfficeChannelClear
         $PackageName = "setup"
-        $MSOffice2019D = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "PerpetualVL2019"}
-        $Version = $MSOffice2019D.Version
-        $URL = $MSOffice2019D.uri
+        $MSOfficeD = Get-EvergreenApp -Name Microsoft365Apps | Where-Object {$_.Channel -eq "$MSOfficeVersionClear"}
+        $Version = $MSOfficeD.Version
+        $URL = $MSOfficeD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
@@ -7937,22 +7838,22 @@ If ($install -eq $False) {
                 Write-Host -ForegroundColor Green  "Create remove.xml finished!"
             }
             If (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
-                If ($Installer -eq '0') {
-                    Write-Host "Create install.xml for Machine-Based Install"
+                If ($MSOfficeInstallerClear -eq 'Machine Based') {
+                    Write-Host "Create install.xml for Machine Based Install"
                     [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
                     [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
                         $XML.appendChild($Root) | out-null
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                         $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                        $Node1.SetAttribute("OfficeClientEdition","$MSOffice2019ArchitectureClear")
-                        $Node1.SetAttribute("Channel","PerpetualVL2019")
+                        $Node1.SetAttribute("OfficeClientEdition","$MSOfficeArchitectureClear")
+                        $Node1.SetAttribute("Channel","$MSOfficeVersionClear")
                     [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","ProPlus2019Volume")
+                        $Node2.SetAttribute("ID","$MSOfficeProductIDClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                         $Node3.SetAttribute("ID","MatchOS")
                         $Node3.SetAttribute("Fallback","en-us")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                        $Node3.SetAttribute("ID","$MSOffice2019LanguageClear")
+                        $Node3.SetAttribute("ID","$MSOfficeLanguageClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","Teams")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -7976,24 +7877,24 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
                         $Node1.SetAttribute("Enabled","FALSE")
                         $XML.Save("$PSScriptRoot\$Product\install.xml")
-                    Write-Host -ForegroundColor Green  "Create install.xml for Machine-Based Install finished!"
+                    Write-Host -ForegroundColor Green  "Create install.xml for Machine Based Install finished!"
                 }
-                If ($Installer -eq '1') {
-                    Write-Host "Create install.xml for User-Based Install"
+                If ($MSOfficeInstallerClear -eq 'User Based') {
+                    Write-Host "Create install.xml for User Based Install"
                     [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
                     [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
                         $XML.appendChild($Root) | out-null
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
                         $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                        $Node1.SetAttribute("OfficeClientEdition","$MSOffice2019ArchitectureClear")
-                        $Node1.SetAttribute("Channel","PerpetualVL2019")
+                        $Node1.SetAttribute("OfficeClientEdition","$MSOfficeArchitectureClear")
+                        $Node1.SetAttribute("Channel","$MSOfficeVersionClear")
                     [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","ProPlus2019Volume")
+                        $Node2.SetAttribute("ID","$MSOfficeProductIDClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                         $Node3.SetAttribute("ID","MatchOS")
                         $Node3.SetAttribute("Fallback","en-us")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                        $Node3.SetAttribute("ID","$MSOffice2019LanguageClear")
+                        $Node3.SetAttribute("ID","$MSOfficeLanguageClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","Teams")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -8017,7 +7918,7 @@ If ($install -eq $False) {
                     [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
                         $Node1.SetAttribute("Enabled","FALSE")
                         $XML.Save("$PSScriptRoot\$Product\install.xml")
-                    Write-Host -ForegroundColor Green  "Create install.xml for User-Based Install finished!"
+                    Write-Host -ForegroundColor Green  "Create install.xml for User Based Install finished!"
                 }
             }
         }
@@ -8035,11 +7936,12 @@ If ($install -eq $False) {
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
             $PackageNameP = "admintemplates-office"
-            $MSOffice2019PD = Get-MicrosoftOfficeAdmx| Where-Object {$_.Architecture -eq "$MSOffice2019ArchitectureClear"}
-            $Version = $MSOffice2019PD.Version
-            $URL = $MSOffice2019PD.uri
+            $MSOfficePD = Get-MicrosoftOfficeAdmx | Where-Object {$_.Architecture -eq "$MSOfficeArchitecturePolicyClear"}
+            $Version = $MSOfficePD.Version
+            $URL = $MSOfficePD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerTypeP = "exe"
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
@@ -8343,22 +8245,24 @@ If ($install -eq $False) {
     #// Mark: Download Microsoft Teams
     If ($MSTeams -eq 1) {
         $PackageName = "Teams_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear"
-        If ($Installer -eq '0') {
+        If ($MSTeamsInstallerClear -eq 'Machine Based') {
             $Product = "Microsoft Teams Machine Based"
             If ($MSTeamsRingClear -eq 'Continuous Deployment' -or $MSTeamsRingClear -eq 'Exploration') {
-                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI" }
+                $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
             }
             Else {
-                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             }
             $Version = $TeamsD.Version
-            $TeamsSplit = $Version.split(".")
-            $TeamsStrings = ([regex]::Matches($Version, "\." )).count
-            $TeamsStringLast = ([regex]::Matches($TeamsSplit[$TeamsStrings], "." )).count
-            If ($TeamsStringLast -lt "5") {
-                $TeamsSplit[$TeamsStrings] = "0" + $TeamsSplit[$TeamsStrings]
+            If ($Version) {
+                $TeamsSplit = $Version.split(".")
+                $TeamsStrings = ([regex]::Matches($Version, "\." )).count
+                $TeamsStringLast = ([regex]::Matches($TeamsSplit[$TeamsStrings], "." )).count
+                If ($TeamsStringLast -lt "5") {
+                    $TeamsSplit[$TeamsStrings] = "0" + $TeamsSplit[$TeamsStrings]
+                }
+                $NewVersion = $TeamsSplit[0] + "." + $TeamsSplit[1] + "." + $TeamsSplit[2] + "." + $TeamsSplit[3]
             }
-            $NewVersion = $TeamsSplit[0] + "." + $TeamsSplit[1] + "." + $TeamsSplit[2] + "." + $TeamsSplit[3]
             $URL = $TeamsD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
@@ -8377,7 +8281,7 @@ If ($install -eq $False) {
             Write-Host -ForegroundColor Magenta "Download $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $CurrentVersion"
-            If ($NewCurrentVersion -lt $NewVersion) {
+            If ($NewCurrentVersion -ne $NewVersion) {
                 Write-Host -ForegroundColor Green "Update available"
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
@@ -8400,7 +8304,7 @@ If ($install -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($MSTeamsInstallerClear -eq 'User Based') {
             $Product = "Microsoft Teams User Based"
             $TeamsD = Get-MicrosoftTeamsUser | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
             $Version = $TeamsD.Version
@@ -8821,6 +8725,45 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download Open-Shell Menu
+    If ($OpenShellMenu -eq 1) {
+        $Product = "Open-Shell Menu"
+        $PackageName = "OpenShellSetup"
+        $OpenShellMenuD = Get-EvergreenApp -Name OpenShellMenu
+        $Version = $OpenShellMenuD.Version
+        $URL = $OpenShellMenuD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download OracleJava8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
@@ -8889,6 +8832,45 @@ If ($install -eq $False) {
                 expand-archive -path "$PSScriptRoot\$Product\Paint.Net.zip" -destinationpath "$PSScriptRoot\$Product"
                 Move-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\$Product\paint.net.install.exe"
                 Remove-Item -Path "$PSScriptRoot\$Product\Paint.Net.zip" -Force
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download pdfforge PDFCreator
+    If ($PDFForgeCreator -eq 1) {
+        $Product = "pdfforge PDFCreator"
+        $PackageName = "PDFForgeCreatorWebSetup_" + "$pdfforgePDFCreatorChannelClear"
+        $PDFForgeCreatorD = Get-PDFForgePDFCreator | Where-Object { $_.Channel -eq "$pdfforgePDFCreatorChannelClear" }
+        $Version = $PDFForgeCreatorD.Version
+        $URL = $PDFForgeCreatorD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$pdfforgePDFCreatorChannelClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $pdfforgePDFCreatorChannelClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $pdfforgePDFCreatorChannelClear $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
@@ -9380,6 +9362,45 @@ If ($install -eq $False) {
         }
     }
 
+    #// Mark: Download Total Commander
+    If ($TotalCommander -eq 1) {
+        $Product = "Total Commander"
+        $PackageName = "TotalCommander_" + "$TotalCommanderArchitectureClear"
+        $TotalCommanderD = Get-TotalCommander | Where-Object {$_.Architecture -eq "$TotalCommanderArchitectureClear"}
+        $Version = $TotalCommanderD.Version
+        $URL = $TotalCommanderD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$TotalCommanderArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $TotalCommanderArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $TotalCommanderArchitectureClear $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
     #// Mark: Download TreeSize
     If ($TreeSize -eq 1) {
         Switch ($TreeSizeType) {
@@ -9711,7 +9732,7 @@ If ($install -eq $False) {
 
     #// Mark: Download Zoom
     If ($Zoom -eq 1) {
-        If ($Installer -eq '0') {
+        If ($ZoomInstallerClear -eq 'Machine Based') {
             $Product = "Zoom VDI"
             $PackageName = "ZoomInstaller"
             $ZoomD = Get-EvergreenApp -Name Zoom | Where-Object {$_.Platform -eq "VDI"}
@@ -9780,7 +9801,7 @@ If ($install -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($ZoomInstallerClear -eq 'User Based') {
             $Product = "Zoom"
             $PackageName = "ZoomInstaller"
             $ZoomD = Get-EvergreenApp -Name Zoom | Where-Object {$_.Type -eq "Msi"}
@@ -9881,7 +9902,7 @@ If ($install -eq $False) {
     }
 }
 
-If ($download -eq $False) {
+If ($Install -eq "1") {
 
     If ($Installer -eq 0) {
         Write-Host "Change User Mode to Install."
@@ -11473,7 +11494,7 @@ If ($download -eq $False) {
 
     #// Mark: Install LogMeIn GoToMeeting
     If ($LogMeInGoToMeeting -eq 1) {
-        If ($Installer -eq '0') {
+        If ($LogMeInGoToMeetingInstallerClear -eq "Machine Based") {
             $Product = "LogMeIn GoToMeeting XenApp"
             # Check, if a new version is available
             $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
@@ -11525,7 +11546,7 @@ If ($download -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($LogMeInGoToMeetingInstallerClear -eq "User Based") {
             $Product = "LogMeIn GoToMeeting"
             # Check, if a new version is available
             $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
@@ -11673,18 +11694,18 @@ If ($download -eq $False) {
             $Options = @(
                 "/configure remove.xml"
             )
-            Write-Host "Uninstall Microsoft Office 2019 or Microsoft 365 Apps"
-            DS_WriteLog "I" "Uninstall Microsoft Office 2019 or Microsoft 365 Apps" $LogFile
+            Write-Host "Uninstall Microsoft Office or Microsoft 365 Apps"
+            DS_WriteLog "I" "Uninstall Microsoft Office or Microsoft 365 Apps" $LogFile
             Try {
                 If ($WhatIf -eq '0') {
                     set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
                     Start-Process -FilePath ".\$MS365AppsInstaller" -ArgumentList $Options -NoNewWindow -wait
                     set-location $PSScriptRoot
                 }
-                Write-Host -ForegroundColor Green "Uninstall Microsoft Office 2019 or Microsoft 365 Apps finished!"
+                Write-Host -ForegroundColor Green "Uninstall Microsoft Office or Microsoft 365 Apps finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office 2019 or Microsoft 365 Apps (Error: $($Error[0]))"
-                DS_WriteLog "E" "Error uninstalling Microsoft Office 2019 or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
+                Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
             }
             # MS365Apps Installation
             $Options = @(
@@ -12228,55 +12249,55 @@ If ($download -eq $False) {
         }
     }
 
-    #// Mark: Install Microsoft Office 2019
-    If ($MSOffice2019 -eq 1) {
-        $Product = "Microsoft Office 2019"
+    #// Mark: Install Microsoft Office
+    If ($MSOffice -eq 1) {
+        $Product = "Microsoft Office " + $MSOfficeChannelClear
         # Check, if a new version is available
         $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
         If (!($Version)) {
-            $Version = $MSOffice2019D.Version
+            $Version = $MSOfficeD.Version
         }
-        $MSOffice2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-        If (!$MSOffice2019V) {
-            $MSOffice2019V = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $MSOfficeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$MSOfficeV) {
+            $MSOfficeV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Microsoft Office*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         Write-Host -ForegroundColor Magenta "Install $Product"
         Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $MSOffice2019V"
-        If ($MSOffice2019V -lt $Version) {
+        Write-Host "Current Version:  $MSOfficeV"
+        If ($MSOfficeV -lt $Version) {
             DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
-            # Download MS Office 2019 install files
+            # Download MS Office install files
             If (!(Test-Path -Path "$PSScriptRoot\$Product\Office\Data\$Version")) {
                 Write-Host "Starting download of $Product install files"
-                $DOffice2019 = @(
+                $DOffice = @(
                     "/download install.xml"
                 )
                 If ($WhatIf -eq '0') {
                     set-location $PSScriptRoot\$Product
-                    Start-Process ".\setup.exe" -ArgumentList $DOffice2019 -wait -NoNewWindow
+                    Start-Process ".\setup.exe" -ArgumentList $DOffice -wait -NoNewWindow
                     set-location $PSScriptRoot
                 }
                 Write-Host -ForegroundColor Green "Download of the new version $Version install files finished!"
             }
-            # MS Office 2019 Uninstallation
+            # MS Office Uninstallation
             $Options = @(
                 "/configure remove.xml"
             )
-            Write-Host "Uninstall Microsoft Office 2019 or Microsoft 365 Apps"
-            DS_WriteLog "I" "Uninstall Microsoft Office 2019 or Microsoft 365 Apps" $LogFile
+            Write-Host "Uninstall Microsoft Office or Microsoft 365 Apps"
+            DS_WriteLog "I" "Uninstall Microsoft Office or Microsoft 365 Apps" $LogFile
             Try {
                 If ($WhatIf -eq '0') {
                     set-location $PSScriptRoot\$Product
                     Start-Process -FilePath ".\setup.exe" -ArgumentList $Options -NoNewWindow -wait
                     set-location $PSScriptRoot
                 }
-                Write-Host -ForegroundColor Green "Uninstall Microsoft Office 2019 or Microsoft 365 Apps finished!"
+                Write-Host -ForegroundColor Green "Uninstall Microsoft Office or Microsoft 365 Apps finished!"
             } Catch {
-                Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office 2019 or Microsoft 365 Apps (Error: $($Error[0]))"
-                DS_WriteLog "E" "Error uninstalling Microsoft Office 2019 or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
+                Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
             }
-            # MS Office 2019 Installation
+            # MS Office Installation
             $Options = @(
                 "/configure install.xml"
             )
@@ -12335,13 +12356,13 @@ If ($download -eq $False) {
         If ($MSOneDriveV -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             DS_WriteLog "I" "Install $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear" $LogFile
-            If ($Installer -eq '0') {
+            If ($MSOneDriveInstallerClear -eq 'Machine Based') {
                 $Options = @(
                     "/allusers"
                     "/SILENT"
                 )
             }
-            If ($Installer -eq '1') {
+            If ($MSOneDriveInstallerClear -eq 'User Based') {
                 $Options = @(
                     "/SILENT"
                 )
@@ -12773,7 +12794,7 @@ If ($download -eq $False) {
 
     #// Mark: Install Microsoft Teams
     If ($MSTeams -eq 1) {
-        If ($Installer -eq '0') {
+        If ($MSTeamsInstallerClear -eq 'Machine Based') {
             $Product = "Microsoft Teams Machine Based"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
@@ -12840,12 +12861,12 @@ If ($download -eq $False) {
                 )
                 #Registry key for Teams machine-based install with Citrix VDA (Thx to Kasper https://github.com/kaspersmjohansen)
                 If (!(Test-Path 'HKLM:\Software\Citrix\PortICA\')) {
-                    Write-Host "Customize System for $Product Machine-Based Install"
+                    Write-Host "Customize System for $Product Machine Based Install"
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path 'HKLM:\Software\Citrix\')) {New-Item -Path "HKLM:Software\Citrix" | Out-Null}
                         New-Item -Path "HKLM:Software\Citrix\PortICA" | Out-Null
                     }
-                    Write-Host -ForegroundColor Green "Customize System for $Product Machine-Based Install finished!"
+                    Write-Host -ForegroundColor Green "Customize System for $Product Machine Based Install finished!"
                 }
                 Try {
                     Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
@@ -12908,7 +12929,7 @@ If ($download -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($MSTeamsInstallerClear -eq 'User Based') {
             $Product = "Microsoft Teams User Based"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSTeamsArchitectureClear" + "_$MSTeamsRingClear" + ".txt"
@@ -13067,7 +13088,7 @@ If ($download -eq $False) {
         If (!$MSVisualStudioCodeV) {
             $MSVisualStudioCodeV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Visual Studio Code*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $MSVisualStudioCodeInstaller = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "exe"
+        $MSVisualStudioCodeInstall = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear" + "." + "exe"
         $MSVisualStudioCodeProcess = "VSCode-Setup-" + "$MSVisualStudioCodeChannelClear" + "-$MSVisualStudioCodePlatformClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear"
         Write-Host "Download Version: $Version"
@@ -13082,7 +13103,7 @@ If ($download -eq $False) {
             Try {
                 Write-Host "Starting install of $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear $Version"
                 If ($WhatIf -eq '0') {
-                    $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstaller" -ArgumentList $Options -NoNewWindow -PassThru
+                    $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstall" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -13444,6 +13465,61 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install Open-Shell Menu
+    If ($OpenShellMenu -eq 1) {
+        $Product = "Open-Shell Menu"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $OpenShellMenuD.Version
+        }
+        $OpenShellMenuV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Open-Shell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$OpenShellMenuV) {
+            $OpenShellMenuV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Open-Shell*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $OpenShellMenuInstaller = "OpenShellSetup.exe"
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $OpenShellMenuV"
+        If ($OpenShellMenuV -lt $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/quiet"
+            )
+            Try {
+                Write-Host "Starting install of $Product $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$OpenShellMenuInstaller" -ArgumentList $Options -NoNewWindow
+                }
+                $p = Get-Process OpenShellSetup -ErrorAction SilentlyContinue
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install OracleJava8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
@@ -13544,6 +13620,62 @@ If ($download -eq $False) {
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install pdfforge PDF Creator
+    If ($PDFForgeCreator -eq 1) {
+        $Product = "pdfforge PDFCreator"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$pdfforgePDFCreatorChannelClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $PDFForgeCreatorD.Version
+        }
+        $PDFForgeCreatorV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PDFCreator*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$PDFForgeCreatorV) {
+            $PDFForgeCreatorV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "PDFCreator*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $PDFForgeCreatorInstaller = "PDFForgeCreatorWebSetup_" + "$pdfforgePDFCreatorChannelClear" + ".exe"
+        $PDFForgeCreatorProcess = "PDFForgeCreatorWebSetup" + "$pdfforgePDFCreatorChannelClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $pdfforgePDFCreatorChannelClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $PDFForgeCreatorV"
+        If ($PDFForgeCreatorV -lt $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/NORESTART /NoIcons"
+            )
+            Try {
+                Write-Host "Starting install of $Product $pdfforgePDFCreatorChannelClear $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$PDFForgeCreatorInstaller" -ArgumentList $Options -NoNewWindow
+                }
+                $p = Get-Process $PDFForgeCreatorProcess -ErrorAction SilentlyContinue
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $pdfforgePDFCreatorChannelClear (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product $pdfforgePDFCreatorChannelClear (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
@@ -14230,6 +14362,62 @@ If ($download -eq $False) {
         }
     }
 
+    #// Mark: Install Total Commander
+    If ($TotalCommander -eq 1) {
+        $Product = "Total Commander"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$TotalCommanderArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $TotalCommanderD.Version
+        }
+        $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Total Commander"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$TotalCommanderV) {
+            $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Total Commander"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $TotalCommanderInstaller = "TotalCommander_" + "$TotalCommanderArchitectureClear" + ".exe"
+        $TotalCommanderProcess = "TotalCommander_" + "$TotalCommanderArchitectureClear"
+        Write-Host -ForegroundColor Magenta "Install $Product $TotalCommanderArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $TotalCommanderV"
+        If ($TotalCommanderV -lt $Version) {
+            DS_WriteLog "I" "Install $Product $TotalCommanderArchitectureClear" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Options = @(
+                "/A1H1L1G1U1"
+            )
+            Try {
+                Write-Host "Starting install of $Product $TotalCommanderArchitectureClear $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$TotalCommanderInstaller" -ArgumentList $Options -NoNewWindow
+                }
+                $p = Get-Process $TotalCommanderProcess -ErrorAction SilentlyContinue
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install TreeSize
     If ($TreeSize -eq 1) {
         Switch ($TreeSizeType) {
@@ -14671,7 +14859,7 @@ If ($download -eq $False) {
 
     #// Mark: Install Zoom
     If ($Zoom -eq 1) {
-        If ($Installer -eq '0') {
+        If ($ZoomInstallerClear -eq 'Machine Based') {
             $Product = "Zoom VDI"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
@@ -14718,7 +14906,7 @@ If ($download -eq $False) {
                 Write-Output ""
             }
         }
-        If ($Installer -eq '1') {
+        If ($ZoomInstallerClear -eq 'User Based') {
             $Product = "Zoom"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
