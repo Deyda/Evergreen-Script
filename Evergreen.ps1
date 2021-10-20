@@ -1258,11 +1258,23 @@ Else {
     Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
     Write-Output ""
     If ($file) {
-        Write-Host -Foregroundcolor Red "File: $file."
+        #Write-Host -Foregroundcolor Red "File: $file."
         $update = @'
         Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
         Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
         & "$PSScriptRoot\evergreen.ps1" -download -file $file
+'@
+        $update > $PSScriptRoot\update.ps1
+        & "$PSScriptRoot\update.ps1"
+        Break
+        
+    }
+    ElseIf ($GUIfile) {
+        #Write-Host -Foregroundcolor Red "GUI File: $GUIfile."
+        $update = @'
+        Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+        Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+        & "$PSScriptRoot\evergreen.ps1" -download -GUIfile $GUIfile
 '@
         $update > $PSScriptRoot\update.ps1
         & "$PSScriptRoot\update.ps1"
