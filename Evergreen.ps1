@@ -12380,6 +12380,20 @@ If ($Install -eq "1") {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
+            Write-Host "Customize $Product"
+            Try {
+                # Disable Microsoft OneDrive auto update
+                Write-Host "Customize Scheduled Task"
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -s 5
+                    Get-ScheduledTask -TaskName OneDrive* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
+                Write-Host -ForegroundColor Green "Customize $Product finished!"
+            } Catch {
+                Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error customizing (Error: $($Error[0]))" $LogFile
+            }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
             Write-Host "Starting copy of $Product $MSOneDriveRingClear ADMX files $Version"
