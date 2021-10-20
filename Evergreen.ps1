@@ -11671,7 +11671,7 @@ If ($Install -eq "1") {
         }
     }
 
-    #// Mark: Install Microsoft Apps 365
+    #// Mark: Install Microsoft 365 Apps
     If ($MS365Apps -eq 1) {
         $Product = "Microsoft 365 Apps"
         # Check, if a new version is available
@@ -12157,7 +12157,7 @@ If ($Install -eq "1") {
                 # Application post deployment tasks (Thx to Kasper https://github.com/kaspersmjohansen)
                 Write-Host "Applying $Product post setup customizations"
                 Write-Host "Post setup customizations for $OS"
-                If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops") {
+                If ($OS -Like "*Windows Server 2019*" -or $OS -eq "Microsoft Windows 10 Enterprise for Virtual Desktops" -or $OS -Like "*Windows Server 2021*") {
                     If ((Test-RegistryValue2 -Path "HKLM:SOFTWARE\FSLogix\Apps" -Value "RoamSearch") -ne $true) {
                         Write-Host "Deactivate FSLogix RoamSearch"
                         If ($WhatIf -eq '0') {
