@@ -13032,7 +13032,7 @@ If ($Install -eq "1") {
         }
     }
 
-    #// Mark: Install Microsoft Visual Studio
+    #// Mark: Install Microsoft Visual Studio 2019
     If ($MSVisualStudio -eq 1) {
         $Product = "Microsoft Visual Studio 2019"
         # Check, if a new version is available
@@ -13665,7 +13665,7 @@ If ($Install -eq "1") {
         }
     }
 
-    #// Mark: Install pdfforge PDF Creator
+    #// Mark: Install pdfforge PDFCreator
     If ($PDFForgeCreator -eq 1) {
         $Product = "pdfforge PDFCreator"
         # Check, if a new version is available
@@ -14846,7 +14846,7 @@ If ($Install -eq "1") {
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/S"
-                "/esktopicon=no"
+                "/desktopicon=no"
                 "/quicklaunchdicon=no"
             )
             Try {
