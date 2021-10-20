@@ -10604,7 +10604,7 @@ If ($Install -eq "1") {
                 Write-Host "Customize $Product"
                 If ($WhatIf -eq '0') {
                     reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
-                    reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscrrenShown /d 1 /f | Out-Null
+                    reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscreenShown /d 1 /f | Out-Null
                     reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
                 }
                 Write-Host -ForegroundColor Green "Customizing $Product finished!"
