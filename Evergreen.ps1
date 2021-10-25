@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.03
+  Version:          2.04
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -110,6 +110,8 @@ the script checks the version number and will update the package.
   2021-10-17        Correction Microsoft Teams Machine Based Download
   2021-10-18        Add GUIfile Parameter / Add Mode and Global Information / Add Single Install Type Definition for LogMeInGoToMeeting, Microsoft 365 Apps, Microsoft Visual Studio Code, Microsoft Azure Data Studio, Microsoft OneDrive, Microsoft Teams and Microsoft Office
   2021-10-19        Add Single Install Type Definition for Slack and Zoom / Add Microsoft Office 2021 LTSC / Change Microsoft Office and Microsoft 365 Apps ADMX Architecture / Add Open-Shell Menu Download and Install / Add pdfforge PDFCreator Download Function / Add pdfforge PDFCreator Download and Install / Add Total Commander Download Function / Add Total Commander Download and Install
+  2021-10-21        Add Repository Mode
+  2021-10-25        Add Start Menu Clean Up Mode
 
 
 .PARAMETER file
@@ -1177,7 +1179,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.03"
+$eVersion = "2.04"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1579,7 +1581,9 @@ $inputXML = @"
                     <Image x:Name="Image_Logo_Detail" Height="100" Margin="510,3,30,0" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" ToolTip="www.deyda.net"/>
                     <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="11,3,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                     <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="15,34,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-                    <CheckBox x:Name="Checkbox_CleanUp" Content="CleanUp" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="Checkbox_Repository" Content="Installer Repository" HorizontalAlignment="Left" Margin="80,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="Checkbox_CleanUp" Content="Installer CleanUp" HorizontalAlignment="Left" Margin="210,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="Checkbox_CleanUpStartMenu" Content="Start Menu CleanUp" HorizontalAlignment="Left" Margin="330,34,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2"/>
                     <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Left" Margin="291,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
                     <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Left" Margin="386,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
                     <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Left" Margin="522,844,0,0" VerticalAlignment="Top" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt or -GUIFile Parameter file"/>
@@ -2546,6 +2550,12 @@ $inputXML = @"
                 $WPFCheckbox_TotalCommander_Detail.IsChecked = "True"
             }
         }
+        Switch ($LastSetting[161]) {
+            1 { $WPFCheckbox_Repository.IsChecked = "True"}
+        }
+        Switch ($LastSetting[162]) {
+            1 { $WPFCheckbox_CleanUpStartMenu.IsChecked = "True"}
+        }
     }
     
     #// MARK: Event Handler
@@ -3400,6 +3410,10 @@ $inputXML = @"
         Else {$Script:PDFForgeCreator = 0}
         If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
         Else {$Script:TotalCommander = 0}
+        If ($WPFCheckbox_Repository.ischecked -eq $true) {$Script:Repository = 1}
+        Else {$Script:Repository = 0}
+        If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
+        Else {$Script:CleanUpStartMenu = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3484,7 +3498,7 @@ $inputXML = @"
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3651,6 +3665,10 @@ $inputXML = @"
         Else {$Script:WhatIf = 0}
         If ($WPFCheckbox_CleanUp.ischecked -eq $true) {$Script:CleanUp = 1}
         Else {$Script:CleanUp = 0}
+        If ($WPFCheckbox_Repository.ischecked -eq $true) {$Script:Repository = 1}
+        Else {$Script:Repository = 0}
+        If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
+        Else {$Script:CleanUpStartMenu = 0}
         If ($WPFCheckbox_MS365Apps_Visio_Detail.ischecked -eq $true) {$Script:MS365Apps_Visio = 1}
         Else {$Script:MS365Apps_Visio = 0}
         If ($WPFCheckbox_MS365Apps_Project_Detail.ischecked -eq $true) {$Script:MS365Apps_Project = 1}
@@ -3751,7 +3769,7 @@ $inputXML = @"
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -3952,6 +3970,10 @@ $inputXML = @"
         Else {$Script:PDFForgeCreator = 0}
         If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
         Else {$Script:TotalCommander = 0}
+        If ($WPFCheckbox_Repository.ischecked -eq $true) {$Script:Repository = 1}
+        Else {$Script:Repository = 0}
+        If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
+        Else {$Script:CleanUpStartMenu = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -4036,7 +4058,7 @@ $inputXML = @"
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -4218,6 +4240,10 @@ $inputXML = @"
         Else {$Script:PDFForgeCreator = 0}
         If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
         Else {$Script:TotalCommander = 0}
+        If ($WPFCheckbox_Repository.ischecked -eq $true) {$Script:Repository = 1}
+        Else {$Script:Repository = 0}
+        If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
+        Else {$Script:CleanUpStartMenu = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -4302,7 +4328,7 @@ $inputXML = @"
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 Switch ($MS365AppsChannel) {
@@ -4512,12 +4538,14 @@ If ($file) {
         $Slack_Installer = $FileSetting[158] -as [int]
         $pdfforgePDFCreatorChannel = $FileSetting[159] -as [int]
         $TotalCommander_Architecture = $FileSetting[160] -as [int]
+        $Repository = $FileSetting[161] -as [int]
+        $CleanUpStartMenu = $FileSetting[162] -as [int]
     }
     Write-Host "Unattended Mode."
 }
 Else {
     # Cleanup of the used variables (AddScript)
-    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSOffice_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture -ErrorAction SilentlyContinue
+    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSOffice_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -5661,8 +5689,12 @@ If ($Install -eq "1") { Write-Host -ForegroundColor Green "Install Option Enable
 Else { Write-Host "Install Option Disabled." }
 If ($WhatIf) { Write-Host -ForegroundColor Green "What If Option Enabled." }
 Else { Write-Host "What If Option Disabled." }
-If ($CleanUp) { Write-Host -ForegroundColor Green "Clean Up Option Enabled." }
-Else { Write-Host "Clean Up Option Disabled." }
+If ($Repository) { Write-Host -ForegroundColor Green "Installer Repository Option Enabled." }
+Else { Write-Host "Installer Repository Option Disabled." }
+If ($CleanUp) { Write-Host -ForegroundColor Green "Installer Clean Up Option Enabled." }
+Else { Write-Host "Installer Clean Up Option Disabled." }
+If ($CleanUpStartMenu) { Write-Host -ForegroundColor Green "Start Menu Clean Up Option Enabled." }
+Else { Write-Host "Start Menu Clean Up Option Disabled." }
 Write-Output ""
 
 If ($Download -eq "1") {
@@ -5786,6 +5818,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -5825,6 +5866,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -5863,6 +5913,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msp" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Include *.msp, *.log, Version.txt, Download* -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -5902,6 +5961,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -5928,14 +5996,14 @@ If ($Download -eq "1") {
                 Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($SourceP))
                 expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                 Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\$Product\AcrobatReaderDC.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\AcrobatReaderDC.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\AcrobatReaderDC.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\AcrobatReaderDC.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\AcrobatReaderDC.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\AcrobatReaderDC.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\en-US\AcrobatReaderDC.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\en-US\AcrobatReaderDC.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
             Write-Output ""
@@ -5966,6 +6034,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6004,6 +6081,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Exclude *.ps1, *.lnk -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -6043,6 +6129,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6082,6 +6177,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6121,6 +6225,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6172,6 +6285,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\Citrix\$Product")) { New-Item -Path "$PSScriptRoot\Citrix\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\Citrix\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -Value "$Version"
@@ -6209,87 +6331,87 @@ If ($Download -eq "1") {
                 Get-Download $URL "$PSScriptRoot\Citrix\$Product\" $SourceP -includeStats
                 expand-archive -path "$PSScriptRoot\Citrix\$Product\$SourceP" -destinationpath "$PSScriptRoot\Citrix\$Product"
                 Remove-Item -Path "$PSScriptRoot\Citrix\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\CitrixBase.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\receiver.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\CitrixBase.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\CitrixBase.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\receiver.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\en-US\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\en-US\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\en-US\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\en-US\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\de-DE\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\de-DE\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\de-DE\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\de-DE\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\de-DE\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\es-ES\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\es-ES\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\es-ES\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\es-ES\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\es-ES\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fr-FR\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\fr-FR\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\fr-FR\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\fr-FR\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\fr-FR\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\it-IT\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\it-IT\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\it-IT\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\it-IT\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\it-IT\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ja-JP\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ja-JP\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ja-JP\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ja-JP\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ja-JP\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\nl-NL\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\nl-NL\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\nl-NL\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\nl-NL\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\nl-NL\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ko-KR\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ko-KR\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ko-KR\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ko-KR\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ko-KR\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-BR\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\pt-BR\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\pt-BR\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\pt-BR\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\pt-BR\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ru-RU\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ru-RU\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ru-RU\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\receiver.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\receiver.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\CitrixBase.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ru-RU\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\ru-RU\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\zh-CN\receiver.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\receiver.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\CitrixBase.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\zh-CN\receiver.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\zh-CN\CitrixBase.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\zh-CN\receiver.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\Citrix\$Product\$CWASubFolderPath\zh-CN\CitrixBase.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\Citrix\$Product\$CWAPath" -Force -Recurse -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
@@ -6321,6 +6443,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6360,6 +6491,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6385,12 +6525,6 @@ If ($Download -eq "1") {
     If ($deviceTRUST -eq 1) {
         $Product = "deviceTRUST"
         $PackageName = "deviceTRUST"
-        <#$URLVersion = "https://docs.devicetrust.com/docs/download/"
-        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
-        $regexAppVersion = "<td>\d\d.\d.\d\d\d+</td>"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $Version = $webVersion.Trim("</td>").Trim("</td>")
-        $URL = "https://storage.devicetrust.com/download/deviceTRUST-$Version.zip"#>
         $deviceTRUSTD = Get-EvergreenApp -Name deviceTRUST | Where-Object { $_.Platform -eq "Windows" -and $_.Type -eq "Bundle" }  | Sort-Object -Property Version -Descending | Select-Object -First 1
         $Version = $deviceTRUSTD.Version
         $URL = $deviceTRUSTD.uri
@@ -6407,6 +6541,16 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6439,17 +6583,17 @@ If ($Download -eq "1") {
             Write-Output ""
             Write-Host "Starting copy of $Product ADMX files $Version"
             If ($WhatIf -eq '0') {
-                expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.zip" -destinationpath "$PSScriptRoot\$Product\ADMX"
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\$Product\ADMX\deviceTRUST.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\deviceTRUST.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\deviceTRUST.adml" -ErrorAction SilentlyContinue
+                expand-archive -path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.zip" -destinationpath "$PSScriptRoot\$Product\_ADMX"
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\_ADMX\deviceTRUST.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\deviceTRUST.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\deviceTRUST.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\ADMX\en-US\deviceTRUST.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\_ADMX\en-US\deviceTRUST.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\dtpolicydefinitions-$Version.zip" -Force
-                Remove-Item -Path "$PSScriptRoot\$Product\ADMX" -Force -Recurse
+                Remove-Item -Path "$PSScriptRoot\$Product\_ADMX" -Force -Recurse
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -6479,6 +6623,7 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -6518,6 +6663,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6557,6 +6711,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6595,6 +6758,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -6634,6 +6806,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6710,6 +6891,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($NewCurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $NewCurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $NewCurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6734,87 +6924,87 @@ If ($Download -eq "1") {
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                 Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\google.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\chrome.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\chrome.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\google.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\chrome.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\de-DE\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\es-ES\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fr-FR\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\it-IT\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ja-JP\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\nl-NL\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ko-KR\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-BR\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ru-RU\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\chrome.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\google.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\chrome.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\zh-CN\chrome.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\google.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\chrome.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\chrome.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\google.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\chrome.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\google.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\common" -Force -Recurse -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\chromeos" -Force -Recurse -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
@@ -6848,6 +7038,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -6887,6 +7086,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6926,6 +7134,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -6978,6 +7195,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -7029,6 +7255,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -7065,6 +7300,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -7105,6 +7349,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7326,6 +7579,15 @@ If ($Download -eq "1") {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\$MS365AppsChannelClear\*" -Recurse -Exclude install.xml,remove.xml
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\Version.txt" -Value "$Version"
@@ -7350,14 +7612,14 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 Start-Process -FilePath "$InstallDir" -ArgumentList "/extract:$env:TEMP /passive /quiet" -wait
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\office16.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\office16.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
-                copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\_ADMX\$Product" -Force -Recurse
+                copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\_ADMX\$Product" -Force
                 Remove-Item -Path "$InstallDir" -Force
-                Remove-Item -Path "$env:TEMP\ADMX" -Force -Recurse
+                Remove-Item -Path "$env:TEMP\admx" -Force -Recurse
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -7388,6 +7650,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7427,6 +7698,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7466,6 +7746,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7505,6 +7794,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7534,164 +7832,164 @@ If ($Download -eq "1") {
                 Remove-Item -Path "$PSScriptRoot\$Product\html" -Force -Recurse -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\examples" -Force -Recurse -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\VERSION" -Force -ErrorAction SilentlyContinue
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedge.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgeupdate.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgewebview2.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedge.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgeupdate.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\msedgewebview2.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\en-US\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\de-DE\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\da-DK")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\da-DK\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\da-DK\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\de-DE\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\da-DK")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\da-DK" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\da-DK\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\da-DK\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\da-DK\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\da-DK\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\da-DK\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\da-DK" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\es-ES\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fi-FI")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fi-FI\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\es-ES\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fi-FI")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fi-FI" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fi-FI\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fi-FI\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fi-FI\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fi-FI\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fi-FI\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fi-FI" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fr-FR\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\fr-FR\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\it-IT\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\it-IT\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ja-JP\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ja-JP\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ko-KR\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nb-NO")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nb-NO\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ko-KR\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\nb-NO")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\nb-NO" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\nb-NO\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nb-NO\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nb-NO\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nb-NO\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nb-NO\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nb-NO" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\nl-NL\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\nl-NL\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pl-PL\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pl-PL\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-BR\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-BR\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-PT\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\pt-PT\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ru-RU\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\ru-RU\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\sv-SE\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedge.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedgeupdate.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedge.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\msedgewebview2.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\sv-SE\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\zh-CN\msedge.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\msedgeupdate.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\msedge.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\msedgewebview2.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedge.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgeupdate.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgewebview2.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedge.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgeupdate.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
@@ -7723,6 +8021,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7762,6 +8069,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear")) { New-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\$MSFSLogixChannelClear\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -7788,16 +8104,16 @@ If ($Download -eq "1") {
             Write-Output ""
             Write-Host "Starting copy of $Product $MSFSLogixChannelClear ADMX files $Version"
             If ($WhatIf -eq '0') {
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fslogix.admx" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fslogix.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fslogix.admx" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\fslogix.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\fslogix.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\fslogix.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\fslogix.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -7938,6 +8254,15 @@ If ($Download -eq "1") {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude install.xml,remove.xml
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -7962,14 +8287,14 @@ If ($Download -eq "1") {
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 $InstallDir = "$PSScriptRoot\$Product\$SourceP"
                 Start-Process -FilePath "$InstallDir" -ArgumentList "/extract:$env:TEMP /passive /quiet" -wait
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\office16.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\office16.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force -Recurse
-                copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                copy-item -Path "$env:TEMP\admx\*" -Destination "$PSScriptRoot\_ADMX\$Product" -Force -Recurse
+                copy-item -Path "$env:TEMP\office2016grouppolicyandoctsettings.xlsx" -Destination "$PSScriptRoot\_ADMX\$Product" -Force
                 Remove-Item -Path "$InstallDir" -Force
-                Remove-Item -Path "$env:TEMP\ADMX" -Force -Recurse
+                Remove-Item -Path "$env:TEMP\admx" -Force -Recurse
             }
             Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -8000,6 +8325,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8039,6 +8373,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8078,6 +8421,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8117,6 +8469,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8156,6 +8517,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8195,6 +8565,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8233,6 +8612,16 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.chm" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -8298,6 +8687,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8334,6 +8732,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8374,6 +8781,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8413,6 +8829,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8452,6 +8877,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8491,6 +8925,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8515,59 +8958,59 @@ If ($Download -eq "1") {
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                 Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\firefox.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\mozilla.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\firefox.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\mozilla.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$PSScriptRoot\$Product\windows\firefox.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\mozilla.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\firefox.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\mozilla.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\firefox.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\mozilla.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\en-US\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\de-DE\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\firefox.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\mozilla.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\mozilla.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\firefox.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\de-DE\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\es-ES\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\mozilla.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\firefox.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\mozilla.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\firefox.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\es-ES\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fr-FR\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\mozilla.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\firefox.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\mozilla.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\firefox.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\fr-FR\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\it-IT\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\mozilla.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\firefox.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\mozilla.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\firefox.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\it-IT\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ru-RU\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\mozilla.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\firefox.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\firefox.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\mozilla.adml" -ErrorAction SilentlyContinue
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\firefox.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\ru-RU\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\zh-CN\firefox.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\mozilla.adml" -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\firefox.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\firefox.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
-                Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\mozilla.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\firefox.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$PSScriptRoot\$Product\windows\zh-CN\mozilla.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\mac" -Force -Recurse -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\README.md" -Force -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\LICENSE" -Force -ErrorAction SilentlyContinue
@@ -8601,6 +9044,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -8640,6 +9092,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8679,6 +9140,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Get-ChildItem "$PSScriptRoot\$Product\" -Exclude lang | Remove-Item -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8718,6 +9188,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8757,6 +9236,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8796,6 +9284,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8834,6 +9331,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -8876,6 +9382,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8915,6 +9430,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8954,6 +9478,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -8993,6 +9526,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9037,6 +9579,15 @@ If ($Download -eq "1") {
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion) {
+                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                            }
+                        }
                         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                         Start-Transcript $LogPS | Out-Null
                         Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9077,6 +9628,15 @@ If ($Download -eq "1") {
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion) {
+                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                            }
+                        }
                         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                         Start-Transcript $LogPS | Out-Null
                         Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9117,6 +9677,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9155,6 +9724,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9194,6 +9772,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9223,7 +9810,7 @@ If ($Download -eq "1") {
         If ($SumatraPDFArchitectureClear -eq 'x86') {
             $URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-" + "$Version" + "-install.exe"
         }
-        If ($SumatraPDFArchitectureClear -eq 'x86') {
+        If ($SumatraPDFArchitectureClear -eq 'x64') {
             $URL = "https://kjkpubsf.sfo2.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-" + "$Version" + "-64-install.exe"
         }
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -9239,6 +9826,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9277,6 +9873,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9316,6 +9921,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9355,6 +9969,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9394,6 +10017,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9434,6 +10066,15 @@ If ($Download -eq "1") {
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion) {
+                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                            }
+                        }
                         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                         Start-Transcript $LogPS | Out-Null
                         Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9470,6 +10111,15 @@ If ($Download -eq "1") {
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion) {
+                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                            }
+                        }
                         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                         Start-Transcript $LogPS | Out-Null
                         Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9511,6 +10161,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse -Exclude silent-install.cmd
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9533,11 +10192,11 @@ If ($Download -eq "1") {
             Write-Output ""
             Write-Host "Starting copy of $Product ADMX files $Version"
             If ($WhatIf -eq '0') {
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\uberAgent.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\uberAgent.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                copy-item -Path "$PSScriptRoot\$Product\uberAgent components\Group Policy\Administrative template (ADMX)\*" -Destination "$PSScriptRoot\ADMX\$Product" -Force
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                copy-item -Path "$PSScriptRoot\$Product\uberAgent components\Group Policy\Administrative template (ADMX)\*" -Destination "$PSScriptRoot\_ADMX\$Product" -Force
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -9568,6 +10227,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9607,6 +10275,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9646,6 +10323,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9684,6 +10370,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9723,6 +10418,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
@@ -9766,6 +10470,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9791,18 +10504,18 @@ If ($Download -eq "1") {
                     Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                     expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                     Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                    If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                    If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                    If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
-                        Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
-                        Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
+                    If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                    If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                    If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
+                        Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
+                        Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
                     }
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
                     Remove-Item -Path "$PSScriptRoot\$Product\$FolderP" -Force -Recurse -ErrorAction SilentlyContinue
                 }
                 Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
@@ -9831,6 +10544,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
@@ -9855,18 +10577,18 @@ If ($Download -eq "1") {
                     Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                     expand-archive -path "$PSScriptRoot\$Product\$SourceP" -destinationpath "$PSScriptRoot\$Product"
                     Remove-Item -Path "$PSScriptRoot\$Product\$SourceP" -Force -ErrorAction SilentlyContinue
-                    If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                    If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                    If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                    If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
-                        Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
-                        Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
+                    If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                    If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKCU.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetings_HKLM.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\ZoomMeetingsGlobalPolicy.reg" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                    If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                    If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -PathType leaf)) {
+                        Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKCU.adml" -ErrorAction SilentlyContinue
+                        Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\ZoomMeetings_HKLM.adml" -ErrorAction SilentlyContinue
                     }
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKCU.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                    Move-Item -Path "$PSScriptRoot\$Product\$FolderP\en-US\ZoomMeetings_HKLM.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
                     Remove-Item -Path "$PSScriptRoot\$Product\$FolderP" -Force -Recurse -ErrorAction SilentlyContinue
                 }
                 Write-Host -ForegroundColor Green "Download of the new ADMX files version $VersionP finished!"
@@ -9893,6 +10615,15 @@ If ($Download -eq "1") {
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product2")) {New-Item -Path "$PSScriptRoot\$Product2" -ItemType Directory | Out-Null}
                     $LogPS = "$PSScriptRoot\$Product2\" + "$Product2 $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
                     Remove-Item "$PSScriptRoot\$Product2\*" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$PSScriptRoot\$Product2\Version.txt" -Value "$Version"
@@ -9982,6 +10713,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\1Password.lnk") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\1Password.lnk" -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -10033,6 +10769,11 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\7-Zip") {Remove-Item -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\7-Zip" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $7ZipArchitectureClear (Error: $($Error[0]))"
@@ -10165,6 +10906,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat DC.lnk") {Remove-Item -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat DC.lnk" -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $AdobeArchitectureClear $AdobeLanguageClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -10265,6 +11011,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     If (Test-Path -Path "$env:PUBLIC\Desktop\DWG TrueView*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\DWG TrueView*.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -10346,16 +11095,16 @@ If ($Install -eq "1") {
             Write-Host "Starting copy of $Product ADMX files $Version"
             $BISFInstallFolder = "${env:ProgramFiles(x86)}\Base Image Script Framework (BIS-F)\ADMX"
             If ($WhatIf -eq '0') {
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\BaseImageScriptFramework.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\BaseImageScriptFramework.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$BISFInstallFolder\BaseImageScriptFramework.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\BaseImageScriptFramework.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\BaseImageScriptFramework.adml" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$BISFInstallFolder\BaseImageScriptFramework.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\BaseImageScriptFramework.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\BaseImageScriptFramework.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$BISFInstallFolder\en-US\BaseImageScriptFramework.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                Move-Item -Path "$BISFInstallFolder\en-US\BaseImageScriptFramework.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -10407,6 +11156,9 @@ If ($Install -eq "1") {
                 Write-Host "Starting install of $Product $CiscoWebexTeamsArchitectureClear $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Webex") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Webex" -Recurse -Force}
+                    }
                 }
                 Get-Content $WebexLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $WebexLog -ErrorAction SilentlyContinue
@@ -10464,6 +11216,9 @@ If ($Install -eq "1") {
                 Write-Host "Starting install of $Product $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Citrix") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Citrix" -Recurse -Force}
+                    }
                 }
                 Get-Content $CitrixFilesLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $CitrixFilesLog -ErrorAction SilentlyContinue
@@ -10603,6 +11358,9 @@ If ($Install -eq "1") {
                 }
                 Write-Host "Customize $Product"
                 If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Citrix Workspace.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Citrix Workspace.lnk" -Force}
+                    }
                     reg add "HKLM\SOFTWARE\Wow6432Node\Policies\Citrix" /v EnableX1FTU /t REG_DWORD /d 0 /f | Out-Null
                     reg add "HKCU\Software\Citrix\Splashscreen" /v SplashscreenShown /d 1 /f | Out-Null
                     reg add "HKLM\SOFTWARE\Policies\Citrix" /f /v EnableFTU /t REG_DWORD /d 0 | Out-Null
@@ -10742,6 +11500,9 @@ If ($Install -eq "1") {
                     Write-Host "Starting install of $Product Client $Version"
                     If ($WhatIf -eq '0') {
                         Start-Process -FilePath "$PSScriptRoot\$Product\$deviceTRUSTClientInstaller" -ArgumentList $Options -PassThru -Wait -ErrorAction Stop | Out-Null
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*" -Recurse -Force}
+                        }
                     }
                     Get-Content $deviceTRUSTClientLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $deviceTRUSTClientLog -ErrorAction SilentlyContinue
@@ -10859,6 +11620,11 @@ If ($Install -eq "1") {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\FileZilla FTP Client") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\FileZilla FTP Client" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -10920,6 +11686,9 @@ If ($Install -eq "1") {
                 Remove-Item $FoxitPDFEditorLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Foxit PDF Editor") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Foxit PDF Editor" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -10981,6 +11750,9 @@ If ($Install -eq "1") {
                 Remove-Item $FoxitLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Foxit Reader.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Foxit PDF Reader") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Foxit PDF Reader" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -11037,6 +11809,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\GIMP*.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\GIMP*.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -11097,6 +11874,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Git for Windows.lnk") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Git for Windows.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $GitForWindowsArchitectureClear (Error: $($Error[0]))"
@@ -11191,6 +11973,9 @@ If ($Install -eq "1") {
                 Remove-Item $ChromeLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Google Chrome.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Google Chrome.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -11273,6 +12058,11 @@ If ($Install -eq "1") {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Greenshot") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Greenshot" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -11334,6 +12124,9 @@ If ($Install -eq "1") {
                 Start-Sleep -Seconds 10
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\ImageGlass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\ImageGlass.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\ImageGlass") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\ImageGlass" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -11394,6 +12187,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\IrfanView") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\IrfanView" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $IrfanViewArchitectureClear (Error: $($Error[0]))"
@@ -11477,6 +12275,9 @@ If ($Install -eq "1") {
                 Remove-Item $KeePassLog -ErrorAction SilentlyContinue
                 If ($WhatIf -eq '0') {
                     If (Test-Path -Path "$env:PUBLIC\Desktop\KeePass.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\KeePass.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\KeePass") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\KeePass" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -11730,6 +12531,19 @@ If ($Install -eq "1") {
                     set-location $PSScriptRoot\$Product\$MS365AppsChannelClear
                     Start-Process -FilePath ".\$MS365AppsInstaller" -ArgumentList $Options -NoNewWindow -wait
                     set-location $PSScriptRoot
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Office Tools") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Office Tools" -Recurse -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Access.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Access.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Excel.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\OneNote.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\OneNote.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Outlook.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Outlook.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Publisher.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Publisher.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Project.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Project.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visio.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visio.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Word.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Force}
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Outlook.lnk") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Outlook.lnk" -Force}
+                    }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -11786,6 +12600,9 @@ If ($Install -eq "1") {
                 Write-Host "Starting install of $Product $MSAVDRemoteDesktopChannelClear $MSAVDRemoteDesktopArchitectureClear $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Remote Desktop.lnk") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Remote Desktop.lnk" -Force}
+                    }
                 }
                 Get-Content $MSAVDRemoteDesktopLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $MSAVDRemoteDesktopLog -ErrorAction SilentlyContinue
@@ -11900,6 +12717,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     $null = Start-Process "$PSScriptRoot\$Product\$MSAzureDataStudioInstaller" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $MSAzureDataStudioProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Azure Data Studio") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Azure Data Studio" -Recurse -Force}
+                    }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -11959,6 +12779,9 @@ If ($Install -eq "1") {
                 Write-Host "Starting install of $Product $MSEdgeChannelClear $MSEdgeArchitectureClear $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" -Force}
+                    }
                 }
                 Get-Content $EdgeLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $EdgeLog -ErrorAction SilentlyContinue
@@ -12384,6 +13207,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     $null = Start-Process "$PSScriptRoot\$Product\$OneDriveInstaller" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $OneDriveProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk" -Force}
+                    }
                 }
                 # OneDrive starts automatically after setup. kill!
                 #Stop-Process -Name "OneDrive" -Force
@@ -12419,82 +13245,82 @@ If ($Install -eq "1") {
                 }
                 $OneDriveInstallFolder = $OneDriveUninstall.DisplayIcon.Substring(0, $OneDriveUninstall.DisplayIcon.IndexOf("\OneDriveSetup.exe"))
                 $sourceadmx = "$($OneDriveInstallFolder)\adm"
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\OneDrive.admx" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\OneDrive.admx" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse -ErrorAction SilentlyContinue
                 }
-                If (Test-Path -Path "$PSScriptRoot\ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\ADMX\$Product" -Force -Recurse}
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product")) { New-Item -Path "$PSScriptRoot\ADMX\$Product" -ItemType Directory | Out-Null }
-                Move-Item -Path "$sourceadmx\OneDrive.admx" -Destination "$PSScriptRoot\ADMX\$Product" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\en-US" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\en-US\OneDrive.adml" -ErrorAction SilentlyContinue
+                If (Test-Path -Path "$PSScriptRoot\_ADMX\$Product") {Remove-Item -Path "$PSScriptRoot\_ADMX\$Product" -Force -Recurse}
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product" -ItemType Directory | Out-Null }
+                Move-Item -Path "$sourceadmx\OneDrive.admx" -Destination "$PSScriptRoot\_ADMX\$Product" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\en-US")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\en-US\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\en-US\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\en-US" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\de-DE\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\en-US" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\de-DE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\de-DE\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\de-DE\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\de\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\es-ES\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\de\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\de-DE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\es-ES")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\es-ES\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\es-ES\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\es\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\fr-FR\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\es\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\es-ES" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\fr-FR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\fr-FR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\fr-FR\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\fr\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\it-IT\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\fr\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\fr-FR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\it-IT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\it-IT\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\it-IT\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\it\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ja-JP\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\it\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\it-IT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ja-JP")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ja-JP\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ja-JP\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\ja\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ko-KR\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\ja\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ja-JP" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ko-KR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ko-KR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ko-KR\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\ko\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\nl-NL\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\ko\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ko-KR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\nl-NL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\nl-NL\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\nl-NL\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\nl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pl-PL\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\nl\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\nl-NL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pl-PL")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pl-PL\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pl-PL\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\pl\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-BR\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\pl\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pl-PL" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-BR")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-BR\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-BR\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\pt-BR\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\pt-PT\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\pt-BR\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-BR" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\pt-PT")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\pt-PT\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\pt-PT\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\pt-PT\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\ru-RU\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\pt-PT\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\pt-PT" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\ru-RU")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\ru-RU\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\ru-RU\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\ru\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\sv-SE\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\ru\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\ru-RU" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\sv-SE")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\sv-SE\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\sv-SE\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\sv\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
-                If (!(Test-Path -Path "$PSScriptRoot\ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
-                If ((Test-Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -PathType leaf)) {
-                    Remove-Item -Path "$PSScriptRoot\ADMX\$Product\zh-CN\OneDrive.adml" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\sv\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\sv-SE" -ErrorAction SilentlyContinue
+                If (!(Test-Path -Path "$PSScriptRoot\_ADMX\$Product\zh-CN")) { New-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN" -ItemType Directory | Out-Null }
+                If ((Test-Path "$PSScriptRoot\_ADMX\$Product\zh-CN\OneDrive.adml" -PathType leaf)) {
+                    Remove-Item -Path "$PSScriptRoot\_ADMX\$Product\zh-CN\OneDrive.adml" -ErrorAction SilentlyContinue
                 }
-                Move-Item -Path "$sourceadmx\zh-CN\OneDrive.adml" -Destination "$PSScriptRoot\ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
+                Move-Item -Path "$sourceadmx\zh-CN\OneDrive.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
             Write-Output ""
@@ -12550,6 +13376,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Power BI Desktop") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Power BI Desktop" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -12611,6 +13442,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Power BI Report Builder") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Power BI Report Builder" -Recurse -Force}
+                    }
                 }
                 Get-Content $MSPowerBIReportBuilderLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $MSPowerBIReportBuilderLog -ErrorAction SilentlyContinue
@@ -12670,6 +13504,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerShell") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerShell" -Recurse -Force}
+                    }
                 }
                 Get-Content $MSPowerShellLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $MSPowerShellLog -ErrorAction SilentlyContinue
@@ -12726,6 +13563,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerToys*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PowerToys*" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -12795,6 +13637,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft SQL Server Tools*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft SQL Server Tools*" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -12904,6 +13751,9 @@ If ($Install -eq "1") {
                     Remove-Item $TeamsLog -ErrorAction SilentlyContinue
                     If ($WhatIf -eq '0') {
                         If (Test-Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk") { Remove-Item -Path "$env:PUBLIC\Desktop\Microsoft Teams.lnk" -Force }
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk" -Force}
+                        }
                     }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -12991,6 +13841,9 @@ If ($Install -eq "1") {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     If ($WhatIf -eq '0') {
                         If (Test-Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk") {Remove-Item -Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk" -Force}
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams.lnk" -Force}
+                        }
                     }
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13073,6 +13926,12 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     $null = Start-Process -FilePath "$PSScriptRoot\$Product\VS-Setup.exe" -ArgumentList $Options -PassThru -NoNewWindow
                     while (Get-Process -Name setup -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio 2019") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio 2019" -Recurse -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio 2019.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio 2019.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio Installer.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio Installer.lnk" -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Blend for Visual Studio 2019.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Blend for Visual Studio 2019.lnk" -Force}
+                    }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -13131,6 +13990,10 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     $null = Start-Process "$PSScriptRoot\$Product\$MSVisualStudioCodeInstall" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $MSVisualStudioCodeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Visual Studio Code*") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Visual Studio Code*" -Recurse -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio Code*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio Code*" -Recurse -Force}
+                    }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -13185,6 +14048,9 @@ If ($Install -eq "1") {
                     $null = Start-Process "$PSScriptRoot\$Product\$MindView7Installer" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $MindView7Process -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                     If (Test-Path -Path "$env:PUBLIC\Desktop\MindView*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\MindView*.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\MindView*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\MindView*" -Recurse -Force}
+                    }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
             } Catch {
@@ -13245,6 +14111,9 @@ If ($Install -eq "1") {
                 Write-Host "Starting install of $Product $FirefoxChannelClear $FirefoxArchitectureClear $FFLanguageClear $Version"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Firefox.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Firefox.lnk" -Force}
+                    }
                 }
                 Get-Content $FirefoxLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $FirefoxLog -ErrorAction SilentlyContinue
@@ -13310,6 +14179,9 @@ If ($Install -eq "1") {
             Write-Output ""
             If ($WhatIf -eq '0') {
                 If (Test-Path -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\mRemoteNG.lnk" -Force}
+                If ($CleanUpStartMenu) {
+                    If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\mRemoteNG") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\mRemoteNG" -Recurse -Force}
+                }
             }
         }
         # Stop, if no new version is available
@@ -13356,6 +14228,11 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Nmap") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Nmap" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13408,6 +14285,11 @@ If ($Install -eq "1") {
 		        If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Notepad++.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Notepad++.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13524,6 +14406,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Open-Shell") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Open-Shell" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13584,6 +14471,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Java") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Java" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $OracleJava8ArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13643,6 +14535,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\paint.net.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\paint.net.lnk" -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13698,6 +14595,11 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PDFCreator.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PDFCreator.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $pdfforgePDFCreatorChannelClear (Error: $($Error[0]))"
@@ -13755,6 +14657,9 @@ If ($Install -eq "1") {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PDFsam Basic.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PDFsam*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PDFsam*" -Recurse -Force}
+                    }
                 }
                 Get-Content $PDFsamLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $PDFsamLog -ErrorAction SilentlyContinue
@@ -13812,6 +14717,11 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PeaZip") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PeaZip" -Recurse -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -13876,6 +14786,9 @@ If ($Install -eq "1") {
                     Remove-Item $PuTTYLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY.lnk" -Force}
                     If (Test-Path -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\PuTTY (64-bit).lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PuTTY*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\PuTTY*" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13927,6 +14840,9 @@ If ($Install -eq "1") {
                         Write-Host "Starting install of $Product $Version"
                         If ($WhatIf -eq '0') {
                             Install-MSI $InstallMSI $Arguments
+                            If ($CleanUpStartMenu) {
+                                If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Remote Desktop Manager*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Remote Desktop Manager*" -Recurse -Force}
+                            }
                         }
                         Get-Content $RemoteDesktopManagerLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                         Remove-Item $RemoteDesktopManagerLog -ErrorAction SilentlyContinue
@@ -14036,6 +14952,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\ShareX") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\ShareX" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14100,6 +15021,10 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Slack*") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Slack*" -Recurse -Force}
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Slack*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Slack*" -Recurse -Force}
+                    }
                 }
                 Get-Content $SlackLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $SlackLog -ErrorAction SilentlyContinue
@@ -14159,8 +15084,9 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     If ($WhatIf -eq '0') {
-                        If (Test-Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk") {
-                            Remove-Item -Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk" -Force
+                        If (Test-Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk") {Remove-Item -Path "$env:USERPROFILE\Desktop\SumatraPDF.lnk" -Force}
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\SumatraPDF.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\SumatraPDF.lnk" -Force}
                         }
                     }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
@@ -14236,6 +15162,9 @@ If ($Install -eq "1") {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     If ($WhatIf -eq '0') {
                         If (Test-Path -Path "$env:PUBLIC\Desktop\Teamviewer.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Teamviewer.lnk" -Force}
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TeamViewer.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TeamViewer.lnk" -Force}
+                        }
                     }
                 }
             } Catch {
@@ -14309,6 +15238,9 @@ If ($Install -eq "1") {
                     Get-Content $TechSmithCamtasiaLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $TechSmithCamtasiaLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\Camtasia*.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Camtasia*.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TechSmith") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TechSmith" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14364,6 +15296,9 @@ If ($Install -eq "1") {
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     Start-Sleep 25
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TechSmith") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TechSmith" -Recurse -Force}
+                    }
                 }
                 Get-Content $TechSmithSnagItLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                 Remove-Item $TechSmithSnagItLog -ErrorAction SilentlyContinue
@@ -14422,6 +15357,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Total Commander") {Remove-Item -Path "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Total Commander" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14471,6 +15411,11 @@ If ($Install -eq "1") {
                         If ($p) {
                             $p.WaitForExit()
                             Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                        }
+                        If ($WhatIf -eq '0') {
+                            If ($CleanUpStartMenu) {
+                                If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TreeSize*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\TreeSize*" -Recurse -Force}
+                            }
                         }
                     } Catch {
                         Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -14626,6 +15571,9 @@ If ($Install -eq "1") {
                     Get-Content $VLCLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $VLCLog -ErrorAction SilentlyContinue
                     If (Test-Path -Path "$env:PUBLIC\Desktop\VLC media player.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\VLC media player.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\VideoLAN") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\VideoLAN" -Recurse -Force}
+                    }
                 }
             } Catch {
                 DS_WriteLog "E" "An error occurred installing $Product (Error: $($Error[0]))" $LogFile 
@@ -14744,6 +15692,11 @@ If ($Install -eq "1") {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\WinMerge") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\WinMerge" -Recurse -Force}
+                    }
+                }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14800,6 +15753,9 @@ If ($Install -eq "1") {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     If ($WhatIf -eq '0') {
                         If (Test-Path -Path "$env:PUBLIC\Desktop\WinSCP.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\WinSCP.lnk" -Force}
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\WinSCP.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\WinSCP.lnk" -Force}
+                        }
                     }
                 }
             } Catch {
@@ -14860,6 +15816,11 @@ If ($Install -eq "1") {
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Wireshark.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Wireshark.lnk" -Force}
+                    }
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
