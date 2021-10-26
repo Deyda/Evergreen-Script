@@ -112,6 +112,7 @@ the script checks the version number and will update the package.
   2021-10-19        Add Single Install Type Definition for Slack and Zoom / Add Microsoft Office 2021 LTSC / Change Microsoft Office and Microsoft 365 Apps ADMX Architecture / Add Open-Shell Menu Download and Install / Add pdfforge PDFCreator Download Function / Add pdfforge PDFCreator Download and Install / Add Total Commander Download Function / Add Total Commander Download and Install
   2021-10-21        Add Repository Mode
   2021-10-25        Add Start Menu Clean Up Mode
+  2021-10-26        Correction Slack and Total Commander installed version detection
 
 
 .PARAMETER file
@@ -14988,12 +14989,12 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $SlackD.Version
         }
-        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$SlackV) {
         }
@@ -15332,9 +15333,9 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $TotalCommanderD.Version
         }
-        $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Total Commander"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Total Commander*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$TotalCommanderV) {
-            $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Total Commander"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $TotalCommanderV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Total Commander*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $TotalCommanderInstaller = "TotalCommander_" + "$TotalCommanderArchitectureClear" + ".exe"
         $TotalCommanderProcess = "TotalCommander_" + "$TotalCommanderArchitectureClear"
