@@ -113,6 +113,7 @@ the script checks the version number and will update the package.
   2021-10-21        Add Repository Mode
   2021-10-25        Add Start Menu Clean Up Mode
   2021-10-26        Correction Slack and Total Commander installed version detection
+  2021-10-27        Correction Repository Mode Filezilla
 
 
 .PARAMETER file
@@ -6625,7 +6626,15 @@ If ($Download -eq "1") {
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
-                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
