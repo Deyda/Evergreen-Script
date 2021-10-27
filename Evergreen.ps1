@@ -1177,6 +1177,7 @@ Function DS_WriteLog {
 
 # Disable progress bar while downloading
 $ProgressPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
