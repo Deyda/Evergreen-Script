@@ -114,7 +114,7 @@ the script checks the version number and will update the package.
   2021-10-25        Add Start Menu Clean Up Mode
   2021-10-26        Correction Slack and Total Commander installed version detection
   2021-10-27        Correction Repository Mode Filezilla
-  2021-10-28        Correction Slack Download
+  2021-10-28        Correction Slack and Zoom Download
 
 
 .PARAMETER file
@@ -10509,7 +10509,8 @@ If ($Download -eq "1") {
                 }
                 Write-Host "Starting download of $Product $Version"
                 If ($WhatIf -eq '0') {
-                    Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                    Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    #Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                 }
@@ -10583,7 +10584,8 @@ If ($Download -eq "1") {
                 }
                 Write-Host "Starting download of $Product $Version"
                 If ($WhatIf -eq '0') {
-                    Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                    Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                    #Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                 }
@@ -10654,7 +10656,8 @@ If ($Download -eq "1") {
                 }
                 Write-Host "Starting download of $Product2 $Version"
                 If ($WhatIf -eq '0') {
-                    Get-Download $URL "$PSScriptRoot\$Product2\" $Source2 -includeStats
+                    Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product2\" + ($Source2))
+                    #Get-Download $URL "$PSScriptRoot\$Product2\" $Source2 -includeStats
                     Write-Verbose "Stop logging"
                     Stop-Transcript | Out-Null
                 }
@@ -15886,7 +15889,7 @@ If ($Install -eq "1") {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
-            If ($ZoomV -lt $Version) {
+            If ($ZoomV -ne $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
@@ -15933,7 +15936,7 @@ If ($Install -eq "1") {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
-            If ($ZoomV -lt $Version) {
+            If ($ZoomV -ne $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
@@ -15982,7 +15985,7 @@ If ($Install -eq "1") {
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
-            If ($ZoomV -lt $Version) {
+            If ($ZoomV -ne $Version) {
                 DS_WriteLog "I" "Installing $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
