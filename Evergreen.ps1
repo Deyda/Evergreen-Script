@@ -114,6 +114,7 @@ the script checks the version number and will update the package.
   2021-10-25        Add Start Menu Clean Up Mode
   2021-10-26        Correction Slack and Total Commander installed version detection
   2021-10-27        Correction Repository Mode Filezilla
+  2021-10-28        Correction Slack Download
 
 
 .PARAMETER file
@@ -9779,7 +9780,7 @@ If ($Download -eq "1") {
     If ($Slack -eq 1) {
         $Product = "Slack"
         $PackageName = "Slack.setup" + "_$SlackArchitectureClear" + "_$SlackPlatformClear"
-        $SlackD = Get-EvergreenApp -Name Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "$SlackPlatformClear" }
+        $SlackD = Get-EvergreenApp -Name Slack | Where-Object {$_.Architecture -eq "$SlackArchitectureClear" -and $_.Platform -eq "PerMachine" }
         $Version = $SlackD.Version
         $URL = $SlackD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
