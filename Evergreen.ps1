@@ -15012,12 +15012,12 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $SlackD.Version
         }
-        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $SlackV = (Get-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $SlackV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$SlackV) {
-            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Slack"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $SlackV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Slack*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If (!$SlackV) {
         }
