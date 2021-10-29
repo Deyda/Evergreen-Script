@@ -115,6 +115,7 @@ the script checks the version number and will update the package.
   2021-10-26        Correction Slack and Total Commander installed version detection
   2021-10-27        Correction Repository Mode Filezilla
   2021-10-28        Correction Slack and Zoom Download
+  2021-10-29        Correction Oracle Java 8 Version / Change Paint.Net Downloader
 
 
 .PARAMETER file
@@ -9288,7 +9289,7 @@ If ($Download -eq "1") {
         }
     }
 
-    #// Mark: Download OracleJava8
+    #// Mark: Download Oracle Java 8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
         $PackageName = "OracleJava8_" + "$OracleJava8ArchitectureClear"
@@ -9340,7 +9341,7 @@ If ($Download -eq "1") {
     If ($PaintDotNet -eq 1) {
         $Product = "Paint Dot Net"
         $PackageName = "Paint.net"
-        $PaintDotNetD = Get-EvergreenApp -Name PaintDotNet | Where-Object { $_.URI -like "*files*" }
+        $PaintDotNetD = Get-EvergreenApp -Name PaintDotNetOfflineInstaller | Where-Object { $_.Architecture -like "x64" }
         $Version = $PaintDotNetD.Version
         $URL = $PaintDotNetD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -14460,7 +14461,7 @@ If ($Install -eq "1") {
         }
     }
 
-    #// Mark: Install OracleJava8
+    #// Mark: Install Oracle Java 8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
         # Check, if a new version is available
@@ -14475,8 +14476,8 @@ If ($Install -eq "1") {
         }
         If ($OracleJava) {
             $OracleJavaSplit = $OracleJava.split(".")
-            $OracleJavaSplit2 = $OracleJavaSplit[2].split("0")
-            $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit2[0] + "-b" + $OracleJavaSplit[3]
+            $OracleJavaSplit2 = (Select-String '.{3}' -Input $OracleJavaSplit[2]).Matches.Value
+            $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit2 + "-b" + $OracleJavaSplit[3]
         }
         $OracleJavaInstaller = "OracleJava8_" + "$OracleJava8ArchitectureClear" +".exe"
         Write-Host -ForegroundColor Magenta "Install $Product $OracleJava8ArchitectureClear"
@@ -14534,11 +14535,11 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $PaintDotNetD.Version
         }
-        If ($Version) {
+        <#If ($Version) {
             $VersionSplit = $Version.split(".")
             $VersionSplit2 = $VersionSplit[1] -split("",3)
             $Version = $VersionSplit[0] + "." + $VersionSplit2[1] + "." + $VersionSplit2[2]
-        }
+        }#>
         $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$PaintDotNetV) {
             $PaintDotNetV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Paint.Net*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
