@@ -115,7 +115,7 @@ the script checks the version number and will update the package.
   2021-10-26        Correction Slack and Total Commander installed version detection
   2021-10-27        Correction Repository Mode Filezilla
   2021-10-28        Correction Slack and Zoom Download
-  2021-10-29        Correction Oracle Java 8 Version / Change Paint.Net Downloader
+  2021-10-29        Correction Oracle Java 8 Version / Change Paint.Net Downloader / Add Citrix Workspace App Web
 
 
 .PARAMETER file
@@ -1412,6 +1412,8 @@ $inputXML = @"
                     <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,274,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
                         <ListBoxItem Content="Current Release"/>
                         <ListBoxItem Content="Long Term Service Release"/>
+                        <ListBoxItem Content="Web Installer Current Release"/>
+                        <ListBoxItem Content="Web Installer Long Term Service Release"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" />
                     <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,295,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
@@ -3806,8 +3808,8 @@ $inputXML = @"
 
     # Button Cancel Detail
     $WPFButton_Cancel_Detail.Add_Click({
-        $Script:install = $true
-        $Script:download = $true
+        #$Script:install = $true
+        #$Script:download = $true
         Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
         $Form.Close()
         Break
@@ -4668,6 +4670,8 @@ Else {
 Switch ($CitrixWorkspaceAppRelease) {
     0 { $CitrixWorkspaceAppReleaseClear = 'Current'}
     1 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
+    2 { $CitrixWorkspaceAppReleaseClear = 'Current'}
+    3 { $CitrixWorkspaceAppReleaseClear = 'LTSR'}
 }
 
 If ($ControlUpAgent_Architecture -ne "") {
@@ -6261,7 +6265,12 @@ If ($Download -eq "1") {
     #// Mark: Download Citrix WorkspaceApp
     If ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
-        $PackageName = "CitrixWorkspaceApp"
+        Switch ($CitrixWorkspaceAppRelease) {
+            0 {$PackageName = "CitrixWorkspaceApp"}
+            1 {$PackageName = "CitrixWorkspaceApp"}
+            2 {$PackageName = "CitrixWorkspaceAppWeb"}
+            3 {$PackageName = "CitrixWorkspaceAppWeb"}
+        }
         $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and $_.Stream -like "*$CitrixWorkspaceAppReleaseClear*" }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
@@ -11333,6 +11342,12 @@ If ($Install -eq "1") {
     If ($Citrix_WorkspaceApp -eq 1) {
         $Product = "Citrix WorkspaceApp $CitrixWorkspaceAppReleaseClear"
         # Check, if a new version is available
+        Switch ($CitrixWorkspaceAppRelease) {
+            0 {$CWAInstaller = "CitrixWorkspaceApp.exe"}
+            1 {$CWAInstaller = "CitrixWorkspaceApp.exe"}
+            2 {$CWAInstaller = "CitrixWorkspaceAppWeb.exe"}
+            3 {$CWAInstaller = "CitrixWorkspaceAppWeb.exe"}
+        }
         $Version = Get-Content -Path "$PSScriptRoot\Citrix\$Product\Version.txt" -ErrorAction SilentlyContinue
         If (!($Version)) {
             $Version = $WSACD.Version
@@ -11375,7 +11390,7 @@ If ($Install -eq "1") {
             Try {
                 Write-Host "Starting install of $Product $Version"
                 If ($WhatIf -eq '0') {
-                    $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\CitrixWorkspaceApp.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
+                    $inst = Start-Process -FilePath "$PSScriptRoot\Citrix\$Product\$CWAInstaller" -ArgumentList $Options -PassThru -ErrorAction Stop
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
