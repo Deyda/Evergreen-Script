@@ -116,7 +116,7 @@ the script checks the version number and will update the package.
   2021-10-27        Correction Repository Mode Filezilla
   2021-10-28        Correction Slack and Zoom Download
   2021-10-29        Correction Oracle Java 8 Version / Change Paint.Net Downloader / Add Citrix Workspace App Web
-
+  2021-11-01        Add Custom XML File for Microsoft Office
 
 .PARAMETER file
 
@@ -1412,8 +1412,6 @@ $inputXML = @"
                     <ComboBox x:Name="Box_CitrixWorkspaceApp" HorizontalAlignment="Left" Margin="215,274,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
                         <ListBoxItem Content="Current Release"/>
                         <ListBoxItem Content="Long Term Service Release"/>
-                        <ListBoxItem Content="Web Installer Current Release"/>
-                        <ListBoxItem Content="Web Installer Long Term Service Release"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_ControlUpAgent" Content="ControlUp Agent" HorizontalAlignment="Left" Margin="15,298,0,0" VerticalAlignment="Top" Grid.Column="1" />
                     <ComboBox x:Name="Box_ControlUpAgent" HorizontalAlignment="Left" Margin="215,295,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.ColumnSpan="2" Grid.Column="1">
@@ -2061,10 +2059,10 @@ $inputXML = @"
                         <ListBoxItem Content="Machine Based"/>
                         <ListBoxItem Content="User Based"/>
                     </ComboBox>
-                    <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps XML File" HorizontalAlignment="Left" Margin="170,732,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <TextBox HorizontalAlignment="Left" Height="40" Margin="172,763,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="405" Name="TextBox_FileName" Grid.Column="2"/>
-                    <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made here will be overwritten." HorizontalAlignment="Left" Margin="172,803,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="405"/>
-                    <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="390,733,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
+                    <Label x:Name="Label_MS365Apps_XML" Content="Custom Microsoft 365 Apps or Microsoft Office XML File" HorizontalAlignment="Left" Margin="170,732,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <TextBox HorizontalAlignment="Left" Height="40" Margin="172,763,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="417" Name="TextBox_FileName" Grid.Column="2"/>
+                    <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made in the GUI will be overwritten." HorizontalAlignment="Left" Margin="171,803,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="426"/>
+                    <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="482,733,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
                     <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="322,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
                 </Grid>
             </ScrollViewer>
@@ -3518,6 +3516,13 @@ $inputXML = @"
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                Switch ($MSOfficeVersion) {
+                    0 { $MSOfficeChannelClear = '2019'}
+                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                }
+                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
             }
             Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
             Write-Output ""
@@ -3789,6 +3794,13 @@ $inputXML = @"
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                Switch ($MSOfficeVersion) {
+                    0 { $MSOfficeChannelClear = '2019'}
+                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                }
+                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
             }
             Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
             Write-Output ""
@@ -4078,6 +4090,13 @@ $inputXML = @"
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                Switch ($MSOfficeVersion) {
+                    0 { $MSOfficeChannelClear = '2019'}
+                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                }
+                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
             }
             Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
             Write-Output ""
@@ -4348,6 +4367,13 @@ $inputXML = @"
                 }
                 If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
                 copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                Switch ($MSOfficeVersion) {
+                    0 { $MSOfficeChannelClear = '2019'}
+                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                }
+                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
             }
             Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
             Write-Output ""
