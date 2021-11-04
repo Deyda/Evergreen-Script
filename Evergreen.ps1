@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.04
+  Version:          2.05
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -37,7 +37,7 @@ the script checks the version number and will update the package.
   2021-03-14        New Install Parameter Adobe Reader DC, Mozilla Firefox and Oracle Java 8 / GUI new Logo Location
   2021-03-15        New Install Parameter Microsoft Edge and Microsoft Teams / Post Setup Customization FSLogix, Microsoft Teams and Microsoft FSLogix
   2021-03-16        Fix Silent Installation of Foxit Reader / Delete Public Desktop Icon of Microsoft Teams, VLC Player and Foxit Reader / Add IrfanView in GUI / Add IrfanView Install and Download / Add Microsoft Teams Developer Ring
-  2021-03-22        Add Comments / Add (AddScript) to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
+  2021-03-22        Add Comments / Add tag to find the places faster when new application is added / Change Install Logging function / Change Adobe Pro DC Download request
   2021-03-23        Added the possibility to delete Microsoft Teams AutoStart in the GUI / Change Microsoft Edge service to manual
   2021-03-24        Add Download Microsoft PowerShell, Microsoft .Net, RemoteDesktopManager, deviceTRUST and Zoom
   2021-03-25        Add Download Slack and ShareX / Add new Software to GUI
@@ -117,6 +117,8 @@ the script checks the version number and will update the package.
   2021-10-28        Correction Slack and Zoom Download
   2021-10-29        Correction Oracle Java 8 Version / Change Paint.Net Downloader / Add Citrix Workspace App Web
   2021-11-01        Add Custom XML File for Microsoft Office
+  2021-11-02        Add Microsoft Office Visio and Project / Add VCRedist PowerShell module / Add Microsoft Visual C++ Runtimes / Correction Google Chrome Version
+  2021-11-03        Add $LASTEXITCODE / Add Install Log Messages
 
 .PARAMETER file
 
@@ -1184,7 +1186,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.04"
+$eVersion = "2.05"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -1504,74 +1506,82 @@ $inputXML = @"
                         <ListBoxItem Content="Preview Ring"/>
                         <ListBoxItem Content="General Ring"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="190,158,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="394,156,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSVisualCPlusPlusRuntime" Content="Microsoft Visual C++ Runtime" HorizontalAlignment="Left" Margin="190,158,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualCPlusPlusRuntime" HorizontalAlignment="Left" Margin="394,156,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                        <ListBoxItem Content="2010"/>
+                        <ListBoxItem Content="2012"/>
+                        <ListBoxItem Content="2013"/>
+                        <ListBoxItem Content="2019"/>
+                        <ListBoxItem Content="All"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualStudio" Content="Microsoft Visual Studio 2019" HorizontalAlignment="Left" Margin="190,178,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudio" HorizontalAlignment="Left" Margin="394,176,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
                         <ListBoxItem Content="Enterprise Edition"/>
                         <ListBoxItem Content="Professional Edition"/>
                         <ListBoxItem Content="Community Edition"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="190,178,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="394,177,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSVisualStudioCode" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="190,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualStudioCode" HorizontalAlignment="Left" Margin="394,197,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="2">
                         <ListBoxItem Content="Insider"/>
                         <ListBoxItem Content="Stable"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MindView7" Content="MindView 7" HorizontalAlignment="Left" Margin="190,198,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="190,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="394,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MindView7" Content="MindView 7" HorizontalAlignment="Left" Margin="190,218,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Firefox" Content="Mozilla Firefox" HorizontalAlignment="Left" Margin="190,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Firefox" HorizontalAlignment="Left" Margin="394,237,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Current"/>
                         <ListBoxItem Content="ESR"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="190,238,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="190,258,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
-                    <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="190,278,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="190,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_OpenShellMenu" Content="Open-Shell Menu" HorizontalAlignment="Left" Margin="190,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="190,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="190,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PDFForgeCreator" Content="pdfforge PDFCreator" HorizontalAlignment="Left" Margin="190,378,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No Silent Installation!"/>
-                    <ComboBox x:Name="Box_pdfforgePDFCreator" HorizontalAlignment="Left" Margin="394,375,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_mRemoteNG" Content="mRemoteNG" HorizontalAlignment="Left" Margin="190,258,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Nmap" Content="Nmap" HorizontalAlignment="Left" Margin="190,278,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No silent installation!"/>
+                    <CheckBox x:Name="Checkbox_NotepadPlusPlus" Content="Notepad ++" HorizontalAlignment="Left" Margin="190,298,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OpenJDK" Content="Open JDK" HorizontalAlignment="Left" Margin="190,318,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OpenShellMenu" Content="Open-Shell Menu" HorizontalAlignment="Left" Margin="190,338,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="190,358,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="190,378,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PDFForgeCreator" Content="pdfforge PDFCreator" HorizontalAlignment="Left" Margin="190,398,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="No Silent Installation!"/>
+                    <ComboBox x:Name="Box_pdfforgePDFCreator" HorizontalAlignment="Left" Margin="394,395,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Free"/>
                         <ListBoxItem Content="Professional"/>
                         <ListBoxItem Content="Terminal Server"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_PDFsam" Content="PDF Split and Merge" HorizontalAlignment="Left" Margin="190,398,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="190,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="190,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="394,435,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_PDFsam" Content="PDF Split and Merge" HorizontalAlignment="Left" Margin="190,418,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_PeaZip" Content="PeaZip" HorizontalAlignment="Left" Margin="190,438,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Putty" Content="PuTTY" HorizontalAlignment="Left" Margin="190,458,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_Putty" HorizontalAlignment="Left" Margin="394,455,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Pre-Release"/>
                         <ListBoxItem Content="Stable"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="190,458,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="394,456,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_RemoteDesktopManager" Content="Remote Desktop Manager" HorizontalAlignment="Left" Margin="190,478,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_RemoteDesktopManager" HorizontalAlignment="Left" Margin="394,476,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Free"/>
                         <ListBoxItem Content="Enterprise"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="190,478,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
-                    <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="190,498,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="190,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="190,538,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="190,558,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="190,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="190,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TotalCommander" Content="Total Commander" HorizontalAlignment="Left" Margin="190,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="190,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="394,636,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_RDAnalyzer" Content="Remote Display Analyzer" HorizontalAlignment="Left" Margin="190,498,0,0" VerticalAlignment="Top" Grid.Column="2" ToolTip="Only Download"/>
+                    <CheckBox x:Name="Checkbox_ShareX" Content="ShareX" HorizontalAlignment="Left" Margin="190,518,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_Slack" Content="Slack" HorizontalAlignment="Left" Margin="190,538,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_SumatraPDF" Content="Sumatra PDF" HorizontalAlignment="Left" Margin="190,558,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <CheckBox x:Name="Checkbox_TeamViewer" Content="TeamViewer" HorizontalAlignment="Left" Margin="190,578,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithCamtasia" Content="TechSmith Camtasia" HorizontalAlignment="Left" Margin="190,598,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TechSmithSnagIt" Content="TechSmith SnagIt" HorizontalAlignment="Left" Margin="190,618,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TotalCommander" Content="Total Commander" HorizontalAlignment="Left" Margin="190,638,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_TreeSize" Content="TreeSize" HorizontalAlignment="Left" Margin="190,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_TreeSize" HorizontalAlignment="Left" Margin="394,656,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Free"/>
                         <ListBoxItem Content="Professional"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="190,658,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="190,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="190,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="190,718,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="190,738,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="190,758,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="190,778,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="394,775,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_uberAgent" Content="uberAgent" HorizontalAlignment="Left" Margin="190,678,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VLCPlayer" Content="VLC Player" HorizontalAlignment="Left" Margin="190,698,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_VMWareTools" Content="VMWare Tools" HorizontalAlignment="Left" Margin="190,718,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinMerge" Content="WinMerge" HorizontalAlignment="Left" Margin="190,738,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="190,758,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="190,778,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="190,798,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="394,795,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="Client"/>
                         <ListBoxItem Content="Client + Citrix Plugin"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_SelectAll" Content="Select All" HorizontalAlignment="Left" Margin="160,851,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="322,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="234,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -1856,13 +1866,13 @@ $inputXML = @"
                     <Label x:Name="Label_Architecture2_Detail" Content="Architecture" HorizontalAlignment="Left" Margin="442,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="64" FontSize="10"/>
                     <Label x:Name="Label_Language2_Detail" Content="Language" HorizontalAlignment="Left" Margin="514,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10"/>
                     <Label x:Name="Label_InstallerType2_Detail" Content="Installer Type" HorizontalAlignment="Left" Margin="575,90,0,0" VerticalAlignment="Top" Grid.Column="2" Width="75" FontSize="10" Grid.ColumnSpan="2"/>
-                    <CheckBox x:Name="Checkbox_MSOffice_Detail" Content="Microsoft Office" HorizontalAlignment="Left" Margin="179,118,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MSOffice_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSOffice_Detail" Content="Microsoft Office" HorizontalAlignment="Left" Margin="15,693,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOffice_Architecture" HorizontalAlignment="Left" Margin="215,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_MSOffice_Language" HorizontalAlignment="Left" Margin="520,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ComboBox x:Name="Box_MSOffice_Language" HorizontalAlignment="Left" Margin="265,692,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
@@ -1880,36 +1890,69 @@ $inputXML = @"
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_MSOffice_Installer" HorizontalAlignment="Left" Margin="585,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSOffice_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="15,718,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOffice_Visio_Language" HorizontalAlignment="Left" Margin="265,717,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOffice_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="15,743,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                    <ComboBox x:Name="Box_MSOffice_Project_Language" HorizontalAlignment="Left" Margin="265,742,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Danish"/>
+                        <ListBoxItem Content="Dutch"/>
+                        <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
+                        <ListBoxItem Content="French"/>
+                        <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Italian"/>
+                        <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Norwegian"/>
+                        <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Spanish"/>
+                        <ListBoxItem Content="Swedish"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="179,118,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="470,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <ComboBox x:Name="Box_MSOneDrive_Installer" HorizontalAlignment="Left" Margin="585,117,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Machine Based"/>
                         <ListBoxItem Content="User Based"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="179,143,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="470,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="179,143,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="470,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_MSOneDrive_Installer" HorizontalAlignment="Left" Margin="585,142,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="Machine Based"/>
-                        <ListBoxItem Content="User Based"/>
-                    </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSPowerBIDesktop_Detail" Content="Microsoft Power BI Desktop" HorizontalAlignment="Left" Margin="179,168,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSPowerBIDesktop_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="179,168,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,167,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSPowerShell_Detail" Content="Microsoft PowerShell" HorizontalAlignment="Left" Margin="179,193,0,0" VerticalAlignment="Top" Grid.Column="2" />
-                    <ComboBox x:Name="Box_MSPowerShell_Architecture" HorizontalAlignment="Left" Margin="470,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
-                        <ListBoxItem Content="-"/>
-                        <ListBoxItem Content="x86"/>
-                        <ListBoxItem Content="x64"/>
-                    </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="179,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="179,193,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="520,192,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="French"/>
@@ -1921,16 +1964,22 @@ $inputXML = @"
                         <ListBoxItem Content="Russian"/>
                         <ListBoxItem Content="Spanish"/>
                     </ComboBox>
-                    <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="179,243,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-                    <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <CheckBox x:Name="Checkbox_MSTeams_Detail" Content="Microsoft Teams" HorizontalAlignment="Left" Margin="179,218,0,0" VerticalAlignment="Top" Grid.Column="2"/>
+                    <ComboBox x:Name="Box_MSTeams_Architecture" HorizontalAlignment="Left" Margin="470,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
                     </ComboBox>
-                    <ComboBox x:Name="Box_MSTeams_Installer" HorizontalAlignment="Left" Margin="585,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                    <ComboBox x:Name="Box_MSTeams_Installer" HorizontalAlignment="Left" Margin="585,217,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="Machine Based"/>
                         <ListBoxItem Content="User Based"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_MSVisualCPlusPlusRuntime_Detail" Content="Microsoft Visual C++ Runtime" HorizontalAlignment="Left" Margin="179,243,0,0" VerticalAlignment="Top" Grid.Column="2" />
+                    <ComboBox x:Name="Box_MSVisualCPlusPlusRuntime_Architecture" HorizontalAlignment="Left" Margin="470,242,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="179,268,0,0" VerticalAlignment="Top" Grid.Column="2" />
                     <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="470,267,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="2">
@@ -2063,7 +2112,7 @@ $inputXML = @"
                     <TextBox HorizontalAlignment="Left" Height="40" Margin="172,763,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="417" Name="TextBox_FileName" Grid.Column="2"/>
                     <Label x:Name="Label_MS365Apps_Text" Content="When a custom file is uploaded, the settings for the XML made in the GUI will be overwritten." HorizontalAlignment="Left" Margin="171,803,0,0" VerticalAlignment="Top" Grid.Column="2" FontSize="10" Width="426"/>
                     <Button x:Name="Button_Browse" Content="Browse" HorizontalAlignment="Left" Margin="482,733,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="1.047,0.821" Height="26" Grid.Column="2"/>
-                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="322,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
+                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Left" Margin="234,888,0,0" VerticalAlignment="Top" FontSize="10" Grid.Column="2"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -2174,13 +2223,16 @@ $inputXML = @"
         $WPFBox_MSAzureDataStudio_Installer.SelectedIndex = $LastSetting[151] -as [int]
         $WPFBox_MSVisualStudioCode_Installer.SelectedIndex = $LastSetting[152] -as [int]
         $WPFBox_MS365Apps_Installer.SelectedIndex = $LastSetting[153] -as [int]
-        $WPFBox_MSOffice_Installer.SelectedIndex = $LastSetting[154] -as [int]
         $WPFBox_MSTeams_Installer.SelectedIndex = $LastSetting[155] -as [int]
         $WPFBox_Zoom_Installer.SelectedIndex = $LastSetting[156] -as [int]
         $WPFBox_MSOneDrive_Installer.SelectedIndex = $LastSetting[157] -as [int]
         $WPFBox_Slack_Installer.SelectedIndex = $LastSetting[158] -as [int]
         $WPFBox_pdfforgePDFCreator.SelectedIndex = $LastSetting[159] -as [int]
         $WPFBox_TotalCommander_Architecture.SelectedIndex = $LastSetting[160] -as [int]
+        $WPFBox_MSVisualCPlusPlusRuntime.SelectedIndex = $LastSetting[164] -as [int]
+        $WPFBox_MSVisualCPlusPlusRuntime_Architecture.SelectedIndex = $LastSetting[165] -as [int]
+        $WPFBox_MSOffice_Visio_Language.SelectedIndex = $LastSetting[167] -as [int]
+        $WPFBox_MSOffice_Project_Language.SelectedIndex = $LastSetting[169] -as [int]
 
         Switch ($LastSetting[8]) {
             1 {
@@ -2561,6 +2613,22 @@ $inputXML = @"
         Switch ($LastSetting[162]) {
             1 { $WPFCheckbox_CleanUpStartMenu.IsChecked = "True"}
         }
+        Switch ($LastSetting[163]) {
+            1 {
+                $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked = "True"
+                $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[166]) {
+            1 {
+                $WPFCheckbox_MSOffice_Visio_Detail.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[168]) {
+            1 {
+                $WPFCheckbox_MSOffice_Project_Detail.IsChecked = "True"
+            }
+        }
     }
     
     #// MARK: Event Handler
@@ -2889,6 +2957,18 @@ $inputXML = @"
     $WPFCheckbox_MSTeams_Detail.Add_Unchecked({
         $WPFCheckbox_MSTeams.IsChecked = $WPFCheckbox_MSTeams_Detail.IsChecked
     })
+    $WPFCheckbox_MSVisualCPlusPlusRuntime.Add_Checked({
+        $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.IsChecked = $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked
+    })
+    $WPFCheckbox_MSVisualCPlusPlusRuntime.Add_Unchecked({
+        $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.IsChecked = $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked
+    })
+    $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.Add_Checked({
+        $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked = $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.IsChecked
+    })
+    $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.Add_Unchecked({
+        $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked = $WPFCheckbox_MSVisualCPlusPlusRuntime_Detail.IsChecked
+    })
     $WPFCheckbox_MSVisualStudioCode.Add_Checked({
         $WPFCheckbox_MSVisualStudioCode_Detail.IsChecked = $WPFCheckbox_MSVisualStudioCode.IsChecked
     })
@@ -3169,6 +3249,7 @@ $inputXML = @"
         $WPFCheckbox_PDFsam.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDFForgeCreator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Checkbox SelectAll to Uncheck (AddScript)
@@ -3246,6 +3327,7 @@ $inputXML = @"
         $WPFCheckbox_OpenShellMenu.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDFForgeCreator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_TotalCommander.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_MSVisualCPlusPlusRuntime.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Browse
@@ -3419,6 +3501,12 @@ $inputXML = @"
         Else {$Script:Repository = 0}
         If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
         Else {$Script:CleanUpStartMenu = 0}
+        If ($WPFCheckbox_MSVisualCPlusPlusRuntime.ischecked -eq $true) {$Script:MSVisualCPlusPlusRuntime = 1}
+        Else {$Script:MSVisualCPlusPlusRuntime = 0}
+        If ($WPFCheckbox_MSOffice_Visio_Detail.ischecked -eq $true) {$Script:MSOffice_Visio = 1}
+        Else {$Script:MSOffice_Visio = 0}
+        If ($WPFCheckbox_MSOffice_Project_Detail.ischecked -eq $true) {$Script:MSOffice_Project = 1}
+        Else {$Script:MSOffice_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3494,38 +3582,48 @@ $inputXML = @"
         $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
         $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
         $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
-        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
         $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
         $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
         $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
         $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
         $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntime_Architecture = $WPFBox_MSVisualCPlusPlusRuntime_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntimeRelease = $WPFBox_MSVisualCPlusPlusRuntime.SelectedIndex
+        $Script:MSOffice_Visio_Language = $WPFBox_MSOffice_Visio_Language.SelectedIndex
+        $Script:MSOffice_Project_Language = $WPFBox_MSOffice_Project_Language.SelectedIndex
+        $Script:MSOffice_Installer = "0"
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
-                Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Beta Channel'}
-                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
-                    2 { $MS365AppsChannelClear = 'Current Channel'}
-                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
-                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
-                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                If ($MS365Apps -eq 1) {
+                    Switch ($MS365AppsChannel) {
+                        0 { $MS365AppsChannelClear = 'Beta Channel'}
+                        1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                        2 { $MS365AppsChannelClear = 'Current Channel'}
+                        3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                        4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                        5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                    }
+                    If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                    Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft 365 Apps $MS365AppsChannelClear folder."
+                    Write-Output ""
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
-                Switch ($MSOfficeVersion) {
-                    0 { $MSOfficeChannelClear = '2019'}
-                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                If ($MSOffice -eq 1) {
+                    Switch ($MSOfficeVersion) {
+                        0 { $MSOfficeChannelClear = '2019'}
+                        1 { $MSOfficeChannelClear = '2021 LTSC'}
+                    }
+                    $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                    If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
                 }
-                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
-                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
+                Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft Office $MSOfficeChannelClear folder."
+                Write-Output ""
             }
-            Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
-            Write-Output ""
         }
         Write-Host "GUI Mode"
         $Form.Close()
@@ -3697,6 +3795,12 @@ $inputXML = @"
         Else {$Script:PDFForgeCreator = 0}
         If ($WPFCheckbox_TotalCommander.ischecked -eq $true) {$Script:TotalCommander = 1}
         Else {$Script:TotalCommander = 0}
+        If ($WPFCheckbox_MSVisualCPlusPlusRuntime.ischecked -eq $true) {$Script:MSVisualCPlusPlusRuntime = 1}
+        Else {$Script:MSVisualCPlusPlusRuntime = 0}
+        If ($WPFCheckbox_MSOffice_Visio_Detail.ischecked -eq $true) {$Script:MSOffice_Visio = 1}
+        Else {$Script:MSOffice_Visio = 0}
+        If ($WPFCheckbox_MSOffice_Project_Detail.ischecked -eq $true) {$Script:MSOffice_Project = 1}
+        Else {$Script:MSOffice_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -3772,38 +3876,48 @@ $inputXML = @"
         $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
         $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
         $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
-        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
         $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
         $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
         $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
         $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
         $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntime_Architecture = $WPFBox_MSVisualCPlusPlusRuntime_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntimeRelease = $WPFBox_MSVisualCPlusPlusRuntime.SelectedIndex
+        $Script:MSOffice_Visio_Language = $WPFBox_MSOffice_Visio_Language.SelectedIndex
+        $Script:MSOffice_Project_Language = $WPFBox_MSOffice_Project_Language.SelectedIndex
+        $Script:MSOffice_Installer = "0"
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
-                Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Beta Channel'}
-                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
-                    2 { $MS365AppsChannelClear = 'Current Channel'}
-                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
-                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
-                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                If ($MS365Apps -eq 1) {
+                    Switch ($MS365AppsChannel) {
+                        0 { $MS365AppsChannelClear = 'Beta Channel'}
+                        1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                        2 { $MS365AppsChannelClear = 'Current Channel'}
+                        3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                        4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                        5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                    }
+                    If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                    Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft 365 Apps $MS365AppsChannelClear folder."
+                    Write-Output ""
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
-                Switch ($MSOfficeVersion) {
-                    0 { $MSOfficeChannelClear = '2019'}
-                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                If ($MSOffice -eq 1) {
+                    Switch ($MSOfficeVersion) {
+                        0 { $MSOfficeChannelClear = '2019'}
+                        1 { $MSOfficeChannelClear = '2021 LTSC'}
+                    }
+                    $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                    If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
                 }
-                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
-                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
+                Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft Office $MSOfficeChannelClear folder."
+                Write-Output ""
             }
-            Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
-            Write-Output ""
         }
         Write-Host "GUI Mode"
         $Form.Close()
@@ -3993,6 +4107,12 @@ $inputXML = @"
         Else {$Script:Repository = 0}
         If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
         Else {$Script:CleanUpStartMenu = 0}
+        If ($WPFCheckbox_MSVisualCPlusPlusRuntime.ischecked -eq $true) {$Script:MSVisualCPlusPlusRuntime = 1}
+        Else {$Script:MSVisualCPlusPlusRuntime = 0}
+        If ($WPFCheckbox_MSOffice_Visio_Detail.ischecked -eq $true) {$Script:MSOffice_Visio = 1}
+        Else {$Script:MSOffice_Visio = 0}
+        If ($WPFCheckbox_MSOffice_Project_Detail.ischecked -eq $true) {$Script:MSOffice_Project = 1}
+        Else {$Script:MSOffice_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -4068,38 +4188,48 @@ $inputXML = @"
         $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
         $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
         $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
-        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
         $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
         $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
         $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
         $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
         $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntime_Architecture = $WPFBox_MSVisualCPlusPlusRuntime_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntimeRelease = $WPFBox_MSVisualCPlusPlusRuntime.SelectedIndex
+        $Script:MSOffice_Visio_Language = $WPFBox_MSOffice_Visio_Language.SelectedIndex
+        $Script:MSOffice_Project_Language = $WPFBox_MSOffice_Project_Language.SelectedIndex
+        $Script:MSOffice_Installer = "0"
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
-                Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Beta Channel'}
-                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
-                    2 { $MS365AppsChannelClear = 'Current Channel'}
-                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
-                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
-                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                If ($MS365Apps -eq 1) {
+                    Switch ($MS365AppsChannel) {
+                        0 { $MS365AppsChannelClear = 'Beta Channel'}
+                        1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                        2 { $MS365AppsChannelClear = 'Current Channel'}
+                        3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                        4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                        5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                    }
+                    If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                    Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft 365 Apps $MS365AppsChannelClear folder."
+                    Write-Output ""
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
-                Switch ($MSOfficeVersion) {
-                    0 { $MSOfficeChannelClear = '2019'}
-                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                If ($MSOffice -eq 1) {
+                    Switch ($MSOfficeVersion) {
+                        0 { $MSOfficeChannelClear = '2019'}
+                        1 { $MSOfficeChannelClear = '2021 LTSC'}
+                    }
+                    $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                    If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
                 }
-                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
-                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
+                Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft Office $MSOfficeChannelClear folder."
+                Write-Output ""
             }
-            Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
-            Write-Output ""
         }
         Write-Host "Save Settings"
     })
@@ -4270,6 +4400,12 @@ $inputXML = @"
         Else {$Script:Repository = 0}
         If ($WPFCheckbox_CleanUpStartMenu.ischecked -eq $true) {$Script:CleanUpStartMenu = 1}
         Else {$Script:CleanUpStartMenu = 0}
+        If ($WPFCheckbox_MSVisualCPlusPlusRuntime.ischecked -eq $true) {$Script:MSVisualCPlusPlusRuntime = 1}
+        Else {$Script:MSVisualCPlusPlusRuntime = 0}
+        If ($WPFCheckbox_MSOffice_Visio_Detail.ischecked -eq $true) {$Script:MSOffice_Visio = 1}
+        Else {$Script:MSOffice_Visio = 0}
+        If ($WPFCheckbox_MSOffice_Project_Detail.ischecked -eq $true) {$Script:MSOffice_Project = 1}
+        Else {$Script:MSOffice_Project = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -4345,38 +4481,48 @@ $inputXML = @"
         $Script:MSAzureDataStudio_Installer = $WPFBox_MSAzureDataStudio_Installer.SelectedIndex
         $Script:MSVisualStudioCode_Installer = $WPFBox_MSVisualStudioCode_Installer.SelectedIndex
         $Script:MS365Apps_Installer = $WPFBox_MS365Apps_Installer.SelectedIndex
-        $Script:MSOffice_Installer = $WPFBox_MSOffice_Installer.SelectedIndex
         $Script:MSTeams_Installer = $WPFBox_MSTeams_Installer.SelectedIndex
         $Script:Zoom_Installer = $WPFBox_Zoom_Installer.SelectedIndex
         $Script:MSOneDrive_Installer = $WPFBox_MSOneDrive_Installer.SelectedIndex
         $Script:Slack_Installer = $WPFBox_Slack_Installer.SelectedIndex
         $Script:pdfforgePDFCreatorChannel = $WPFBox_pdfforgePDFCreator.SelectedIndex
         $Script:TotalCommander_Architecture = $WPFBox_TotalCommander_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntime_Architecture = $WPFBox_MSVisualCPlusPlusRuntime_Architecture.SelectedIndex
+        $Script:MSVisualCPlusPlusRuntimeRelease = $WPFBox_MSVisualCPlusPlusRuntime.SelectedIndex
+        $Script:MSOffice_Visio_Language = $WPFBox_MSOffice_Visio_Language.SelectedIndex
+        $Script:MSOffice_Project_Language = $WPFBox_MSOffice_Project_Language.SelectedIndex
+        $Script:MSOffice_Installer = "0"
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$MSOffice_Installer,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
-                Switch ($MS365AppsChannel) {
-                    0 { $MS365AppsChannelClear = 'Beta Channel'}
-                    1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
-                    2 { $MS365AppsChannelClear = 'Current Channel'}
-                    3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
-                    4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
-                    5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                If ($MS365Apps -eq 1) {
+                    Switch ($MS365AppsChannel) {
+                        0 { $MS365AppsChannelClear = 'Beta Channel'}
+                        1 { $MS365AppsChannelClear = 'Current Channel (Preview)'}
+                        2 { $MS365AppsChannelClear = 'Current Channel'}
+                        3 { $MS365AppsChannelClear = 'Semi-Annual Channel (Preview)'}
+                        4 { $MS365AppsChannelClear = 'Monthly Enterprise Channel'}
+                        5 { $MS365AppsChannelClear = 'Semi-Annual Channel'}
+                    }
+                    If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
+                    Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft 365 Apps $MS365AppsChannelClear folder."
+                    Write-Output ""
                 }
-                If (!(Test-Path -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear")) {New-Item -Path "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\Microsoft 365 Apps\$MS365AppsChannelClear\install.xml" -Force
-                Switch ($MSOfficeVersion) {
-                    0 { $MSOfficeChannelClear = '2019'}
-                    1 { $MSOfficeChannelClear = '2021 LTSC'}
+                If ($MSOffice -eq 1) {
+                    Switch ($MSOfficeVersion) {
+                        0 { $MSOfficeChannelClear = '2019'}
+                        1 { $MSOfficeChannelClear = '2021 LTSC'}
+                    }
+                    $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
+                    If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
+                    copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
                 }
-                $OfficePath = "Microsoft Office " + $MSOfficeChannelClear
-                If (!(Test-Path -Path "$PSScriptRoot\$OfficePath")) {New-Item -Path "$PSScriptRoot\$OfficePath" -ItemType Directory | Out-Null}
-                copy-item -Path "$MS365Apps_Path" -Destination "$PSScriptRoot\$OfficePath\install.xml" -Force
+                Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully to the Microsoft Office $MSOfficeChannelClear folder."
+                Write-Output ""
             }
-            Write-Host -ForegroundColor Green "Copy custom XML file as install.xml successfully."
-            Write-Output ""
         }
         Write-Host "Save Settings"
     })
@@ -4564,7 +4710,6 @@ If ($file) {
         $MSAzureDataStudio_Installer = $FileSetting[151] -as [int]
         $MSVisualStudioCode_Installer = $FileSetting[152] -as [int]
         $MS365Apps_Installer = $FileSetting[153] -as [int]
-        $MSOffice_Installer = $FileSetting[154] -as [int]
         $MSTeams_Installer = $FileSetting[155] -as [int]
         $Zoom_Installer = $FileSetting[156] -as [int]
         $MSOneDrive_Installer = $FileSetting[157] -as [int]
@@ -4573,12 +4718,19 @@ If ($file) {
         $TotalCommander_Architecture = $FileSetting[160] -as [int]
         $Repository = $FileSetting[161] -as [int]
         $CleanUpStartMenu = $FileSetting[162] -as [int]
+        $MSVisualCPlusPlusRuntime = $FileSetting[163] -as [int]
+        $MSVisualCPlusPlusRuntimeRelease = $FileSetting[164] -as [int]
+        $MSVisualCPlusPlusRuntime_Architecture = $FileSetting[165] -as [int]
+        $MSOffice_Visio = $FileSetting[166] -as [int]
+        $MSOffice_Visio_Language = $FileSetting[167] -as [int]
+        $MSOffice_Project = $FileSetting[168] -as [int]
+        $MSOffice_Project_Language = $FileSetting[169] -as [int]
     }
     Write-Host "Unattended Mode."
 }
 Else {
     # Cleanup of the used variables (AddScript)
-    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSOffice_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu -ErrorAction SilentlyContinue
+    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu,MSVisualCPlusPlusRuntime,MSVisualCPlusPlusRuntimeRelease,MSVisualCPlusPlusRuntime_Architecture,MSOffice_Visio,MSOffice_Visio_Language,MSOffice_Project,MSOffice_Project_Language -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -4595,6 +4747,10 @@ Else {
         $Admin = [System.IO.File]::ReadAllBytes("$ShortcutFile")
         $Admin[0x15] = $Admin[0x15] -bor 0x20
         [System.IO.File]::WriteAllBytes("$ShortcutFile", $Admin)
+    }
+    If (!(Test-Path -Path "$PSScriptRoot\img\Logo_DEYDA_no_cta.png")) {
+        If (!(Test-Path -Path "$PSScriptRoot\img")) { New-Item -Path "$PSScriptRoot\img" -ItemType Directory | Out-Null }
+        Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/img/Logo_DEYDA_no_cta.png -OutFile ("$PSScriptRoot\img\" + "Logo_DEYDA_no_cta.png")
     }
     gui_mode
 }
@@ -5197,16 +5353,6 @@ Switch ($MSFSLogixChannel) {
     1 { $MSFSLogixChannelClear = 'Production'}
 }
 
-If ($MSOffice_Installer -ne "") {
-    Switch ($MSOffice_Installer) {
-        1 { $MSOfficeInstallerClear = 'Machine Based'}
-        2 { $MSOfficeInstallerClear = 'User Based'}
-    }
-}
-Else {
-    $MSOfficeInstallerClear = $InstallerClear
-}
-
 If ($MSOffice_Architecture -ne "") {
     Switch ($MSOffice_Architecture) {
         1 { 
@@ -5276,11 +5422,93 @@ Switch ($MSOfficeVersion) {
         $MSOfficeVersionClear = 'PerpetualVL2019'
         $MSOfficeChannelClear = '2019'
         $MSOfficeProductIDClear = 'ProPlus2019Volume'
+        $MSOfficeProjectIDClear = 'ProjectPro2019Volume'
+        $MSOfficeVisioIDClear = 'VisioPro2019Volume'
     }
     1 {
         $MSOfficeVersionClear = 'PerpetualVL2021'
         $MSOfficeChannelClear = '2021 LTSC'
         $MSOfficeProductIDClear = 'ProPlus2021Volume'
+        $MSOfficeProjectIDClear = 'ProjectPro2021Volume'
+        $MSOfficeVisioIDClear = 'VisioPro2021Volume'
+    }
+}
+
+If ($MSOffice_Project_Language -ne "") {
+    Switch ($MSOffice_Project_Language) {
+        1 { $MSOfficeProjectLanguageClear = 'da-DK'}
+        2 { $MSOfficeProjectLanguageClear = 'nl-NL'}
+        3 { $MSOfficeProjectLanguageClear = 'en-US'}
+        4 { $MSOfficeProjectLanguageClear = 'fi-FI'}
+        5 { $MSOfficeProjectLanguageClear = 'fr-FR'}
+        6 { $MSOfficeProjectLanguageClear = 'de-DE'}
+        7 { $MSOfficeProjectLanguageClear = 'it-IT'}
+        8 { $MSOfficeProjectLanguageClear = 'ja-JP'}
+        9 { $MSOfficeProjectLanguageClear = 'ko-KR'}
+        10 { $MSOfficeProjectLanguageClear = 'nb-NO'}
+        11 { $MSOfficeProjectLanguageClear = 'pl-PL'}
+        12 { $MSOfficeProjectLanguageClear = 'pt-PT'}
+        13 { $MSOfficeProjectLanguageClear = 'ru-RU'}
+        14 { $MSOfficeProjectLanguageClear = 'es-ES'}
+        15 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+    }
+}
+Else {
+    Switch ($Language) {
+        0 { $MSOfficeProjectLanguageClear = 'da-DK'}
+        1 { $MSOfficeProjectLanguageClear = 'nl-NL'}
+        2 { $MSOfficeProjectLanguageClear = 'en-US'}
+        3 { $MSOfficeProjectLanguageClear = 'fi-FI'}
+        4 { $MSOfficeProjectLanguageClear = 'fr-FR'}
+        5 { $MSOfficeProjectLanguageClear = 'de-DE'}
+        6 { $MSOfficeProjectLanguageClear = 'it-IT'}
+        7 { $MSOfficeProjectLanguageClear = 'ja-JP'}
+        8 { $MSOfficeProjectLanguageClear = 'ko-KR'}
+        9 { $MSOfficeProjectLanguageClear = 'nb-NO'}
+        10 { $MSOfficeProjectLanguageClear = 'pl-PL'}
+        11 { $MSOfficeProjectLanguageClear = 'pt-PT'}
+        12 { $MSOfficeProjectLanguageClear = 'ru-RU'}
+        13 { $MSOfficeProjectLanguageClear = 'es-ES'}
+        14 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+    }
+}
+
+If ($MSOffice_Visio_Language -ne "") {
+    Switch ($MSOffice_Visio_Language) {
+        1 { $MSOfficeVisioLanguageClear = 'da-DK'}
+        2 { $MSOfficeVisioLanguageClear = 'nl-NL'}
+        3 { $MSOfficeVisioLanguageClear = 'en-US'}
+        4 { $MSOfficeVisioLanguageClear = 'fi-FI'}
+        5 { $MSOfficeVisioLanguageClear = 'fr-FR'}
+        6 { $MSOfficeVisioLanguageClear = 'de-DE'}
+        7 { $MSOfficeVisioLanguageClear = 'it-IT'}
+        8 { $MSOfficeVisioLanguageClear = 'ja-JP'}
+        9 { $MSOfficeVisioLanguageClear = 'ko-KR'}
+        10 { $MSOfficeVisioLanguageClear = 'nb-NO'}
+        11 { $MSOfficeVisioLanguageClear = 'pl-PL'}
+        12 { $MSOfficeVisioLanguageClear = 'pt-PT'}
+        13 { $MSOfficeVisioLanguageClear = 'ru-RU'}
+        14 { $MSOfficeVisioLanguageClear = 'es-ES'}
+        15 { $MSOfficeVisioLanguageClear = 'sv-SE'}
+    }
+}
+Else {
+    Switch ($Language) {
+        0 { $MSOfficeVisioLanguageClear = 'da-DK'}
+        1 { $MSOfficeVisioLanguageClear = 'nl-NL'}
+        2 { $MSOfficeVisioLanguageClear = 'en-US'}
+        3 { $MSOfficeVisioLanguageClear = 'fi-FI'}
+        4 { $MSOfficeVisioLanguageClear = 'fr-FR'}
+        5 { $MSOfficeVisioLanguageClear = 'de-DE'}
+        6 { $MSOfficeVisioLanguageClear = 'it-IT'}
+        7 { $MSOfficeVisioLanguageClear = 'ja-JP'}
+        8 { $MSOfficeVisioLanguageClear = 'ko-KR'}
+        9 { $MSOfficeVisioLanguageClear = 'nb-NO'}
+        10 { $MSOfficeVisioLanguageClear = 'pl-PL'}
+        11 { $MSOfficeVisioLanguageClear = 'pt-PT'}
+        12 { $MSOfficeVisioLanguageClear = 'ru-RU'}
+        13 { $MSOfficeVisioLanguageClear = 'es-ES'}
+        14 { $MSOfficeVisioLanguageClear = 'sv-SE'}
     }
 }
 
@@ -5390,6 +5618,24 @@ Switch ($MSTeamsRing) {
     1 { $MSTeamsRingClear = 'Exploration'}
     2 { $MSTeamsRingClear = 'Preview'}
     3 { $MSTeamsRingClear = 'General'}
+}
+
+Switch ($MSVisualCPlusPlusRuntimeRelease) {
+    0 { $MSVisualCPlusPlusRuntimeReleaseClear = '2010'}
+    1 { $MSVisualCPlusPlusRuntimeReleaseClear = '2012'}
+    2 { $MSVisualCPlusPlusRuntimeReleaseClear = '2013'}
+    3 { $MSVisualCPlusPlusRuntimeReleaseClear = '2019'}
+    4 { $MSVisualCPlusPlusRuntimeReleaseClear = 'All'}
+}
+
+If ($MSVisualCPlusPlusRuntime_Architecture -ne "") {
+    Switch ($MSVisualCPlusPlusRuntime_Architecture) {
+        1 { $MSVisualCPlusPlusRuntimeArchitectureClear = 'x86'}
+        2 { $MSVisualCPlusPlusRuntimeArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $MSVisualCPlusPlusRuntimeArchitectureClear = $ArchitectureClear
 }
 
 Switch ($MSVisualStudioEdition) {
@@ -5822,6 +6068,32 @@ If ($Download -eq "1") {
       }
     }
 
+    If (!(Get-Module -ListAvailable -Name VcRedist)) {
+        Write-Host "Install VcRedist module."
+        Install-Module VcRedist -Force | Import-Module VcRedist
+        Write-Host -ForegroundColor Green "Install VcRedist module done."
+        Write-Output ""
+    }
+    Else {
+        Write-Host "Check VcRedist module version."
+        $version = (Get-Module -ListAvailable VcRedist) | Sort-Object Version -Descending  | Select-Object Version -First 1
+        $psgalleryversion = Find-Module -Name VcRedist | Sort-Object Version -Descending | Select-Object Version -First 1
+        $stringver = $version | Select-Object @{n='ModuleVersion'; e={$_.Version -as [string]}}
+        $a = $stringver | Select-Object Moduleversion -ExpandProperty Moduleversion
+        $onlinever = $psgalleryversion | select-object @{n='OnlineVersion'; e={$_.Version -as [string]}}
+        $b = $onlinever | Select-Object OnlineVersion -ExpandProperty OnlineVersion
+        if ([version]"$a" -ge [version]"$b") {
+            Write-Host -ForegroundColor Green "Installed VcRedist module version is up to date."
+            Write-Output ""
+        }
+        else {
+            Write-Host "Update VcRedist module."
+            Update-Module VcRedist -force
+            Write-Host -ForegroundColor Green "Update VcRedist module done."
+            Write-Output ""
+      }
+    }
+
     Write-Host -ForegroundColor DarkGray "Starting downloads..."
     Write-Output ""
 
@@ -5855,7 +6127,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -5903,7 +6175,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -5950,7 +6222,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msp" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -5998,7 +6270,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6071,7 +6343,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6118,7 +6390,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6166,7 +6438,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6214,7 +6486,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6262,7 +6534,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6327,7 +6599,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\Citrix\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\Citrix\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6485,7 +6757,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6533,7 +6805,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6583,7 +6855,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6665,7 +6937,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6713,7 +6985,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6761,7 +7033,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6808,7 +7080,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6856,7 +7128,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -6941,7 +7213,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($NewCurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $NewCurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $NewCurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
@@ -7088,7 +7360,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7136,7 +7408,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7184,7 +7456,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7245,7 +7517,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7305,7 +7577,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7350,7 +7622,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7399,7 +7671,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7635,7 +7907,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\$MS365AppsChannelClear\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\$MS365AppsChannelClear\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7706,7 +7978,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7754,7 +8026,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7802,7 +8074,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -7850,7 +8122,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8077,7 +8349,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8125,7 +8397,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\$MSFSLogixChannelClear\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8220,22 +8492,38 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Green  "Create remove.xml finished!"
             }
             If (!(Test-Path "$PSScriptRoot\$Product\install.xml" -PathType leaf)) {
-                If ($MSOfficeInstallerClear -eq 'Machine Based') {
-                    Write-Host "Create install.xml for Machine Based Install"
-                    [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
-                    [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
-                        $XML.appendChild($Root) | out-null
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
-                        $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                        $Node1.SetAttribute("OfficeClientEdition","$MSOfficeArchitectureClear")
-                        $Node1.SetAttribute("Channel","$MSOfficeVersionClear")
+                Write-Host "Create install.xml for install."
+                [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
+                [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
+                    $XML.appendChild($Root) | out-null
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
+                    $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
+                    $Node1.SetAttribute("OfficeClientEdition","$MSOfficeArchitectureClear")
+                    $Node1.SetAttribute("Channel","$MSOfficeVersionClear")
+                [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
+                    $Node2.SetAttribute("ID","$MSOfficeProductIDClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","MatchOS")
+                    $Node3.SetAttribute("Fallback","en-us")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
+                    $Node3.SetAttribute("ID","$MSOfficeLanguageClear")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Teams")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Lync")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","Groove")
+                [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
+                    $Node3.SetAttribute("ID","OneDrive")
+                If ($MSOffice_Visio -eq '1') {
+                    Write-Host "Add Microsoft Visio to install.xml for install."
                     [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","$MSOfficeProductIDClear")
+                    $Node2.SetAttribute("ID","$MSOfficeVisioIDClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                         $Node3.SetAttribute("ID","MatchOS")
                         $Node3.SetAttribute("Fallback","en-us")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                        $Node3.SetAttribute("ID","$MSOfficeLanguageClear")
+                        $Node3.SetAttribute("ID","$MSOfficeVisioLanguageClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","Teams")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -8244,45 +8532,16 @@ If ($Download -eq "1") {
                         $Node3.SetAttribute("ID","Groove")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","OneDrive")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
-                        $Node1.SetAttribute("Level","None")
-                        $Node1.SetAttribute("AcceptEULA","TRUE")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
-                        $Node1.SetAttribute("Level","Standard")
-                        $Node1.SetAttribute("Path","%temp%")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","SharedComputerLicensing")
-                        $Node1.SetAttribute("Value","1")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
-                        $Node1.SetAttribute("Value","TRUE")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","DeviceBasedLicensing")
-                        $Node1.SetAttribute("Value","0")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","AUTOACTIVATE")
-                        $Node1.SetAttribute("Value","1")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
-                        $Node1.SetAttribute("Enabled","FALSE")
-                        $XML.Save("$PSScriptRoot\$Product\install.xml")
-                    Write-Host -ForegroundColor Green  "Create install.xml for Machine Based Install finished!"
                 }
-                If ($MSOfficeInstallerClear -eq 'User Based') {
-                    Write-Host "Create install.xml for User Based Install"
-                    [System.XML.XMLDocument]$XML=New-Object System.XML.XMLDocument
-                    [System.XML.XMLElement]$Root = $XML.CreateElement("Configuration")
-                        $XML.appendChild($Root) | out-null
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Add"))
-                        $Node1.SetAttribute("SourcePath","$PSScriptRoot\$Product")
-                        $Node1.SetAttribute("OfficeClientEdition","$MSOfficeArchitectureClear")
-                        $Node1.SetAttribute("Channel","$MSOfficeVersionClear")
+                If ($MSOffice_Project -eq '1') {
+                    Write-Host "Add Microsoft Project to install.xml for install."
                     [System.XML.XMLElement]$Node2 = $Node1.AppendChild($XML.CreateElement("Product"))
-                        $Node2.SetAttribute("ID","$MSOfficeProductIDClear")
+                    $Node2.SetAttribute("ID","$MSOfficeProjectIDClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
                         $Node3.SetAttribute("ID","MatchOS")
                         $Node3.SetAttribute("Fallback","en-us")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("Language"))
-                        $Node3.SetAttribute("ID","$MSOfficeLanguageClear")
+                        $Node3.SetAttribute("ID","$MSOfficeProjectLanguageClear")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","Teams")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
@@ -8291,23 +8550,23 @@ If ($Download -eq "1") {
                         $Node3.SetAttribute("ID","Groove")
                     [System.XML.XMLElement]$Node3 = $Node2.AppendChild($XML.CreateElement("ExcludeApp"))
                         $Node3.SetAttribute("ID","OneDrive")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
-                        $Node1.SetAttribute("Level","None")
-                        $Node1.SetAttribute("AcceptEULA","TRUE")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
-                        $Node1.SetAttribute("Level","Standard")
-                        $Node1.SetAttribute("Path","%temp%")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","SharedComputerLicensing")
-                        $Node1.SetAttribute("Value","0")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
-                        $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
-                        $Node1.SetAttribute("Value","TRUE")
-                    [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
-                        $Node1.SetAttribute("Enabled","FALSE")
-                        $XML.Save("$PSScriptRoot\$Product\install.xml")
-                    Write-Host -ForegroundColor Green  "Create install.xml for User Based Install finished!"
                 }
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Display"))
+                    $Node1.SetAttribute("Level","None")
+                    $Node1.SetAttribute("AcceptEULA","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Logging"))
+                    $Node1.SetAttribute("Level","Standard")
+                    $Node1.SetAttribute("Path","%temp%")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","SharedComputerLicensing")
+                    $Node1.SetAttribute("Value","0")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Property"))
+                    $Node1.SetAttribute("Name","FORCEAPPSHUTDOWN")
+                    $Node1.SetAttribute("Value","TRUE")
+                [System.XML.XMLElement]$Node1 = $Root.AppendChild($XML.CreateElement("Updates"))
+                    $Node1.SetAttribute("Enabled","FALSE")
+                    $XML.Save("$PSScriptRoot\$Product\install.xml")
+                Write-Host -ForegroundColor Green  "Create install.xml for install finished!"
             }
         }
         If ($CurrentVersion -lt $Version) {
@@ -8316,7 +8575,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8387,7 +8646,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8435,7 +8694,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8483,7 +8742,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8531,7 +8790,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8579,7 +8838,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8627,7 +8886,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8674,7 +8933,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8749,7 +9008,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8794,7 +9053,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8812,6 +9071,251 @@ If ($Download -eq "1") {
                     Stop-Transcript | Out-Null
                 }
                 Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+        }
+    }
+
+    #// Mark: Download Microsoft Visual C++ Runtime
+    If ($MSVisualCPlusPlusRuntime -eq 1) {
+        $Product = "Microsoft Visual C++ Runtime"
+        If ($MSVisualCPlusPlusRuntimeRelease -ne 4) {
+            $PackageName = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $MSVisualCPlusPlusRuntimeD = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "$MSVisualCPlusPlusRuntimeReleaseClear"}
+            $Version = $MSVisualCPlusPlusRuntimeD.Version
+            If ($MSVisualCPlusPlusRuntimeReleaseClear -eq "2010") {
+                $VersionSplit = $Version.split(".")
+                If ($VersionSplit) {$VersionStrings = ([regex]::Matches($Version, "\." )).count}
+                Switch ($VersionStrings) {
+                    1 { $Version = $VersionSplit[0] + "." + $VersionSplit[1]}
+                    2 { $Version = $VersionSplit[0] + "." + $VersionSplit[1] + "." + $VersionSplit[2]}
+                    3 { $Version = $VersionSplit[0] + "." + $VersionSplit[1] + "." + $VersionSplit[2]}
+                }
+            }
+            $URL = $MSVisualCPlusPlusRuntimeD.download
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerType = "exe"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $CurrentVersion"
+            If ($CurrentVersion -lt $Version) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*$CurrentVersion.log" -Recurse
+                    Start-Transcript $LogPS | Out-Null
+                    Set-Content -Path "$VersionPath" -Value "$Version"
+                }
+                Write-Host "Starting download of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear $Version"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+        } Else {
+            $PackageName2010 = "VS-Setup2010_" + "$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $PackageName2012 = "VS-Setup2012_" + "$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $PackageName2013 = "VS-Setup2013_" + "$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $PackageName2019 = "VS-Setup2019_" + "$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $MSVisualCPlusPlusRuntime2010D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "2010"}
+            $MSVisualCPlusPlusRuntime2012D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "2012"}
+            $MSVisualCPlusPlusRuntime2013D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "2013"}
+            $MSVisualCPlusPlusRuntime2019D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "2019"}
+            $Version2010 = $MSVisualCPlusPlusRuntime2010D.Version
+            $VersionSplit2010 = $Version2010.split(".")
+            If ($VersionSplit2010) {$VersionStrings2010 = ([regex]::Matches($Version2010, "\." )).count}
+            Switch ($VersionStrings2010) {
+                1 { $Version2010 = $VersionSplit2010[0] + "." + $VersionSplit2010[1]}
+                2 { $Version2010 = $VersionSplit2010[0] + "." + $VersionSplit2010[1] + "." + $VersionSplit2010[2]}
+                3 { $Version2010 = $VersionSplit2010[0] + "." + $VersionSplit2010[1] + "." + $VersionSplit2010[2]}
+            }
+            $Version2012 = $MSVisualCPlusPlusRuntime2012D.Version
+            $Version2013 = $MSVisualCPlusPlusRuntime2013D.Version
+            $Version2019 = $MSVisualCPlusPlusRuntime2019D.Version
+            $URL2010 = $MSVisualCPlusPlusRuntime2010D.download
+            $URL2012 = $MSVisualCPlusPlusRuntime2012D.download
+            $URL2013 = $MSVisualCPlusPlusRuntime2013D.download
+            $URL2019 = $MSVisualCPlusPlusRuntime2019D.download
+            Add-Content -Path "$FWFile" -Value "$URL2010"
+            Add-Content -Path "$FWFile" -Value "$URL2012"
+            Add-Content -Path "$FWFile" -Value "$URL2013"
+            Add-Content -Path "$FWFile" -Value "$URL2019"
+            $InstallerType = "exe"
+            $Source2010 = "$PackageName2010" + "." + "$InstallerType"
+            $Source2012 = "$PackageName2012" + "." + "$InstallerType"
+            $Source2013 = "$PackageName2013" + "." + "$InstallerType"
+            $Source2019 = "$PackageName2019" + "." + "$InstallerType"
+            $VersionPath2010 = "$PSScriptRoot\$Product\Version_2010_" + "$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $CurrentVersion2010 = Get-Content -Path "$VersionPath2010" -EA SilentlyContinue
+            $VersionPath2012 = "$PSScriptRoot\$Product\Version_2012_" + "$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $CurrentVersion2012 = Get-Content -Path "$VersionPath2012" -EA SilentlyContinue
+            $VersionPath2013 = "$PSScriptRoot\$Product\Version_2013_" + "$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $CurrentVersion2013 = Get-Content -Path "$VersionPath2013" -EA SilentlyContinue
+            $VersionPath2019 = "$PSScriptRoot\$Product\Version_2019_" + "$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $CurrentVersion2019 = Get-Content -Path "$VersionPath2019" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010"
+            Write-Host "Download Version: $Version2010"
+            Write-Host "Current Version:  $CurrentVersion2010"
+            If ($CurrentVersion2010 -lt $Version2010) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS2010 = "$PSScriptRoot\$Product\" + "$Product 2010 $Version2010.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion2010) {
+                            Write-Host "Copy $Product installer version $CurrentVersion2010 to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2010")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2010" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2010" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2010 finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*2010*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2010*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2010*.exe" -Recurse
+                    Start-Transcript $LogPS2010 | Out-Null
+                    Set-Content -Path "$VersionPath2010" -Value "$Version2010"
+                }
+                Write-Host "Starting download of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010 $Version2010"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL2010 "$PSScriptRoot\$Product\" $Source2010 -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version2010 finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Download $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012"
+            Write-Host "Download Version: $Version2012"
+            Write-Host "Current Version:  $CurrentVersion2012"
+            If ($CurrentVersion2012 -lt $Version2012) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS2012 = "$PSScriptRoot\$Product\" + "$Product 2012 $Version2012.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion2012) {
+                            Write-Host "Copy $Product installer version $CurrentVersion2012 to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2012 finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*2012*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012*.exe" -Recurse
+                    Start-Transcript $LogPS2012 | Out-Null
+                    Set-Content -Path "$VersionPath2012" -Value "$Version2012"
+                }
+                Write-Host "Starting download of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012 $Version2012"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL2012 "$PSScriptRoot\$Product\" $Source2012 -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version2012 finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Download $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013"
+            Write-Host "Download Version: $Version2013"
+            Write-Host "Current Version:  $CurrentVersion2013"
+            If ($CurrentVersion2013 -lt $Version2013) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS2013 = "$PSScriptRoot\$Product\" + "$Product 2013 $Version2013.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion2013) {
+                            Write-Host "Copy $Product installer version $CurrentVersion2013 to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2013 finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*2013*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013*.exe" -Recurse
+                    Start-Transcript $LogPS2013 | Out-Null
+                    Set-Content -Path "$VersionPath2013" -Value "$Version2013"
+                }
+                Write-Host "Starting download of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013 $Version2013"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL2013 "$PSScriptRoot\$Product\" $Source2013 -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version2013 finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Download $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019"
+            Write-Host "Download Version: $Version2019"
+            Write-Host "Current Version:  $CurrentVersion2019"
+            If ($CurrentVersion2019 -lt $Version2019) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS2019 = "$PSScriptRoot\$Product\" + "$Product 2019 $Version2019.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion2019) {
+                            Write-Host "Copy $Product installer version $CurrentVersion2019 to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2019")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2019" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2019" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2019 finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*2019*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2019*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2019*.exe" -Recurse
+                    Start-Transcript $LogPS2019 | Out-Null
+                    Set-Content -Path "$VersionPath2019" -Value "$Version2019"
+                }
+                Write-Host "Starting download of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019 $Version2019"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL2019 "$PSScriptRoot\$Product\" $Source2019 -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version2019 finished!"
                 Write-Output ""
             }
             Else {
@@ -8843,7 +9347,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8891,7 +9395,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8939,7 +9443,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -8987,7 +9491,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9106,7 +9610,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9154,7 +9658,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9202,7 +9706,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9250,7 +9754,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9298,7 +9802,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9346,7 +9850,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9393,7 +9897,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9444,7 +9948,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9492,7 +9996,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9540,7 +10044,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9588,7 +10092,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9641,7 +10145,7 @@ If ($Download -eq "1") {
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                         If ($Repository -eq '1') {
                             If ($CurrentVersion) {
-                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                                 Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9690,7 +10194,7 @@ If ($Download -eq "1") {
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                         If ($Repository -eq '1') {
                             If ($CurrentVersion) {
-                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                                 Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9739,7 +10243,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9786,7 +10290,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9834,7 +10338,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9888,7 +10392,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9935,7 +10439,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -9983,7 +10487,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10031,7 +10535,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10079,7 +10583,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10128,7 +10632,7 @@ If ($Download -eq "1") {
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                         If ($Repository -eq '1') {
                             If ($CurrentVersion) {
-                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                                 Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10173,7 +10677,7 @@ If ($Download -eq "1") {
                         $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                         If ($Repository -eq '1') {
                             If ($CurrentVersion) {
-                                Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                                Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                                 If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                                 Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10223,7 +10727,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10289,7 +10793,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10337,7 +10841,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10385,7 +10889,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10432,7 +10936,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10480,7 +10984,7 @@ If ($Download -eq "1") {
                 $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
-                        Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                         Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10532,7 +11036,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10607,7 +11111,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10679,7 +11183,7 @@ If ($Download -eq "1") {
                     $LogPS = "$PSScriptRoot\$Product2\" + "$Product2 $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
-                            Write-Host "Copy $Product Installer Version $CurrentVersion to Repository folder"
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
                             If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
                             Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
@@ -10775,6 +11279,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -10832,6 +11337,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -10876,7 +11382,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $Adobe"
         If ($Adobe -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $Version"
@@ -10886,10 +11392,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -10952,7 +11460,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $Adobe"
         If ($Adobe -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $AdobeArchitectureClear $AdobeLanguageClear" $LogFile
+            DS_WriteLog "I" "Install $Product $AdobeArchitectureClear $AdobeLanguageClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/sAll"
@@ -10968,6 +11476,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -11063,7 +11572,7 @@ If ($Install -eq "1") {
                 Write-Host -ForegroundColor Red "Error unpacking $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error unpacking $Product (Error: $($Error[0]))" $LogFile
             }
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             $Arguments = @(
                 "/i"
                 "`"$InstallMSI`""
@@ -11118,7 +11627,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $BISFV"
         If ($BISFV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11206,7 +11715,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CiscoWebexTeamsV"
         If ($CiscoWebexTeamsV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11266,7 +11775,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CitrixFilesV"
         If ($CitrixFilesV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11327,7 +11836,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $HypTools"
         If ($HypTools -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $CitrixHypervisorToolsArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $CitrixHypervisorToolsArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11387,7 +11896,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $WSA"
         If ($WSA -ne $Version) {
-            DS_WriteLog "I" "Install $Product" $LogFile
+            DS_WriteLog "I" "Uninstall $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # Citrix WSA Uninstallation
             Write-Host "Uninstall Citrix Workspace App / Receiver"
@@ -11397,6 +11906,7 @@ If ($Install -eq "1") {
                     Start-process $UninstallWSACR -ArgumentList '/silent /disableCEIP' -NoNewWindow -Wait
                 }
                 Write-Host -ForegroundColor Green "Uninstall Citrix Workspace App / Receiver finished!"
+                DS_WriteLog "I" "Uninstallation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error uninstalling Citrix Workspace App / Receiver (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error Uninstalling Citrix Workspace App / Receiver (Error: $($Error[0]))" $LogFile
@@ -11420,10 +11930,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 Write-Host "Customize $Product"
                 If ($WhatIf -eq '0') {
@@ -11478,7 +11990,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $ControlUpAgentV"
         If ($ControlUpAgentV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $ControlUpAgentFrameworkClear $ControlUpAgentArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -11557,7 +12069,7 @@ If ($Install -eq "1") {
             Write-Host "Current Version:  $deviceTRUSTClientV"
             If ($deviceTRUSTClientV -lt $Version) {
                 # deviceTRUST Client
-                DS_WriteLog "I" "Installing $Product Client" $LogFile
+                DS_WriteLog "I" "Install $Product Client" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 Try {
                     $Options = @(
@@ -11595,7 +12107,7 @@ If ($Install -eq "1") {
             Write-Host "Current Version:  $deviceTRUSTHostV"
             If ($deviceTRUSTHostV -lt $Version) {
                 # deviceTRUST Host
-                DS_WriteLog "I" "Installing $Product Host" $LogFile
+                DS_WriteLog "I" "Install $Product Host" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $InstallMSI = "$PSScriptRoot\$Product\$deviceTRUSTHostInstaller"
                 Try {
@@ -11623,7 +12135,7 @@ If ($Install -eq "1") {
             Write-Host "Current Version:  $deviceTRUSTConsoleV"
             If ($deviceTRUSTConsoleV -lt $Version) {
                 # deviceTRUST Console
-                DS_WriteLog "I" "Installing $Product Console" $LogFile
+                DS_WriteLog "I" "Install $Product Console" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $InstallMSI = "$PSScriptRoot\$Product\$deviceTRUSTConsoleInstaller"
                 Try {
@@ -11684,10 +12196,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -11874,10 +12388,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -11939,10 +12455,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -11980,52 +12498,55 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $ChromeD.Version
         }
-        $ChromeSplit = $Version.split(".")
-        $ChromeStrings = ([regex]::Matches($Version, "\." )).count
-        $ChromeStringLast = ([regex]::Matches($ChromeSplit[$ChromeStrings], "." )).count
-        If ($ChromeStringLast -lt "3") {
-            $ChromeSplit[$ChromeStrings] = "0" + $ChromeSplit[$ChromeStrings]
+        $ChromeSplit1 = $Version.split(".")
+        $ChromeStrings1 = ([regex]::Matches($Version, "\." )).count
+        $ChromeStringLast1 = ([regex]::Matches($ChromeSplit1[$ChromeStrings1], "." )).count
+        If ($ChromeStringLast1 -lt "3") {
+            $ChromeSplit1[$ChromeStrings1] = "0" + $ChromeSplit1[$ChromeStrings1]
         }
-        Switch ($ChromeStrings) {
+        Switch ($ChromeStrings1) {
             1 {
-                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1]
+                $NewVersion1 = $ChromeSplit1[0] + "." + $ChromeSplit1[1]
             }
             2 {
-                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2]
+                $NewVersion1 = $ChromeSplit1[0] + "." + $ChromeSplit1[1] + "." + $ChromeSplit1[2]
             }
             3 {
-                $NewVersion = $ChromeSplit[0] + "." + $ChromeSplit[1] + "." + $ChromeSplit[2] + "." + $ChromeSplit[3]
+                $NewVersion1 = $ChromeSplit1[0] + "." + $ChromeSplit1[1] + "." + $ChromeSplit1[2] + "." + $ChromeSplit1[3]
             }
         }
+        $Version = $NewVersion1
         $Chrome = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         $ChromeLog = "$LogTemp\GoogleChrome.log"
         If (!$Chrome) {
             $Chrome = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Google Chrome"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        $CurrentChromeSplit = $Chrome.split(".")
-        $CurrentChromeStrings = ([regex]::Matches($Chrome, "\." )).count
-        $CurrentChromeStringLast = ([regex]::Matches($CurrentChromeSplit[$CurrentChromeStrings], "." )).count
-        If ($CurrentChromeStringLast -lt "3") {
-            $CurrentChromeSplit[$CurrentChromeStrings] = "0" + $CurrentChromeSplit[$CurrentChromeStrings]
-        }
-        Switch ($CurrentChromeStrings) {
-            1 {
-                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1]
+        If ($Chrome) {
+            $CurrentChromeSplit1 = $Chrome.split(".")
+            $CurrentChromeStrings1 = ([regex]::Matches($Chrome, "\." )).count
+            $CurrentChromeStringLast1 = ([regex]::Matches($CurrentChromeSplit1[$CurrentChromeStrings1], "." )).count
+            If ($CurrentChromeStringLast1 -lt "3") {
+                $CurrentChromeSplit1[$CurrentChromeStrings1] = "0" + $CurrentChromeSplit1[$CurrentChromeStrings1]
             }
-            2 {
-                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2]
-            }
-            3 {
-                $NewCurrentVersion = $CurrentChromeSplit[0] + "." + $CurrentChromeSplit[1] + "." + $CurrentChromeSplit[2] + "." + $CurrentChromeSplit[3]
+            Switch ($CurrentChromeStrings1) {
+                1 {
+                    $NewCurrentVersion1 = $CurrentChromeSplit1[0] + "." + $CurrentChromeSplit1[1]
+                }
+                2 {
+                    $NewCurrentVersion1 = $CurrentChromeSplit1[0] + "." + $CurrentChromeSplit1[1] + "." + $CurrentChromeSplit1[2]
+                }
+                3 {
+                    $NewCurrentVersion1 = $CurrentChromeSplit1[0] + "." + $CurrentChromeSplit1[1] + "." + $CurrentChromeSplit1[2] + "." + $CurrentChromeSplit1[3]
+                }
             }
         }
         $ChromeInstaller = "googlechromestandaloneenterprise_" + "$GoogleChromeArchitectureClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$ChromeInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $GoogleChromeArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $Chrome"
-        If ($NewCurrentVersion -lt $NewVersion) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+        Write-Host "Download Version: $NewVersion1"
+        Write-Host "Current Version:  $NewCurrentVersion1"
+        If ($NewCurrentVersion1 -ne $NewVersion1) {
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -12034,7 +12555,7 @@ If ($Install -eq "1") {
                 "/L*V $ChromeLog"
             )
             Try {
-                Write-Host "Starting install of $Product $GoogleChromeArchitectureClear $Version"
+                Write-Host "Starting install of $Product $GoogleChromeArchitectureClear $NewVersion1"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                 }
@@ -12122,10 +12643,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -12174,7 +12697,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $ImageGlassV"
         If ($ImageGlassV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -12252,10 +12775,12 @@ If ($Install -eq "1") {
                 }
                 else {
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -12327,7 +12852,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $KeePassV"
         If ($KeePassV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -12393,7 +12918,7 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $LogMeInGoToMeetingV"
             If ($LogMeInGoToMeetingV -lt $Version) {
-                DS_WriteLog "I" "Installing $Product" $LogFile
+                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
                     "/i"
@@ -12445,7 +12970,7 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $LogMeInGoToMeetingV"
             If ($LogMeInGoToMeetingV -lt $Version) {
-                DS_WriteLog "I" "Installing $Product" $LogFile
+                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
                     "/i"
@@ -12514,10 +13039,12 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSDotNetFrameworkArchitectureClear $MSDotNetFrameworkChannelClear Channel (Error: $($Error[0]))"
@@ -12585,6 +13112,7 @@ If ($Install -eq "1") {
                     set-location $PSScriptRoot
                 }
                 Write-Host -ForegroundColor Green "Uninstall Microsoft Office or Microsoft 365 Apps finished!"
+                DS_WriteLog "I" "Uninstallation Microsoft Office or Microsoft 365 Apps finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
@@ -12615,6 +13143,7 @@ If ($Install -eq "1") {
                     }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -12791,6 +13320,7 @@ If ($Install -eq "1") {
                     }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSAzureDataStudioChannelClear $ArchitectureClear $MSAzureDataStudioModeClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -12956,6 +13486,7 @@ If ($Install -eq "1") {
                     while (Get-Process -Name $EdgeWebView2Process -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } catch {
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
             }
@@ -12997,11 +13528,12 @@ If ($Install -eq "1") {
         If (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}) {
             $UninstallFSLRE = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft FSLogix Apps RuleEditor"}).UninstallString.replace("/uninstall","")
         }
+        $FSLCheck = $UninstallFSL.replace("""","")
+        $FSLRECheck = $UninstallFSLRE.replace("""","")
         Write-Host -ForegroundColor Magenta "Install $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSFSLogixV"
         If ($MSFSLogixV -lt $Version) {
-            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             # FSLogix Uninstall
             If ($MSFSLogixV) {
@@ -13009,10 +13541,15 @@ If ($Install -eq "1") {
                 DS_WriteLog "I" "Uninstall $Product" $LogFile
                 Try {
                     If ($WhatIf -eq '0') {
-                        Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
-                        Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                        If (Test-Path -Path "$FSLCheck" -PathType Leaf) {
+                            Start-process $UninstallFSL -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                        }
+                        If (Test-Path -Path "$FSLRECheck" -PathType Leaf) {
+                            Start-process $UninstallFSLRE -ArgumentList '/uninstall /quiet /norestart' -NoNewWindow -Wait
+                        }
                     }
                     Write-Host -ForegroundColor Green "Uninstall $Product finished!"
+                    DS_WriteLog "I" "Uninstallation $Product finished!" $LogFile
                 } Catch {
                     Write-Host -ForegroundColor Red "Error uninstalling $Product (Error: $($Error[0]))"
                     DS_WriteLog "E" "Error uninstalling $Product (Error: $($Error[0]))" $LogFile
@@ -13030,6 +13567,7 @@ If ($Install -eq "1") {
             # FSLogix Install
             Try {
                 Write-Host "Starting install of $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear $Version"
+                DS_WriteLog "I" "Install $Product" $LogFile
                 If ($WhatIf -eq '0') {
                     Start-Process "$PSScriptRoot\$Product\$MSFSLogixChannelClear\FSLogixAppsSetup.exe" -ArgumentList '/install /norestart /quiet' -NoNewWindow -Wait
                 }
@@ -13040,6 +13578,7 @@ If ($Install -eq "1") {
                 }
                 Write-Host -ForegroundColor Green "Install $Product Rule Editor $MSFSLogixChannelClear $MSFSLogixArchitectureClear finished!"
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSFSLogixChannelClear $MSFSLogixArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13197,6 +13736,7 @@ If ($Install -eq "1") {
                     set-location $PSScriptRoot
                 }
                 Write-Host -ForegroundColor Green "Uninstall Microsoft Office or Microsoft 365 Apps finished!"
+                DS_WriteLog "I" "Uninstallation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error uninstalling Microsoft Office or Microsoft 365 Apps (Error: $($Error[0]))" $LogFile
@@ -13214,6 +13754,7 @@ If ($Install -eq "1") {
                     set-location $PSScriptRoot
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13283,6 +13824,7 @@ If ($Install -eq "1") {
                 # OneDrive starts automatically after setup. kill!
                 #Stop-Process -Name "OneDrive" -Force
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSOneDriveRingClear Ring $MSOneDriveArchitectureClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -13441,10 +13983,12 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -13628,10 +14172,12 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -13702,10 +14248,12 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -13760,7 +14308,6 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $Teams"
             If ($Teams -ne $Version) {
-                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 #Uninstalling MS Teams
                 If ($Teams) {
@@ -13812,6 +14359,7 @@ If ($Install -eq "1") {
                 }
                 Try {
                     Write-Host "Starting install of $Product $MSTeamsArchitectureClear $MSTeamsRingClear Ring $Version"
+                    DS_WriteLog "I" "Install $Product" $LogFile
                     If ($WhatIf -eq '0') {
                         Install-MSI $InstallMSI $Arguments
                         Start-Sleep 5
@@ -13908,6 +14456,7 @@ If ($Install -eq "1") {
                         while (Get-Process -Name $TeamsProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                     }
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                     If ($WhatIf -eq '0') {
                         If (Test-Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk") {Remove-Item -Path "$env:USERPROFILE\Desktop\Microsoft Teams.lnk" -Force}
                         If ($CleanUpStartMenu) {
@@ -13948,6 +14497,271 @@ If ($Install -eq "1") {
                     Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 }
                 Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+        }
+    }
+
+    #// Mark: Install Microsoft Visual C++ Runtime
+    If ($MSVisualCPlusPlusRuntime -eq 1) {
+        $Product = "Microsoft Visual C++ Runtime"
+        # Check, if a new version is available
+        If ($MSVisualCPlusPlusRuntimeRelease -ne 4) {
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $MSVisualCPlusPlusRuntimeD.Version
+            }
+            $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            If (!$MSVisualCPlusPlusRuntimeV) {
+                $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            }
+            If (!$MSVisualCPlusPlusRuntimeV) {
+                $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+            }
+            If (!$MSVisualCPlusPlusRuntimeV) {
+                $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+            }
+            $MSVisualCPlusPlusRuntimeInstall = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + "." + "exe"
+            $MSVisualCPlusPlusRuntimeProcess = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            Write-Host -ForegroundColor Magenta "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $MSVisualCPlusPlusRuntimeV"
+            If ($MSVisualCPlusPlusRuntimeV -ne $Version) {
+                $Options = @(
+                    "/quiet"
+                    "/norestart"
+                )
+                DS_WriteLog "I" "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                Try {
+                    Write-Host "Starting install of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear"
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualCPlusPlusRuntimeArchitectureClear release $MSVisualCPlusPlusRuntimeReleaseClear"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -Seconds 20
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+        } Else {
+            $VersionPath2010 = "$PSScriptRoot\$Product\Version_2010" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $Version2010 = Get-Content -Path "$VersionPath2010" -ErrorAction SilentlyContinue
+            If (!($Version2010)) {
+                $Version2010 = $MSVisualCPlusPlusRuntime2010D.Version
+            }
+            $VersionPath2012 = "$PSScriptRoot\$Product\Version_2012" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $Version2012 = Get-Content -Path "$VersionPath2012" -ErrorAction SilentlyContinue
+            If (!($Version2012)) {
+                $Version2012 = $MSVisualCPlusPlusRuntime2012D.Version
+            }
+            $VersionPath2013 = "$PSScriptRoot\$Product\Version_2013" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $Version2013 = Get-Content -Path "$VersionPath2013" -ErrorAction SilentlyContinue
+            If (!($Version2013)) {
+                $Version2013 = $MSVisualCPlusPlusRuntime2013D.Version
+            }
+            $VersionPath2019 = "$PSScriptRoot\$Product\Version_2019" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
+            $Version2019 = Get-Content -Path "$VersionPath2019" -ErrorAction SilentlyContinue
+            If (!($Version2019)) {
+                $Version2019 = $MSVisualCPlusPlusRuntime2019D.Version
+            }
+            $MSVisualCPlusPlusRuntime2010V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2010*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+            If (!$MSVisualCPlusPlusRuntime2010V) {
+                $MSVisualCPlusPlusRuntime2010V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2010*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+            }
+            $MSVisualCPlusPlusRuntime2012V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2012*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            If (!$MSVisualCPlusPlusRuntime2012V) {
+                $MSVisualCPlusPlusRuntime2012V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2012*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            }
+            $MSVisualCPlusPlusRuntime2013V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2013*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            If (!$MSVisualCPlusPlusRuntime2013V) {
+                $MSVisualCPlusPlusRuntime2013V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2013*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            }
+            $MSVisualCPlusPlusRuntime2019V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2019*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            If (!$MSVisualCPlusPlusRuntime2019V) {
+                $MSVisualCPlusPlusRuntime2019V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2019*$MSVisualCPlusPlusRuntimeArchitectureClear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+            }
+            $MSVisualCPlusPlusRuntimeInstall2010 = "VS-Setup2010" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + "." + "exe"
+            $MSVisualCPlusPlusRuntimeProcess2010 = "VS-Setup2010" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $MSVisualCPlusPlusRuntimeInstall2012 = "VS-Setup2012" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + "." + "exe"
+            $MSVisualCPlusPlusRuntimeProcess2012 = "VS-Setup2012" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $MSVisualCPlusPlusRuntimeInstall2013 = "VS-Setup2013" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + "." + "exe"
+            $MSVisualCPlusPlusRuntimeProcess2013 = "VS-Setup2013" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            $MSVisualCPlusPlusRuntimeInstall2019 = "VS-Setup2019" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + "." + "exe"
+            $MSVisualCPlusPlusRuntimeProcess2019 = "VS-Setup2019" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
+            Write-Host -ForegroundColor Magenta "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010"
+            Write-Host "Download Version: $Version2010"
+            Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2010V"
+            If ($MSVisualCPlusPlusRuntime2010V -ne $Version2010) {
+                $Options = @(
+                    "/quiet"
+                    "/norestart"
+                )
+                DS_WriteLog "I" "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                Try {
+                    Write-Host "Starting install of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010"
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2010" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2010 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version2010 finished!"
+                    DS_WriteLog "I" "Installation $Product release 2010 finished!" $LogFile
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010 (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010 (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2010"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -Seconds 20
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012"
+            Write-Host "Download Version: $Version2012"
+            Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2012V"
+            If ($MSVisualCPlusPlusRuntime2012V -ne $Version2012) {
+                $Options = @(
+                    "/quiet"
+                    "/norestart"
+                )
+                DS_WriteLog "I" "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                Try {
+                    Write-Host "Starting install of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012"
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2012" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2012 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version2012 finished!"
+                    DS_WriteLog "I" "Installation $Product release 2012 finished!" $LogFile
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012 (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012 (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2012"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -Seconds 20
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013"
+            Write-Host "Download Version: $Version2013"
+            Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2013V"
+            If ($MSVisualCPlusPlusRuntime2013V -ne $Version2013) {
+                $Options = @(
+                    "/quiet"
+                    "/norestart"
+                )
+                DS_WriteLog "I" "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                Try {
+                    Write-Host "Starting install of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013"
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2013" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2013 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version2013 finished!"
+                    DS_WriteLog "I" "Installation $Product release 2013 finished!" $LogFile
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013 (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013 (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2013"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -Seconds 20
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            Write-Host -ForegroundColor Magenta "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019"
+            Write-Host "Download Version: $Version2019"
+            Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2019V"
+            If ($MSVisualCPlusPlusRuntime2019V -ne $Version2019) {
+                $Options = @(
+                    "/quiet"
+                    "/norestart"
+                )
+                DS_WriteLog "I" "Install $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                Try {
+                    Write-Host "Starting install of $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019"
+                    If ($WhatIf -eq '0') {
+                        $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2019" -ArgumentList $Options -PassThru -NoNewWindow
+                        while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2019 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                    }
+                    Write-Host -ForegroundColor Green "Install of the new version $Version2019 finished!"
+                    DS_WriteLog "I" "Installation $Product release 2019 finished!" $LogFile
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019 (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019 (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product $MSVisualCPlusPlusRuntimeArchitectureClear release 2019"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Start-Sleep -Seconds 20
+                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
             }
@@ -14003,6 +14817,7 @@ If ($Install -eq "1") {
                     }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioEditionClear Edition (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product $MSVisualStudioEditionClear Edition (Error: $($Error[0]))" $LogFile
@@ -14065,6 +14880,7 @@ If ($Install -eq "1") {
                     }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MSVisualStudioCodeChannelClear $MSVisualStudioCodeArchitectureClear $MSVisualStudioCodeModeClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14122,6 +14938,7 @@ If ($Install -eq "1") {
                     }
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $MindView7LanguageClear (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -14286,7 +15103,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $NmapV"
         If ($NmapV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $Version"
@@ -14297,6 +15114,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14343,7 +15161,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $Notepad"
         If ($Notepad -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $NotepadPlusPlusArchitectureClear $Version"
@@ -14354,6 +15172,7 @@ If ($Install -eq "1") {
 		        If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14403,7 +15222,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $OpenJDKV"
         If ($OpenJDKV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $openJDKArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $openJDKArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -14474,6 +15293,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14539,6 +15359,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14603,6 +15424,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14664,6 +15486,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14712,7 +15535,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $PDFsamV"
         If ($PDFsamV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -14786,6 +15609,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -14838,7 +15662,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $PuTTYV"
         If ($PuTTYV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product $PuttyChannelClear $PuTTYArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $PuttyChannelClear $PuTTYArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -14897,7 +15721,7 @@ If ($Install -eq "1") {
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version:  $RemoteDesktopManagerFree"
                 If ($RemoteDesktopManagerFree -lt $Version) {
-                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    DS_WriteLog "I" "Install $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     $Arguments = @(
                         "/i"
@@ -14949,7 +15773,7 @@ If ($Install -eq "1") {
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version:  $RemoteDesktopManagerEnterprise"
                 If ($RemoteDesktopManagerEnterprise -lt $Version) {
-                    DS_WriteLog "I" "Installing $Product" $LogFile
+                    DS_WriteLog "I" "Install $Product" $LogFile
                     Write-Host -ForegroundColor Green "Update available"
                     $Arguments = @(
                         "/i"
@@ -15020,6 +15844,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -15076,7 +15901,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $SlackV"
         If ($SlackV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product $SlackArchitectureClear $SlackPlatformClear" $LogFile
+            DS_WriteLog "I" "Install $Product $SlackArchitectureClear $SlackPlatformClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -15149,6 +15974,7 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
@@ -15224,11 +16050,13 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 $p = Get-Process TeamViewer-setup -ErrorAction SilentlyContinue
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                     If ($WhatIf -eq '0') {
                         If (Test-Path -Path "$env:PUBLIC\Desktop\Teamviewer.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Teamviewer.lnk" -Force}
                         If ($CleanUpStartMenu) {
@@ -15291,7 +16119,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $TechSmithCamtasiaVN"
         If ($TechSmithCamtasiaVN -ne $Version) {
-            DS_WriteLog "I" "Installing $Product" $LogFile
+            DS_WriteLog "I" "Install $Product" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -15352,7 +16180,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $TechSmithSnagItV"
         If ($TechSmithSnagItV -ne $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -15425,6 +16253,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -15480,6 +16309,7 @@ If ($Install -eq "1") {
                         If ($p) {
                             $p.WaitForExit()
                             Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                            DS_WriteLog "I" "Installation $Product finished!" $LogFile
                         }
                         If ($WhatIf -eq '0') {
                             If ($CleanUpStartMenu) {
@@ -15531,6 +16361,7 @@ If ($Install -eq "1") {
                         If ($p) {
                             $p.WaitForExit()
                             Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                            DS_WriteLog "I" "Installation $Product finished!" $LogFile
                         }
                     } Catch {
                         Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
@@ -15582,6 +16413,7 @@ If ($Install -eq "1") {
                     Start-Process "$PSScriptRoot\$Product\$uberAgentInstaller" -NoNewWindow -Wait
                 }
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                DS_WriteLog "I" "Installation $Product finished!" $LogFile
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
@@ -15625,7 +16457,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $VLC"
         If ($VLC -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Arguments = @(
                 "/i"
@@ -15699,11 +16531,13 @@ If ($Install -eq "1") {
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     Write-Host -ForegroundColor Yellow "System needs to reboot after installation!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     Write-Host -ForegroundColor Yellow "System needs to reboot after installation!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product $ArchitectureClear (Error: $($Error[0]))"
@@ -15760,6 +16594,7 @@ If ($Install -eq "1") {
                 If ($p) {
                     $p.WaitForExit()
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -15816,6 +16651,7 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
@@ -15867,7 +16703,7 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $WiresharkV"
         If ($WiresharkV -lt $Version) {
-            DS_WriteLog "I" "Installing $Product $ArchitectureClear" $LogFile
+            DS_WriteLog "I" "Install $Product $ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
                 "/S"
@@ -15881,10 +16717,12 @@ If ($Install -eq "1") {
                 }
                 else{
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
                     If ($CleanUpStartMenu) {
@@ -15932,7 +16770,7 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
             If ($ZoomV -ne $Version) {
-                DS_WriteLog "I" "Installing $Product" $LogFile
+                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
                     "/i"
@@ -15979,7 +16817,7 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
             If ($ZoomV -ne $Version) {
-                DS_WriteLog "I" "Installing $Product" $LogFile
+                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
                     "/i"
@@ -16028,7 +16866,7 @@ If ($Install -eq "1") {
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
             If ($ZoomV -ne $Version) {
-                DS_WriteLog "I" "Installing $Product" $LogFile
+                DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
                     "/i"
@@ -16071,3 +16909,5 @@ If ($Install -eq "1") {
         Change User /Execute | Out-Null
     }
 }
+$LASTEXITCODE = "0"
+exit $LASTEXITCODE
