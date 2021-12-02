@@ -127,10 +127,11 @@ the script checks the version number and will update the package.
   2021-11-18        Add Mozilla Thunderbird ADMX download / GUI Changes
   2021-11-21        Change Mozilla Firefox language selection to new method / Add language long name to Mozilla Firefox write-host
   2021-11-22        Add fallback loop to FSLogix and Powershell download if Preview or LTS don't exist / Add Mozilla Thunderbird, PDF24 Creator, WinRAR and additional Architecture selection to the GUI
-  2021-11-23        Add Mozilla Tunderbird install / Add Adobe Pro DC Architecture selection / Add Google Chrome Channel selection / Split Googel Chrome and Microsoft Edge installed version detection in the different channels / Add OpenJDK Package Release selection
+  2021-11-23        Add Mozilla Thunderbird install / Add Adobe Pro DC Architecture selection / Add Google Chrome Channel selection / Split Google Chrome and Microsoft Edge installed version detection in the different channels / Add OpenJDK Package Release selection
   2021-11-24        Add PDF24 Creator download function, Download and Install section / Add Microsoft Edge reghack for the installation message "Microsoft Edge works best with the latest Windows Updates."
   2021-11-25        Add WinRAR download function, Download and Install section / Add Detail Architecture selection for Microsoft Azure Data Studio
   2021-11-26        Minor changes on the output / Add ControlUp Remote DX download function, Download and Install section / Add Cisco Webex Teams VDI Plugin download function, Download and Install section
+  2021-12-02        Mozille Firefox Channel selection correction
 
 .PARAMETER file
 
@@ -7353,6 +7354,11 @@ Else {
         Russian { $MindView7LanguageClear = 'English'}
         Spanish { $MindView7LanguageClear = 'English'}
     }
+}
+
+Switch ($FirefoxChannel ) {
+    0 { $FirefoxChannelClear = 'LATEST'}
+    1 { $FirefoxChannelClear = 'ESR'}
 }
 
 If ($Firefox_Architecture -ne "") {
