@@ -132,6 +132,7 @@ the script checks the version number and will update the package.
   2021-11-25        Add WinRAR download function, Download and Install section / Add Detail Architecture selection for Microsoft Azure Data Studio
   2021-11-26        Minor changes on the output / Add ControlUp Remote DX download function, Download and Install section / Add Cisco Webex Teams VDI Plugin download function, Download and Install section
   2021-12-02        Mozille Firefox Channel selection correction
+  2021-12-06        Change Microsoft Teams downlaoder to filter msi
 
 .PARAMETER file
 
@@ -10912,7 +10913,7 @@ If ($Download -eq "1") {
                 $TeamsD = Get-NevergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
             }
             Else {
-                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear"}
+                $TeamsD = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "$MSTeamsArchitectureClear" -and $_.Ring -eq "$MSTeamsRingClear" -and $_.Type -eq "MSI"}
             }
             $Version = $TeamsD.Version
             If ($Version) {
