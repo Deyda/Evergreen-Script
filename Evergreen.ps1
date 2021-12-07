@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07
+  Version:          2.06.1
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -2518,7 +2518,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07"
+$eVersion = "2.06.1"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -10383,7 +10383,8 @@ If ($Download -eq "1") {
             }
             Write-Host "Starting download of $Product $MSFSLogixChannelClear release $MSFSLogixArchitectureClear version $Version"
             If ($WhatIf -eq '0') {
-                Get-Download $URL "$PSScriptRoot\$Product\$MSFSLogixChannelClear" $Source -includeStats
+                Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\$MSFSLogixChannelClear\" + ($Source))
+                #Get-Download $URL "$PSScriptRoot\$Product\$MSFSLogixChannelClear\" $Source -includeStats
                 expand-archive -path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -destinationpath "$PSScriptRoot\$Product\$MSFSLogixChannelClear"
                 Remove-Item -Path "$PSScriptRoot\$Product\$MSFSLogixChannelClear\$Source" -Force
                 Switch ($MSFSLogixArchitectureClear) {
