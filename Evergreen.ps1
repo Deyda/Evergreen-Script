@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.06
+  Version:          2.07
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -132,7 +132,8 @@ the script checks the version number and will update the package.
   2021-11-25        Add WinRAR download function, Download and Install section / Add Detail Architecture selection for Microsoft Azure Data Studio
   2021-11-26        Minor changes on the output / Add ControlUp Remote DX download function, Download and Install section / Add Cisco Webex Teams VDI Plugin download function, Download and Install section
   2021-12-02        Mozille Firefox Channel selection correction
-  2021-12-06        Change Microsoft Teams downlaoder to filter msi
+  2021-12-06        Change Microsoft Teams downlaoder to filter msi / Add Microsoft FSLogix Channel Stable (Preferred by Deyda)
+  2021-12-07        Change IrfanView download site / Additional filter parameter for Microsoft .Net Framework
 
 .PARAMETER file
 
@@ -325,8 +326,8 @@ Function Get-IrfanView {
         $m = $m.Replace(' ','')
         $Version = $m -replace "Version"
         $FileI = $Version -replace "\.",""
-        $x32 = "http://download.betanews.com/download/967963863-1/iview$($FileI)_setup.exe"
-        $x64 = "http://download.betanews.com/download/967963863-1/iview$($FileI)_x64_setup.exe"
+        $x32 = "https://www.fosshub.com/IrfanView.html?dwl=iview$($FileI)_setup.exe"
+        $x64 = "https://www.fosshub.com/IrfanView.html?dwl=iview$($FileI)_x64_setup.exe"
 
 
         $PSObjectx32 = [PSCustomObject] @{
@@ -556,6 +557,33 @@ Function Get-PDFsam() {
         }
 
         Write-Output -InputObject $PSObjectx64
+        
+    }
+}
+
+# Function Microsoft FSlogix Stable (Preferred by Deyda) Download
+#========================================================================================================================================
+Function Get-MSFSLogix() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://mw2301-my.sharepoint.com/:u:/g/personal/manuel_deyda_net/ESKhpNRTBsJKnBLOeoo9B-MBZ0PNfMXy342K4akivlUewQ?e=JmFn9d"
+    Try {
+        #$webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $appxURL = "https://mw2301-my.sharepoint.com/:u:/g/personal/manuel_deyda_net/ESKhpNRTBsJKnBLOeoo9B-MBZ0PNfMXy342K4akivlUewQ?e=JmFn9d"
+
+        $PSObjectx = [PSCustomObject] @{
+            Version      = "2.9.7349.30108"
+            URI          = $appxURL
+        }
+
+        Write-Output -InputObject $PSObjectx
         
     }
 }
@@ -2490,7 +2518,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.06"
+$eVersion = "2.07"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -2798,6 +2826,7 @@ $inputXML = @"
                     <ComboBox x:Name="Box_MSFSlogix" HorizontalAlignment="Left" Margin="205,645,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
                         <ListBoxItem Content="Preview"/>
                         <ListBoxItem Content="Production"/>
+                        <ListBoxItem Content="Stable (Preferred by Deyda)"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSOffice" Content="Microsoft Office" HorizontalAlignment="Left" Margin="12,670,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSOffice" HorizontalAlignment="Left" Margin="205,666,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
@@ -6982,6 +7011,7 @@ Else {
 Switch ($MSFSLogixChannel) {
     0 { $MSFSLogixChannelClear = 'Preview'}
     1 { $MSFSLogixChannelClear = 'Production'}
+    2 { $MSFSLogixChannelClear = 'Stable'}
 }
 
 If ($MSOffice_Architecture -ne "") {
@@ -9589,7 +9619,7 @@ If ($Download -eq "1") {
     If ($MSDotNetFramework -eq 1) {
         $Product = "Microsoft Dot Net Framework"
         $PackageName = "NetFramework-runtime_" + "$MSDotNetFrameworkArchitectureClear" + "_$MSDotNetFrameworkChannelClear"
-        $MSDotNetFrameworkD = Get-EvergreenApp -Name Microsoft.NET | Where-Object {$_.Architecture -eq "$MSDotNetFrameworkArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear"}
+        $MSDotNetFrameworkD = Get-EvergreenApp -Name Microsoft.NET | Where-Object {$_.Architecture -eq "$MSDotNetFrameworkArchitectureClear" -and $_.Channel -eq "$MSDotNetFrameworkChannelClear" -and $_.installer -eq "windowsdesktop" }
         $Version = $MSDotNetFrameworkD.Version
         $URL = $MSDotNetFrameworkD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -10315,9 +10345,13 @@ If ($Download -eq "1") {
     If ($MSFSLogix -eq 1) {
         $Product = "Microsoft FSLogix"
         $PackageName = "FSLogixAppsSetup_" + "$MSFSLogixChannelCLear"
-        $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Channel -eq "$MSFSLogixChannelClear"}
-        If (!($MSFSLogixD.uri)) {
-            $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Channel -eq "Production"}
+        If ($MSFSLogixChannelClear -eq "Stable") {
+            $MSFSLogixD = Get-MSFSLogix
+        } else {
+            $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Channel -eq "$MSFSLogixChannelClear"}
+            If (!($MSFSLogixD.uri)) {
+                $MSFSLogixD = Get-EvergreenApp -Name MicrosoftFSLogixApps -ea silentlyContinue -WarningAction silentlyContinue | Where-Object { $_.Channel -eq "Production"}
+            }
         }
         $Version = $MSFSLogixD.Version
         $URL = $MSFSLogixD.uri
