@@ -576,7 +576,7 @@ Function Get-MSFSLogix() {
         Break
     }
     Finally {
-        $appxURL = "https://mw2301-my.sharepoint.com/:u:/g/personal/manuel_deyda_net/ESKhpNRTBsJKnBLOeoo9B-MBZ0PNfMXy342K4akivlUewQ?e=JmFn9d"
+        $appxURL = "https://www.deyda.net/wp-content/uploads/2021/12/fslogix_apps_29734930108.zip"
 
         $PSObjectx = [PSCustomObject] @{
             Version      = "2.9.7349.30108"
@@ -2580,9 +2580,9 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 # Script Version
 # ========================================================================================================================================
 Write-Output ""
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way   "
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "      Manuel Winkel - Deyda Consulting (www.deyda.net)     "
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                         "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way    "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "      Manuel Winkel - Deyda Consulting (www.deyda.net)      "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                        "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
