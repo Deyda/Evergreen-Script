@@ -325,9 +325,9 @@ Function Get-IrfanView {
         $m = $m -replace "<((?!@).)*?>"
         $m = $m.Replace(' ','')
         $Version = $m -replace "Version"
-        $FileI = $Version -replace "\.",""
-        $x32 = "https://www.fosshub.com/IrfanView.html?dwl=iview$($FileI)_setup.exe"
-        $x64 = "https://www.fosshub.com/IrfanView.html?dwl=iview$($FileI)_x64_setup.exe"
+        #$FileI = $Version -replace "\.",""
+        $x32 = "https://www.techspot.com/downloads/downloadnow/299/?evp=893edf43f99033113608d9a805221b92&file=372"
+        $x64 = "https://www.techspot.com/downloads/downloadnow/299/?evp=2bc137b9206e4001fbe10993002f0fb0&file=371"
 
 
         $PSObjectx32 = [PSCustomObject] @{
