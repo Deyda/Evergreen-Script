@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.06.1
+  Version:          2.07.1
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -134,6 +134,8 @@ the script checks the version number and will update the package.
   2021-12-02        Mozille Firefox Channel selection correction
   2021-12-06        Change Microsoft Teams downlaoder to filter msi / Add Microsoft FSLogix Channel Stable (Preferred by Deyda)
   2021-12-07        Change IrfanView download site / Additional filter parameter for Microsoft .Net Framework
+  2021-12-08        Add Global Language Arabic, Chinese, Croatian, Czech, Hebrew, Hungarian, Romanian, Slovak, Slovenian, Turkish and Ukrainian / Add new language to KeePass and WinRAR download function / Add new language to Adobe Reader DC, IrfanView, Microsoft 365 Apps, Microsoft Office, Firefox, Thnderbird, Microsoft SQL Server Management Studio, Foxit PDF Editor and KeePass
+  2021-12-10        Implement method to rewrite the language keys in the LastSetting.txt
 
 .PARAMETER file
 
@@ -1231,6 +1233,292 @@ Function Get-WinRAR() {
             $appversionbeta32sv = $appversionbeta32sv.Split("<")[0]
         }
 
+        $regexAppVersionuk = "<tr>\n.*\n.*Ukrainian.*\n.*\n.*.*\n<\/tr>"
+        $webVersionproduk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionuk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerproduk = $webVersionproduk.Line.Split(">")[2]
+        $installerproduk = $installerproduk.Split('"')[1]
+        $appversionproduk = $webVersionproduk.Line.Split(">")[8]
+        $appversionproduk = $appversionproduk.Split("<")[0]
+        $webVersionbetauk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionuk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetauk) {
+            $installerbetauk = $webVersionbetauk.Line.Split(">")[2]
+            $installerbetauk = $installerbetauk.Split('"')[1]
+            $appversionbetauk = $webVersionbetauk.Line.Split(">")[8]
+            $appversionbetauk = $appversionbetauk.Split("<")[0]
+        }
+        $webVersionprod32uk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionuk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32uk = $webVersionprod32uk.Line.Split(">")[2]
+        $installerprod32uk = $installerprod32uk.Split('"')[1]
+        $appversionprod32uk = $webVersionprod32uk.Line.Split(">")[8]
+        $appversionprod32uk = $appversionprod32uk.Split("<")[0]
+        $webVersionbeta32uk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionuk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32uk) {
+            $installerbeta32uk = $webVersionbeta32uk.Line.Split(">")[2]
+            $installerbeta32uk = $installerbeta32uk.Split('"')[1]
+            $appversionbeta32uk = $webVersionbeta32uk.Line.Split(">")[8]
+            $appversionbeta32uk = $appversionbeta32uk.Split("<")[0]
+        }
+
+        $regexAppVersiontr = "<tr>\n.*\n.*Turkish.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodtr = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontr -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodtr = $webVersionprodtr.Line.Split(">")[2]
+        $installerprodtr = $installerprodtr.Split('"')[1]
+        $appversionprodtr = $webVersionprodtr.Line.Split(">")[8]
+        $appversionprodtr = $appversionprodtr.Split("<")[0]
+        $webVersionbetatr = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontr -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetatr) {
+            $installerbetatr = $webVersionbetatr.Line.Split(">")[2]
+            $installerbetatr = $installerbetatr.Split('"')[1]
+            $appversionbetatr = $webVersionbetatr.Line.Split(">")[8]
+            $appversionbetatr = $appversionbetatr.Split("<")[0]
+        }
+        $webVersionprod32tr = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontr -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32tr = $webVersionprod32tr.Line.Split(">")[2]
+        $installerprod32tr = $installerprod32tr.Split('"')[1]
+        $appversionprod32tr = $webVersionprod32tr.Line.Split(">")[8]
+        $appversionprod32tr = $appversionprod32tr.Split("<")[0]
+        $webVersionbeta32tr = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontr -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32tr) {
+            $installerbeta32tr = $webVersionbeta32tr.Line.Split(">")[2]
+            $installerbeta32tr = $installerbeta32tr.Split('"')[1]
+            $appversionbeta32tr = $webVersionbeta32tr.Line.Split(">")[8]
+            $appversionbeta32tr = $appversionbeta32tr.Split("<")[0]
+        }
+
+        $regexAppVersionhe = "<tr>\n.*\n.*Hebrew.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodhe = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhe -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodhe = $webVersionprodhe.Line.Split(">")[2]
+        $installerprodhe = $installerprodhe.Split('"')[1]
+        $appversionprodhe = $webVersionprodhe.Line.Split(">")[8]
+        $appversionprodhe = $appversionprodhe.Split("<")[0]
+        $webVersionbetahe = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhe -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetahe) {
+            $installerbetahe = $webVersionbetahe.Line.Split(">")[2]
+            $installerbetahe = $installerbetahe.Split('"')[1]
+            $appversionbetahe = $webVersionbetahe.Line.Split(">")[8]
+            $appversionbetahe = $appversionbetahe.Split("<")[0]
+        }
+        $webVersionprod32he = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhe -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32he = $webVersionprod32he.Line.Split(">")[2]
+        $installerprod32he = $installerprod32he.Split('"')[1]
+        $appversionprod32he = $webVersionprod32he.Line.Split(">")[8]
+        $appversionprod32he = $appversionprod32he.Split("<")[0]
+        $webVersionbeta32he = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhe -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32he) {
+            $installerbeta32he = $webVersionbeta32he.Line.Split(">")[2]
+            $installerbeta32he = $installerbeta32he.Split('"')[1]
+            $appversionbeta32he = $webVersionbeta32he.Line.Split(">")[8]
+            $appversionbeta32he = $appversionbeta32he.Split("<")[0]
+        }
+
+        $regexAppVersionar = "<tr>\n.*\n.*Arabic.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodar = $webRequest.RawContent | Select-String -Pattern $regexAppVersionar -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodar = $webVersionprodar.Line.Split(">")[2]
+        $installerprodar = $installerprodar.Split('"')[1]
+        $appversionprodar = $webVersionprodar.Line.Split(">")[8]
+        $appversionprodar = $appversionprodar.Split("<")[0]
+        $webVersionbetaar = $webRequest.RawContent | Select-String -Pattern $regexAppVersionar -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetaar) {
+            $installerbetaar = $webVersionbetaar.Line.Split(">")[2]
+            $installerbetaar = $installerbetaar.Split('"')[1]
+            $appversionbetaar = $webVersionbetaar.Line.Split(">")[8]
+            $appversionbetaar = $appversionbetaar.Split("<")[0]
+        }
+        $webVersionprod32ar = $webRequest.RawContent | Select-String -Pattern $regexAppVersionar -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32ar = $webVersionprod32ar.Line.Split(">")[2]
+        $installerprod32ar = $installerprod32ar.Split('"')[1]
+        $appversionprod32ar = $webVersionprod32ar.Line.Split(">")[8]
+        $appversionprod32ar = $appversionprod32ar.Split("<")[0]
+        $webVersionbeta32ar = $webRequest.RawContent | Select-String -Pattern $regexAppVersionar -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32ar) {
+            $installerbeta32ar = $webVersionbeta32ar.Line.Split(">")[2]
+            $installerbeta32ar = $installerbeta32ar.Split('"')[1]
+            $appversionbeta32ar = $webVersionbeta32ar.Line.Split(">")[8]
+            $appversionbeta32ar = $appversionbeta32ar.Split("<")[0]
+        }
+
+        $regexAppVersiontc = "<tr>\n.*\n.*Chinese.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodtc = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontc -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodtc = $webVersionprodtc.Line.Split(">")[2]
+        $installerprodtc = $installerprodtc.Split('"')[1]
+        $appversionprodtc = $webVersionprodtc.Line.Split(">")[8]
+        $appversionprodtc = $appversionprodtc.Split("<")[0]
+        $webVersionbetatc = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontc -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetatc) {
+            $installerbetatc = $webVersionbetatc.Line.Split(">")[2]
+            $installerbetatc = $installerbetatc.Split('"')[1]
+            $appversionbetatc = $webVersionbetatc.Line.Split(">")[8]
+            $appversionbetatc = $appversionbetatc.Split("<")[0]
+        }
+        $webVersionprod32tc = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontc -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32tc = $webVersionprod32tc.Line.Split(">")[2]
+        $installerprod32tc = $installerprod32tc.Split('"')[1]
+        $appversionprod32tc = $webVersionprod32tc.Line.Split(">")[8]
+        $appversionprod32tc = $appversionprod32tc.Split("<")[0]
+        $webVersionbeta32tc = $webRequest.RawContent | Select-String -Pattern $regexAppVersiontc -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32tc) {
+            $installerbeta32tc = $webVersionbeta32tc.Line.Split(">")[2]
+            $installerbeta32tc = $installerbeta32tc.Split('"')[1]
+            $appversionbeta32tc = $webVersionbeta32tc.Line.Split(">")[8]
+            $appversionbeta32tc = $appversionbeta32tc.Split("<")[0]
+        }
+
+        $regexAppVersioncz = "<tr>\n.*\n.*Czech.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodcz = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncz -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodcz = $webVersionprodcz.Line.Split(">")[2]
+        $installerprodcz = $installerprodcz.Split('"')[1]
+        $appversionprodcz = $webVersionprodcz.Line.Split(">")[8]
+        $appversionprodcz = $appversionprodcz.Split("<")[0]
+        $webVersionbetacz = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncz -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetacz) {
+            $installerbetacz = $webVersionbetacz.Line.Split(">")[2]
+            $installerbetacz = $installerbetacz.Split('"')[1]
+            $appversionbetacz = $webVersionbetacz.Line.Split(">")[8]
+            $appversionbetacz = $appversionbetacz.Split("<")[0]
+        }
+        $webVersionprod32cz = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncz -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32cz = $webVersionprod32cz.Line.Split(">")[2]
+        $installerprod32cz = $installerprod32cz.Split('"')[1]
+        $appversionprod32cz = $webVersionprod32cz.Line.Split(">")[8]
+        $appversionprod32cz = $appversionprod32cz.Split("<")[0]
+        $webVersionbeta32cz = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncz -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32cz) {
+            $installerbeta32cz = $webVersionbeta32cz.Line.Split(">")[2]
+            $installerbeta32cz = $installerbeta32cz.Split('"')[1]
+            $appversionbeta32cz = $webVersionbeta32cz.Line.Split(">")[8]
+            $appversionbeta32cz = $appversionbeta32cz.Split("<")[0]
+        }
+
+        $regexAppVersionsk = "<tr>\n.*\n.*Slovak.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodsk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionsk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodsk = $webVersionprodsk.Line.Split(">")[2]
+        $installerprodsk = $installerprodsk.Split('"')[1]
+        $appversionprodsk = $webVersionprodsk.Line.Split(">")[8]
+        $appversionprodsk = $appversionprodsk.Split("<")[0]
+        $webVersionbetask = $webRequest.RawContent | Select-String -Pattern $regexAppVersionsk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetask) {
+            $installerbetask = $webVersionbetask.Line.Split(">")[2]
+            $installerbetask = $installerbetask.Split('"')[1]
+            $appversionbetask = $webVersionbetask.Line.Split(">")[8]
+            $appversionbetask = $appversionbetask.Split("<")[0]
+        }
+        $webVersionprod32sk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionsk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32sk = $webVersionprod32sk.Line.Split(">")[2]
+        $installerprod32sk = $installerprod32sk.Split('"')[1]
+        $appversionprod32sk = $webVersionprod32sk.Line.Split(">")[8]
+        $appversionprod32sk = $appversionprod32sk.Split("<")[0]
+        $webVersionbeta32sk = $webRequest.RawContent | Select-String -Pattern $regexAppVersionsk -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32sk) {
+            $installerbeta32sk = $webVersionbeta32sk.Line.Split(">")[2]
+            $installerbeta32sk = $installerbeta32sk.Split('"')[1]
+            $appversionbeta32sk = $webVersionbeta32sk.Line.Split(">")[8]
+            $appversionbeta32sk = $appversionbeta32sk.Split("<")[0]
+        }
+
+        $regexAppVersionhu = "<tr>\n.*\n.*Hungarian.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodhu = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhu -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodhu = $webVersionprodhu.Line.Split(">")[2]
+        $installerprodhu = $installerprodhu.Split('"')[1]
+        $appversionprodhu = $webVersionprodhu.Line.Split(">")[8]
+        $appversionprodhu = $appversionprodhu.Split("<")[0]
+        $webVersionbetahu = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhu -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetahu) {
+            $installerbetahu = $webVersionbetahu.Line.Split(">")[2]
+            $installerbetahu = $installerbetahu.Split('"')[1]
+            $appversionbetahu = $webVersionbetahu.Line.Split(">")[8]
+            $appversionbetahu = $appversionbetahu.Split("<")[0]
+        }
+        $webVersionprod32hu = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhu -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32hu = $webVersionprod32hu.Line.Split(">")[2]
+        $installerprod32hu = $installerprod32hu.Split('"')[1]
+        $appversionprod32hu = $webVersionprod32hu.Line.Split(">")[8]
+        $appversionprod32hu = $appversionprod32hu.Split("<")[0]
+        $webVersionbeta32hu = $webRequest.RawContent | Select-String -Pattern $regexAppVersionhu -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32hu) {
+            $installerbeta32hu = $webVersionbeta32hu.Line.Split(">")[2]
+            $installerbeta32hu = $installerbeta32hu.Split('"')[1]
+            $appversionbeta32hu = $webVersionbeta32hu.Line.Split(">")[8]
+            $appversionbeta32hu = $appversionbeta32hu.Split("<")[0]
+        }
+
+        $regexAppVersionslv = "<tr>\n.*\n.*Slovenian.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodslv = $webRequest.RawContent | Select-String -Pattern $regexAppVersionslv -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodslv = $webVersionprodslv.Line.Split(">")[2]
+        $installerprodslv = $installerprodslv.Split('"')[1]
+        $appversionprodslv = $webVersionprodslv.Line.Split(">")[8]
+        $appversionprodslv = $appversionprodslv.Split("<")[0]
+        $webVersionbetaslv = $webRequest.RawContent | Select-String -Pattern $regexAppVersionslv -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetaslv) {
+            $installerbetaslv = $webVersionbetaslv.Line.Split(">")[2]
+            $installerbetaslv = $installerbetaslv.Split('"')[1]
+            $appversionbetaslv = $webVersionbetaslv.Line.Split(">")[8]
+            $appversionbetaslv = $appversionbetaslv.Split("<")[0]
+        }
+        $webVersionprod32slv = $webRequest.RawContent | Select-String -Pattern $regexAppVersionslv -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32slv = $webVersionprod32slv.Line.Split(">")[2]
+        $installerprod32slv = $installerprod32slv.Split('"')[1]
+        $appversionprod32slv = $webVersionprod32slv.Line.Split(">")[8]
+        $appversionprod32slv = $appversionprod32slv.Split("<")[0]
+        $webVersionbeta32slv = $webRequest.RawContent | Select-String -Pattern $regexAppVersionslv -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32slv) {
+            $installerbeta32slv = $webVersionbeta32slv.Line.Split(">")[2]
+            $installerbeta32slv = $installerbeta32slv.Split('"')[1]
+            $appversionbeta32slv = $webVersionbeta32slv.Line.Split(">")[8]
+            $appversionbeta32slv = $appversionbeta32slv.Split("<")[0]
+        }
+
+        $regexAppVersionro = "<tr>\n.*\n.*Romanian.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodro = $webRequest.RawContent | Select-String -Pattern $regexAppVersionro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodro = $webVersionprodro.Line.Split(">")[2]
+        $installerprodro = $installerprodro.Split('"')[1]
+        $appversionprodro = $webVersionprodro.Line.Split(">")[8]
+        $appversionprodro = $appversionprodro.Split("<")[0]
+        $webVersionbetaro = $webRequest.RawContent | Select-String -Pattern $regexAppVersionro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetaro) {
+            $installerbetaro = $webVersionbetaro.Line.Split(">")[2]
+            $installerbetaro = $installerbetaro.Split('"')[1]
+            $appversionbetaro = $webVersionbetaro.Line.Split(">")[8]
+            $appversionbetaro = $appversionbetaro.Split("<")[0]
+        }
+        $webVersionprod32ro = $webRequest.RawContent | Select-String -Pattern $regexAppVersionro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32ro = $webVersionprod32ro.Line.Split(">")[2]
+        $installerprod32ro = $installerprod32ro.Split('"')[1]
+        $appversionprod32ro = $webVersionprod32ro.Line.Split(">")[8]
+        $appversionprod32ro = $appversionprod32ro.Split("<")[0]
+        $webVersionbeta32ro = $webRequest.RawContent | Select-String -Pattern $regexAppVersionro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32ro) {
+            $installerbeta32ro = $webVersionbeta32ro.Line.Split(">")[2]
+            $installerbeta32ro = $installerbeta32ro.Split('"')[1]
+            $appversionbeta32ro = $webVersionbeta32ro.Line.Split(">")[8]
+            $appversionbeta32ro = $appversionbeta32ro.Split("<")[0]
+        }
+
+        $regexAppVersioncro = "<tr>\n.*\n.*Croatian.*\n.*\n.*.*\n<\/tr>"
+        $webVersionprodcro = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        $installerprodcro = $webVersionprodcro.Line.Split(">")[2]
+        $installerprodcro = $installerprodcro.Split('"')[1]
+        $appversionprodcro = $webVersionprodcro.Line.Split(">")[8]
+        $appversionprodcro = $appversionprodcro.Split("<")[0]
+        $webVersionbetacro = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -First 1
+        If ($webVersionbetacro) {
+            $installerbetacro = $webVersionbetacro.Line.Split(">")[2]
+            $installerbetacro = $installerbetacro.Split('"')[1]
+            $appversionbetacro = $webVersionbetacro.Line.Split(">")[8]
+            $appversionbetacro = $appversionbetacro.Split("<")[0]
+        }
+        $webVersionprod32cro = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -NotMatch $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        $installerprod32cro = $webVersionprod32cro.Line.Split(">")[2]
+        $installerprod32cro = $installerprod32cro.Split('"')[1]
+        $appversionprod32cro = $webVersionprod32cro.Line.Split(">")[8]
+        $appversionprod32cro = $appversionprod32cro.Split("<")[0]
+        $webVersionbeta32cro = $webRequest.RawContent | Select-String -Pattern $regexAppVersioncro -AllMatches | ForEach-Object { $_.Matches.Value } | Select-String -Pattern $regexAppVersionbeta -AllMatches | Select-Object -Last 1
+        If ($webVersionbeta32cro) {
+            $installerbeta32cro = $webVersionbeta32cro.Line.Split(">")[2]
+            $installerbeta32cro = $installerbeta32cro.Split('"')[1]
+            $appversionbeta32cro = $webVersionbeta32cro.Line.Split(">")[8]
+            $appversionbeta32cro = $appversionbeta32cro.Split("<")[0]
+        }
+
         $appx64URLPRODEN = "https://www.rarlab.com" + "$installerproden"
         If ($installerbetaen) {
             $appx64URLBETAEN = "https://www.rarlab.com" + "$installerbetaen"
@@ -1454,6 +1742,171 @@ Function Get-WinRAR() {
         } Else {
             $appx32URLBETASV = "https://www.rarlab.com" + "$installerprod32sv"
             $appversionbeta32sv = $appversionprod32sv
+        }
+
+        $appx64URLPRODUK = "https://www.rarlab.com" + "$installerproduk"
+        If ($installerbetauk) {
+            $appx64URLBETAUK = "https://www.rarlab.com" + "$installerbetauk"
+        } Else {
+            $appx64URLBETAUK = "https://www.rarlab.com" + "$installerproduk"
+            $appversionbetauk = $appversionproduk
+        }
+        $appx32URLPRODUK = "https://www.rarlab.com" + "$installerprod32uk"
+        If ($installerbeta32uk) {
+            $appx32URLBETAUK = "https://www.rarlab.com" + "$installerbeta32uk"
+        } Else {
+            $appx32URLBETAUK = "https://www.rarlab.com" + "$installerprod32uk"
+            $appversionbeta32uk = $appversionprod32uk
+        }
+
+        $appx64URLPRODtr = "https://www.rarlab.com" + "$installerprodtr"
+        If ($installerbetatr) {
+            $appx64URLBETAtr = "https://www.rarlab.com" + "$installerbetatr"
+        } Else {
+            $appx64URLBETAtr = "https://www.rarlab.com" + "$installerprodtr"
+            $appversionbetatr = $appversionprodtr
+        }
+        $appx32URLPRODtr = "https://www.rarlab.com" + "$installerprod32tr"
+        If ($installerbeta32tr) {
+            $appx32URLBETAtr = "https://www.rarlab.com" + "$installerbeta32tr"
+        } Else {
+            $appx32URLBETAtr = "https://www.rarlab.com" + "$installerprod32tr"
+            $appversionbeta32tr = $appversionprod32tr
+        }
+
+        $appx64URLPRODhe = "https://www.rarlab.com" + "$installerprodhe"
+        If ($installerbetahe) {
+            $appx64URLBETAhe = "https://www.rarlab.com" + "$installerbetahe"
+        } Else {
+            $appx64URLBETAhe = "https://www.rarlab.com" + "$installerprodhe"
+            $appversionbetahe = $appversionprodhe
+        }
+        $appx32URLPRODhe = "https://www.rarlab.com" + "$installerprod32he"
+        If ($installerbeta32he) {
+            $appx32URLBETAhe = "https://www.rarlab.com" + "$installerbeta32he"
+        } Else {
+            $appx32URLBETAhe = "https://www.rarlab.com" + "$installerprod32he"
+            $appversionbeta32he = $appversionprod32he
+        }
+
+        $appx64URLPRODar = "https://www.rarlab.com" + "$installerprodar"
+        If ($installerbetaar) {
+            $appx64URLBETAar = "https://www.rarlab.com" + "$installerbetaar"
+        } Else {
+            $appx64URLBETAar = "https://www.rarlab.com" + "$installerprodar"
+            $appversionbetaar = $appversionprodar
+        }
+        $appx32URLPRODar = "https://www.rarlab.com" + "$installerprod32ar"
+        If ($installerbeta32ar) {
+            $appx32URLBETAar = "https://www.rarlab.com" + "$installerbeta32ar"
+        } Else {
+            $appx32URLBETAar = "https://www.rarlab.com" + "$installerprod32ar"
+            $appversionbeta32ar = $appversionprod32ar
+        }
+
+        $appx64URLPRODtc = "https://www.rarlab.com" + "$installerprodtc"
+        If ($installerbetatc) {
+            $appx64URLBETAtc = "https://www.rarlab.com" + "$installerbetatc"
+        } Else {
+            $appx64URLBETAtc = "https://www.rarlab.com" + "$installerprodtc"
+            $appversionbetatc = $appversionprodtc
+        }
+        $appx32URLPRODtc = "https://www.rarlab.com" + "$installerprod32tc"
+        If ($installerbeta32tc) {
+            $appx32URLBETAtc = "https://www.rarlab.com" + "$installerbeta32tc"
+        } Else {
+            $appx32URLBETAtc = "https://www.rarlab.com" + "$installerprod32tc"
+            $appversionbeta32tc = $appversionprod32tc
+        }
+
+        $appx64URLPRODcz = "https://www.rarlab.com" + "$installerprodcz"
+        If ($installerbetacz) {
+            $appx64URLBETAcz = "https://www.rarlab.com" + "$installerbetacz"
+        } Else {
+            $appx64URLBETAcz = "https://www.rarlab.com" + "$installerprodcz"
+            $appversionbetacz = $appversionprodcz
+        }
+        $appx32URLPRODcz = "https://www.rarlab.com" + "$installerprod32cz"
+        If ($installerbeta32cz) {
+            $appx32URLBETAcz = "https://www.rarlab.com" + "$installerbeta32cz"
+        } Else {
+            $appx32URLBETAcz = "https://www.rarlab.com" + "$installerprod32cz"
+            $appversionbeta32cz = $appversionprod32cz
+        }
+
+        $appx64URLPRODsk = "https://www.rarlab.com" + "$installerprodsk"
+        If ($installerbetask) {
+            $appx64URLBETAsk = "https://www.rarlab.com" + "$installerbetask"
+        } Else {
+            $appx64URLBETAsk = "https://www.rarlab.com" + "$installerprodsk"
+            $appversionbetask = $appversionprodsk
+        }
+        $appx32URLPRODsk = "https://www.rarlab.com" + "$installerprod32sk"
+        If ($installerbeta32sk) {
+            $appx32URLBETAsk = "https://www.rarlab.com" + "$installerbeta32sk"
+        } Else {
+            $appx32URLBETAsk = "https://www.rarlab.com" + "$installerprod32sk"
+            $appversionbeta32sk = $appversionprod32sk
+        }
+
+        $appx64URLPRODhu = "https://www.rarlab.com" + "$installerprodhu"
+        If ($installerbetahu) {
+            $appx64URLBETAhu = "https://www.rarlab.com" + "$installerbetahu"
+        } Else {
+            $appx64URLBETAhu = "https://www.rarlab.com" + "$installerprodhu"
+            $appversionbetahu = $appversionprodhu
+        }
+        $appx32URLPRODhu = "https://www.rarlab.com" + "$installerprod32hu"
+        If ($installerbeta32hu) {
+            $appx32URLBETAhu = "https://www.rarlab.com" + "$installerbeta32hu"
+        } Else {
+            $appx32URLBETAhu = "https://www.rarlab.com" + "$installerprod32hu"
+            $appversionbeta32hu = $appversionprod32hu
+        }
+
+        $appx64URLPRODslv = "https://www.rarlab.com" + "$installerprodslv"
+        If ($installerbetaslv) {
+            $appx64URLBETAslv = "https://www.rarlab.com" + "$installerbetaslv"
+        } Else {
+            $appx64URLBETAslv = "https://www.rarlab.com" + "$installerprodslv"
+            $appversionbetaslv = $appversionprodslv
+        }
+        $appx32URLPRODslv = "https://www.rarlab.com" + "$installerprod32slv"
+        If ($installerbeta32slv) {
+            $appx32URLBETAslv = "https://www.rarlab.com" + "$installerbeta32slv"
+        } Else {
+            $appx32URLBETAslv = "https://www.rarlab.com" + "$installerprod32slv"
+            $appversionbeta32slv = $appversionprod32slv
+        }
+
+        $appx64URLPRODro = "https://www.rarlab.com" + "$installerprodro"
+        If ($installerbetaro) {
+            $appx64URLBETAro = "https://www.rarlab.com" + "$installerbetaro"
+        } Else {
+            $appx64URLBETAro = "https://www.rarlab.com" + "$installerprodro"
+            $appversionbetaro = $appversionprodro
+        }
+        $appx32URLPRODro = "https://www.rarlab.com" + "$installerprod32ro"
+        If ($installerbeta32ro) {
+            $appx32URLBETAro = "https://www.rarlab.com" + "$installerbeta32ro"
+        } Else {
+            $appx32URLBETAro = "https://www.rarlab.com" + "$installerprod32ro"
+            $appversionbeta32ro = $appversionprod32ro
+        }
+
+        $appx64URLPRODcro = "https://www.rarlab.com" + "$installerprodcro"
+        If ($installerbetacro) {
+            $appx64URLBETAcro = "https://www.rarlab.com" + "$installerbetacro"
+        } Else {
+            $appx64URLBETAcro = "https://www.rarlab.com" + "$installerprodcro"
+            $appversionbetacro = $appversionprodcro
+        }
+        $appx32URLPRODcro = "https://www.rarlab.com" + "$installerprod32cro"
+        If ($installerbeta32cro) {
+            $appx32URLBETAcro = "https://www.rarlab.com" + "$installerbeta32cro"
+        } Else {
+            $appx32URLBETAcro = "https://www.rarlab.com" + "$installerprod32cro"
+            $appversionbeta32cro = $appversionprod32cro
         }
 
         $PSObjectx64PRODEN = [PSCustomObject] @{
@@ -1936,6 +2389,358 @@ Function Get-WinRAR() {
             URI          = $appx32URLBETASV
         }
 
+        $PSObjectx64PRODUK = [PSCustomObject] @{
+            Version      = $appVersionproduk
+            Language     = "Ukrainian"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODUK
+        }
+
+        $PSObjectx64BETAUK = [PSCustomObject] @{
+            Version      = $appVersionbetauk
+            Language     = "Ukrainian"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAUK
+        }
+
+        $PSObjectx32PRODUK = [PSCustomObject] @{
+            Version      = $appVersionprod32uk
+            Language     = "Ukrainian"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODUK
+        }
+
+        $PSObjectx32BETAUK = [PSCustomObject] @{
+            Version      = $appVersionbeta32uk
+            Language     = "Ukrainian"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAUK
+        }
+
+        $PSObjectx64PRODtr = [PSCustomObject] @{
+            Version      = $appVersionprodtr
+            Language     = "Turkish"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODtr
+        }
+
+        $PSObjectx64BETAtr = [PSCustomObject] @{
+            Version      = $appVersionbetatr
+            Language     = "Turkish"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAtr
+        }
+
+        $PSObjectx32PRODtr = [PSCustomObject] @{
+            Version      = $appVersionprod32tr
+            Language     = "Turkish"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODtr
+        }
+
+        $PSObjectx32BETAtr = [PSCustomObject] @{
+            Version      = $appVersionbeta32tr
+            Language     = "Turkish"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAtr
+        }
+
+        $PSObjectx64PRODhe = [PSCustomObject] @{
+            Version      = $appVersionprodhe
+            Language     = "Hebrew"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODhe
+        }
+
+        $PSObjectx64BETAhe = [PSCustomObject] @{
+            Version      = $appVersionbetahe
+            Language     = "Hebrew"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAhe
+        }
+
+        $PSObjectx32PRODhe = [PSCustomObject] @{
+            Version      = $appVersionprod32he
+            Language     = "Hebrew"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODhe
+        }
+
+        $PSObjectx32BETAhe = [PSCustomObject] @{
+            Version      = $appVersionbeta32he
+            Language     = "Hebrew"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAhe
+        }
+
+        $PSObjectx64PRODar = [PSCustomObject] @{
+            Version      = $appVersionprodar
+            Language     = "Arabic"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODar
+        }
+
+        $PSObjectx64BETAar = [PSCustomObject] @{
+            Version      = $appVersionbetaar
+            Language     = "Arabic"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAar
+        }
+
+        $PSObjectx32PRODar = [PSCustomObject] @{
+            Version      = $appVersionprod32ar
+            Language     = "Arabic"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODar
+        }
+
+        $PSObjectx32BETAar = [PSCustomObject] @{
+            Version      = $appVersionbeta32ar
+            Language     = "Arabic"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAar
+        }
+
+        $PSObjectx64PRODtc = [PSCustomObject] @{
+            Version      = $appVersionprodtc
+            Language     = "Chinese"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODtc
+        }
+
+        $PSObjectx64BETAtc = [PSCustomObject] @{
+            Version      = $appVersionbetatc
+            Language     = "Chinese"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAtc
+        }
+
+        $PSObjectx32PRODtc = [PSCustomObject] @{
+            Version      = $appVersionprod32tc
+            Language     = "Chinese"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODtc
+        }
+
+        $PSObjectx32BETAtc = [PSCustomObject] @{
+            Version      = $appVersionbeta32tc
+            Language     = "Chinese"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAtc
+        }
+
+        $PSObjectx64PRODcz = [PSCustomObject] @{
+            Version      = $appVersionprodcz
+            Language     = "Czech"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODcz
+        }
+
+        $PSObjectx64BETAcz = [PSCustomObject] @{
+            Version      = $appVersionbetacz
+            Language     = "Czech"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAcz
+        }
+
+        $PSObjectx32PRODcz = [PSCustomObject] @{
+            Version      = $appVersionprod32cz
+            Language     = "Czech"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODcz
+        }
+
+        $PSObjectx32BETAcz = [PSCustomObject] @{
+            Version      = $appVersionbeta32cz
+            Language     = "Czech"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAcz
+        }
+
+        $PSObjectx64PRODsk = [PSCustomObject] @{
+            Version      = $appVersionprodsk
+            Language     = "Slovak"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODsk
+        }
+
+        $PSObjectx64BETAsk = [PSCustomObject] @{
+            Version      = $appVersionbetask
+            Language     = "Slovak"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAsk
+        }
+
+        $PSObjectx32PRODsk = [PSCustomObject] @{
+            Version      = $appVersionprod32sk
+            Language     = "Slovak"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODsk
+        }
+
+        $PSObjectx32BETAsk = [PSCustomObject] @{
+            Version      = $appVersionbeta32sk
+            Language     = "Slovak"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAsk
+        }
+
+        $PSObjectx64PRODhu = [PSCustomObject] @{
+            Version      = $appVersionprodhu
+            Language     = "Hungarian"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODhu
+        }
+
+        $PSObjectx64BETAhu = [PSCustomObject] @{
+            Version      = $appVersionbetahu
+            Language     = "Hungarian"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAhu
+        }
+
+        $PSObjectx32PRODhu = [PSCustomObject] @{
+            Version      = $appVersionprod32hu
+            Language     = "Hungarian"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODhu
+        }
+
+        $PSObjectx32BETAhu = [PSCustomObject] @{
+            Version      = $appVersionbeta32hu
+            Language     = "Hungarian"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAhu
+        }
+
+        $PSObjectx64PRODslv = [PSCustomObject] @{
+            Version      = $appVersionprodslv
+            Language     = "Slovenian"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODslv
+        }
+
+        $PSObjectx64BETAslv = [PSCustomObject] @{
+            Version      = $appVersionbetaslv
+            Language     = "Slovenian"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAslv
+        }
+
+        $PSObjectx32PRODslv = [PSCustomObject] @{
+            Version      = $appVersionprod32slv
+            Language     = "Slovenian"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODslv
+        }
+
+        $PSObjectx32BETAslv = [PSCustomObject] @{
+            Version      = $appVersionbeta32slv
+            Language     = "Slovenian"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAslv
+        }
+
+        $PSObjectx64PRODro = [PSCustomObject] @{
+            Version      = $appVersionprodro
+            Language     = "Romanian"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODro
+        }
+
+        $PSObjectx64BETAro = [PSCustomObject] @{
+            Version      = $appVersionbetaro
+            Language     = "Romanian"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAro
+        }
+
+        $PSObjectx32PRODro = [PSCustomObject] @{
+            Version      = $appVersionprod32ro
+            Language     = "Romanian"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODro
+        }
+
+        $PSObjectx32BETAro = [PSCustomObject] @{
+            Version      = $appVersionbeta32ro
+            Language     = "Romanian"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAro
+        }
+
+        $PSObjectx64PRODcro = [PSCustomObject] @{
+            Version      = $appVersionprodcro
+            Language     = "Croatian"
+            Architecture = "x64"
+            Channel      = "Stable"
+            URI          = $appx64URLPRODcro
+        }
+
+        $PSObjectx64BETAcro = [PSCustomObject] @{
+            Version      = $appVersionbetacro
+            Language     = "Croatian"
+            Architecture = "x64"
+            Channel      = "Beta"
+            URI          = $appx64URLBETAcro
+        }
+
+        $PSObjectx32PRODcro = [PSCustomObject] @{
+            Version      = $appVersionprod32cro
+            Language     = "Croatian"
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $appx32URLPRODcro
+        }
+
+        $PSObjectx32BETAcro = [PSCustomObject] @{
+            Version      = $appVersionbeta32cro
+            Language     = "Croatian"
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $appx32URLBETAcro
+        }
+
         Write-Output -InputObject $PSObjectx64BETAEN
         Write-Output -InputObject $PSObjectx64PRODEN
         Write-Output -InputObject $PSObjectx32BETAEN
@@ -1996,6 +2801,50 @@ Function Get-WinRAR() {
         Write-Output -InputObject $PSObjectx64PRODSV
         Write-Output -InputObject $PSObjectx32BETASV
         Write-Output -InputObject $PSObjectx32PRODSV
+        Write-Output -InputObject $PSObjectx64BETAUK
+        Write-Output -InputObject $PSObjectx64PRODUK
+        Write-Output -InputObject $PSObjectx32BETAUK
+        Write-Output -InputObject $PSObjectx32PRODUK
+        Write-Output -InputObject $PSObjectx64BETAtr
+        Write-Output -InputObject $PSObjectx64PRODtr
+        Write-Output -InputObject $PSObjectx32BETAtr
+        Write-Output -InputObject $PSObjectx32PRODtr
+        Write-Output -InputObject $PSObjectx64BETAhe
+        Write-Output -InputObject $PSObjectx64PRODhe
+        Write-Output -InputObject $PSObjectx32BETAhe
+        Write-Output -InputObject $PSObjectx32PRODhe
+        Write-Output -InputObject $PSObjectx64BETAar
+        Write-Output -InputObject $PSObjectx64PRODar
+        Write-Output -InputObject $PSObjectx32BETAar
+        Write-Output -InputObject $PSObjectx32PRODar
+        Write-Output -InputObject $PSObjectx64BETAtc
+        Write-Output -InputObject $PSObjectx64PRODtc
+        Write-Output -InputObject $PSObjectx32BETAtc
+        Write-Output -InputObject $PSObjectx32PRODtc
+        Write-Output -InputObject $PSObjectx64BETAcz
+        Write-Output -InputObject $PSObjectx64PRODcz
+        Write-Output -InputObject $PSObjectx32BETAcz
+        Write-Output -InputObject $PSObjectx32PRODcz
+        Write-Output -InputObject $PSObjectx64BETAsk
+        Write-Output -InputObject $PSObjectx64PRODsk
+        Write-Output -InputObject $PSObjectx32BETAsk
+        Write-Output -InputObject $PSObjectx32PRODsk
+        Write-Output -InputObject $PSObjectx64BETAhu
+        Write-Output -InputObject $PSObjectx64PRODhu
+        Write-Output -InputObject $PSObjectx32BETAhu
+        Write-Output -InputObject $PSObjectx32PRODhu
+        Write-Output -InputObject $PSObjectx64BETAslv
+        Write-Output -InputObject $PSObjectx64PRODslv
+        Write-Output -InputObject $PSObjectx32BETAslv
+        Write-Output -InputObject $PSObjectx32PRODslv
+        Write-Output -InputObject $PSObjectx64BETAro
+        Write-Output -InputObject $PSObjectx64PRODro
+        Write-Output -InputObject $PSObjectx32BETAro
+        Write-Output -InputObject $PSObjectx32PRODro
+        Write-Output -InputObject $PSObjectx64BETAcro
+        Write-Output -InputObject $PSObjectx64PRODcro
+        Write-Output -InputObject $PSObjectx32BETAcro
+        Write-Output -InputObject $PSObjectx32PRODcro
     }
 }
 
@@ -2197,6 +3046,39 @@ Function Get-KeePassLanguage() {
         $regexLanguageSwedish = 'https:\/\/.*Swedish.zip'
         $URLSwedish = $webRequest.RawContent | Select-String -Pattern $regexLanguageSwedish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
         $VersionSwedish = $URLSwedish.Split("-")[1]
+        $regexLanguageArabic = 'https:\/\/.*Arabic.zip'
+        $URLArabic = $webRequest.RawContent | Select-String -Pattern $regexLanguageArabic -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionArabic = $URLArabic.Split("-")[1]
+        $regexLanguageCzech = 'https:\/\/.*Czech.zip'
+        $URLCzech = $webRequest.RawContent | Select-String -Pattern $regexLanguageCzech -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionCzech = $URLCzech.Split("-")[1]
+        $regexLanguageSlovak = 'https:\/\/.*Slovak.zip'
+        $URLSlovak = $webRequest.RawContent | Select-String -Pattern $regexLanguageSlovak -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSlovak = $URLSlovak.Split("-")[1]
+        $regexLanguageUkrainian = 'https:\/\/.*Ukrainian.zip'
+        $URLUkrainian = $webRequest.RawContent | Select-String -Pattern $regexLanguageUkrainian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionUkrainian = $URLUkrainian.Split("-")[1]
+        $regexLanguageHungarian = 'https:\/\/.*Hungarian.zip'
+        $URLHungarian = $webRequest.RawContent | Select-String -Pattern $regexLanguageHungarian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionHungarian = $URLHungarian.Split("-")[1]
+        $regexLanguageTurkish = 'https:\/\/.*Turkish.zip'
+        $URLTurkish = $webRequest.RawContent | Select-String -Pattern $regexLanguageTurkish -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionTurkish = $URLTurkish.Split("-")[1]
+        $regexLanguageSlovenian = 'https:\/\/.*Slovenian.zip'
+        $URLSlovenian = $webRequest.RawContent | Select-String -Pattern $regexLanguageSlovenian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionSlovenian = $URLSlovenian.Split("-")[1]
+        $regexLanguageRomanian = 'https:\/\/.*Romanian.zip'
+        $URLRomanian = $webRequest.RawContent | Select-String -Pattern $regexLanguageRomanian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionRomanian = $URLRomanian.Split("-")[1]
+        $regexLanguageCroatian = 'https:\/\/.*Croatian.zip'
+        $URLCroatian = $webRequest.RawContent | Select-String -Pattern $regexLanguageCroatian -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionCroatian = $URLCroatian.Split("-")[1]
+        $regexLanguageHebrew = 'https:\/\/.*Hebrew.zip'
+        $URLHebrew = $webRequest.RawContent | Select-String -Pattern $regexLanguageHebrew -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionHebrew = $URLHebrew.Split("-")[1]
+        $regexLanguageChinese = 'https:\/\/.*Chinese.zip'
+        $URLChinese = $webRequest.RawContent | Select-String -Pattern $regexLanguageChinese -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $VersionChinese = $URLChinese.Split("-")[1]
 
         $PSObjectGerman = [PSCustomObject] @{
             Language     = "German"
@@ -2282,20 +3164,97 @@ Function Get-KeePassLanguage() {
             URI          = $URLSwedish
         }
 
-        Write-Output -InputObject $PSObjectGerman
+        $PSObjectArabic = [PSCustomObject] @{
+            Language     = "Arabic"
+            Version      = $VersionArabic
+            URI          = $URLArabic
+        }
+
+        $PSObjectCzech = [PSCustomObject] @{
+            Language     = "Czech"
+            Version      = $VersionCzech
+            URI          = $URLCzech
+        }
+
+        $PSObjectSlovak = [PSCustomObject] @{
+            Language     = "Slovak"
+            Version      = $VersionSlovak
+            URI          = $URLSlovak
+        }
+
+        $PSObjectUkrainian = [PSCustomObject] @{
+            Language     = "Ukrainian"
+            Version      = $VersionUkrainian
+            URI          = $URLUkrainian
+        }
+
+        $PSObjectHungarian = [PSCustomObject] @{
+            Language     = "Hungarian"
+            Version      = $VersionHungarian
+            URI          = $URLHungarian
+        }
+
+        $PSObjectTurkish = [PSCustomObject] @{
+            Language     = "Turkish"
+            Version      = $VersionTurkish
+            URI          = $URLTurkish
+        }
+
+        $PSObjectSlovenian = [PSCustomObject] @{
+            Language     = "Slovenian"
+            Version      = $VersionSlovenian
+            URI          = $URLSlovenian
+        }
+
+        $PSObjectRomanian = [PSCustomObject] @{
+            Language     = "Romanian"
+            Version      = $VersionRomanian
+            URI          = $URLRomanian
+        }
+
+        $PSObjectCroatian = [PSCustomObject] @{
+            Language     = "Croatian"
+            Version      = $VersionCroatian
+            URI          = $URLCroatian
+        }
+
+        $PSObjectHebrew = [PSCustomObject] @{
+            Language     = "Hebrew"
+            Version      = $VersionHebrew
+            URI          = $URLHebrew
+        }
+
+        $PSObjectChinese = [PSCustomObject] @{
+            Language     = "Chinese"
+            Version      = $VersionChinese
+            URI          = $URLChinese
+        }
+
+        Write-Output -InputObject $PSObjectArabic
+        Write-Output -InputObject $PSObjectChinese
+        Write-Output -InputObject $PSObjectCroatian
+        Write-Output -InputObject $PSObjectCzech
         Write-Output -InputObject $PSObjectDutch
         Write-Output -InputObject $PSObjectDanish
         Write-Output -InputObject $PSObjectFinnish
         Write-Output -InputObject $PSObjectFrench
+        Write-Output -InputObject $PSObjectGerman
+        Write-Output -InputObject $PSObjectHebrew
+        Write-Output -InputObject $PSObjectHungarian
         Write-Output -InputObject $PSObjectJapanese
         Write-Output -InputObject $PSObjectKorean
         Write-Output -InputObject $PSObjectItalian
         Write-Output -InputObject $PSObjectNorwegian
         Write-Output -InputObject $PSObjectPolish
         Write-Output -InputObject $PSObjectPortuguese
+        Write-Output -InputObject $PSObjectRomanian
         Write-Output -InputObject $PSObjectRussian
+        Write-Output -InputObject $PSObjectSlovak
+        Write-Output -InputObject $PSObjectSlovenian
         Write-Output -InputObject $PSObjectSpanish
         Write-Output -InputObject $PSObjectSwedish
+        Write-Output -InputObject $PSObjectTurkish
+        Write-Output -InputObject $PSObjectUkrainian
     }
 }
 
@@ -2518,7 +3477,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.06.1"
+$eVersion = "2.07.1"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -2603,7 +3562,304 @@ If (!($NoUpdate)) {
         Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
         Write-Output ""
         If ($file) {
-            #Write-Host -Foregroundcolor Red "File: $file."
+            # Change old LastSetting.txt files to the new format (AddScript)
+            If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
+                New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
+                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+            }
+            Else {
+                If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                    New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+                } Else {
+                    Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
+                }
+            }
+            If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
+            } Else {
+                If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
+                If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+                    Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
+                    Write-Output ""
+                    $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
+                    $Change_Language = $LastSetting[0] -as [int]
+                    Switch ($Change_Language) {
+                        0 {$New_Language = "4"}
+                        1 {$New_Language = "5"}
+                        2 {$New_Language = "6"}
+                        3 {$New_Language = "7"}
+                        4 {$New_Language = "8"}
+                        5 {$New_Language = "9"}
+                        6 {$New_Language = "12"}
+                        7 {$New_Language = "13"}
+                        8 {$New_Language = "14"}
+                        9 {$New_Language = "15"}
+                        10 {$New_Language = "16"}
+                        11 {$New_Language = "17"}
+                        12 {$New_Language = "19"}
+                        13 {$New_Language = "22"}
+                        14 {$New_Language = "23"}
+                    }
+                    $LastSetting[0] = $New_Language
+                    $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
+                    Switch ($Change_AdobeReaderDC_Language) {
+                        0 {$New_AdobeReaderDC_Language = "0"}
+                        1 {$New_AdobeReaderDC_Language = "3"}
+                        2 {$New_AdobeReaderDC_Language = "4"}
+                        3 {$New_AdobeReaderDC_Language = "5"}
+                        4 {$New_AdobeReaderDC_Language = "6"}
+                        5 {$New_AdobeReaderDC_Language = "7"}
+                        6 {$New_AdobeReaderDC_Language = "8"}
+                        7 {$New_AdobeReaderDC_Language = "10"}
+                        8 {$New_AdobeReaderDC_Language = "11"}
+                        9 {$New_AdobeReaderDC_Language = "12"}
+                        10 {$New_AdobeReaderDC_Language = "13"}
+                        11 {$New_AdobeReaderDC_Language = "14"}
+                        12 {$New_AdobeReaderDC_Language = "16"}
+                        13 {$New_AdobeReaderDC_Language = "19"}
+                        14 {$New_AdobeReaderDC_Language = "20"}
+                    }
+                    $LastSetting[95] = $New_AdobeReaderDC_Language
+                    $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
+                    Switch ($Change_FoxitPDFEditor_Language) {
+                        0 {$New_FoxitPDFEditor_Language = "0"}
+                        1 {$New_FoxitPDFEditor_Language = "1"}
+                        2 {$New_FoxitPDFEditor_Language = "2"}
+                        3 {$New_FoxitPDFEditor_Language = "3"}
+                        4 {$New_FoxitPDFEditor_Language = "4"}
+                        5 {$New_FoxitPDFEditor_Language = "5"}
+                        6 {$New_FoxitPDFEditor_Language = "6"}
+                        7 {$New_FoxitPDFEditor_Language = "7"}
+                        8 {$New_FoxitPDFEditor_Language = "8"}
+                        9 {$New_FoxitPDFEditor_Language = "8"}
+                        10 {$New_FoxitPDFEditor_Language = "9"}
+                        11 {$New_FoxitPDFEditor_Language = "10"}
+                        12 {$New_FoxitPDFEditor_Language = "11"}
+                        13 {$New_FoxitPDFEditor_Language = "12"}
+                        14 {$New_FoxitPDFEditor_Language = "13"}
+                    }
+                    $LastSetting[100] = $New_FoxitPDFEditor_Language
+                    $Change_KeePass_Language = $LastSetting[106] -as [int]
+                    Switch ($Change_KeePass_Language) {
+                        0 {$New_KeePass_Language = "0"}
+                        1 {$New_KeePass_Language = "5"}
+                        2 {$New_KeePass_Language = "6"}
+                        3 {$New_KeePass_Language = "7"}
+                        4 {$New_KeePass_Language = "8"}
+                        5 {$New_KeePass_Language = "9"}
+                        6 {$New_KeePass_Language = "10"}
+                        7 {$New_KeePass_Language = "13"}
+                        8 {$New_KeePass_Language = "14"}
+                        9 {$New_KeePass_Language = "15"}
+                        10 {$New_KeePass_Language = "16"}
+                        11 {$New_KeePass_Language = "17"}
+                        12 {$New_KeePass_Language = "18"}
+                        13 {$New_KeePass_Language = "20"}
+                        14 {$New_KeePass_Language = "23"}
+                        15 {$New_KeePass_Language = "24"}
+                    }
+                    $LastSetting[106] = $New_KeePass_Language
+                    $Change_MS365Apps_Language = $LastSetting[109] -as [int]
+                    Switch ($Change_MS365Apps_Language) {
+                        0 {$New_MS365Apps_Language = "0"}
+                        1 {$New_MS365Apps_Language = "5"}
+                        2 {$New_MS365Apps_Language = "6"}
+                        3 {$New_MS365Apps_Language = "7"}
+                        4 {$New_MS365Apps_Language = "8"}
+                        5 {$New_MS365Apps_Language = "9"}
+                        6 {$New_MS365Apps_Language = "10"}
+                        7 {$New_MS365Apps_Language = "13"}
+                        8 {$New_MS365Apps_Language = "14"}
+                        9 {$New_MS365Apps_Language = "15"}
+                        10 {$New_MS365Apps_Language = "16"}
+                        11 {$New_MS365Apps_Language = "18"}
+                        12 {$New_MS365Apps_Language = "20"}
+                        13 {$New_MS365Apps_Language = "23"}
+                        14 {$New_MS365Apps_Language = "24"}
+                    }
+                    $LastSetting[109] = $New_MS365Apps_Language
+                    $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
+                    Switch ($Change_MS365Apps_Visio_Language) {
+                        0 {$New_MS365Apps_Visio_Language = "0"}
+                        1 {$New_MS365Apps_Visio_Language = "5"}
+                        2 {$New_MS365Apps_Visio_Language = "6"}
+                        3 {$New_MS365Apps_Visio_Language = "7"}
+                        4 {$New_MS365Apps_Visio_Language = "8"}
+                        5 {$New_MS365Apps_Visio_Language = "9"}
+                        6 {$New_MS365Apps_Visio_Language = "10"}
+                        7 {$New_MS365Apps_Visio_Language = "13"}
+                        8 {$New_MS365Apps_Visio_Language = "14"}
+                        9 {$New_MS365Apps_Visio_Language = "15"}
+                        10 {$New_MS365Apps_Visio_Language = "16"}
+                        11 {$New_MS365Apps_Visio_Language = "18"}
+                        12 {$New_MS365Apps_Visio_Language = "20"}
+                        13 {$New_MS365Apps_Visio_Language = "23"}
+                        14 {$New_MS365Apps_Visio_Language = "24"}
+                    }
+                    $LastSetting[111] = $New_MS365Apps_Visio_Language
+                    $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
+                    Switch ($Change_MS365Apps_Project_Language) {
+                        0 {$New_MS365Apps_Project_Language = "0"}
+                        1 {$New_MS365Apps_Project_Language = "5"}
+                        2 {$New_MS365Apps_Project_Language = "6"}
+                        3 {$New_MS365Apps_Project_Language = "7"}
+                        4 {$New_MS365Apps_Project_Language = "8"}
+                        5 {$New_MS365Apps_Project_Language = "9"}
+                        6 {$New_MS365Apps_Project_Language = "10"}
+                        7 {$New_MS365Apps_Project_Language = "13"}
+                        8 {$New_MS365Apps_Project_Language = "14"}
+                        9 {$New_MS365Apps_Project_Language = "15"}
+                        10 {$New_MS365Apps_Project_Language = "16"}
+                        11 {$New_MS365Apps_Project_Language = "18"}
+                        12 {$New_MS365Apps_Project_Language = "20"}
+                        13 {$New_MS365Apps_Project_Language = "23"}
+                        14 {$New_MS365Apps_Project_Language = "24"}
+                    }
+                    $LastSetting[113] = $New_MS365Apps_Project_Language
+                    $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
+                    Switch ($Change_MSSQLServerManagementStudio_Language) {
+                        0 {$New_MSSQLServerManagementStudio_Language = "0"}
+                        1 {$New_MSSQLServerManagementStudio_Language = "2"}
+                        2 {$New_MSSQLServerManagementStudio_Language = "3"}
+                        3 {$New_MSSQLServerManagementStudio_Language = "4"}
+                        4 {$New_MSSQLServerManagementStudio_Language = "5"}
+                        5 {$New_MSSQLServerManagementStudio_Language = "6"}
+                        6 {$New_MSSQLServerManagementStudio_Language = "7"}
+                        7 {$New_MSSQLServerManagementStudio_Language = "8"}
+                        8 {$New_MSSQLServerManagementStudio_Language = "9"}
+                        9 {$New_MSSQLServerManagementStudio_Language = "10"}
+                    }
+                    $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
+                    $Change_Firefox_Language = $LastSetting[125] -as [int]
+                    Switch ($Change_Firefox_Language) {
+                        0 {$New_Firefox_Language = "0"}
+                        1 {$New_Firefox_Language = "6"}
+                        2 {$New_Firefox_Language = "7"}
+                        3 {$New_Firefox_Language = "9"}
+                        4 {$New_Firefox_Language = "10"}
+                        5 {$New_Firefox_Language = "13"}
+                        6 {$New_Firefox_Language = "14"}
+                        7 {$New_Firefox_Language = "18"}
+                        8 {$New_Firefox_Language = "20"}
+                        9 {$New_Firefox_Language = "23"}
+                        10 {$New_Firefox_Language = "24"}
+                    }
+                    $LastSetting[125] = $New_Firefox_Language
+                    $Change_IrfanView_Language = $LastSetting[138] -as [int]
+                    Switch ($Change_IrfanView_Language) {
+                        0 {$New_IrfanView_Language = "0"}
+                        1 {$New_IrfanView_Language = "4"}
+                        2 {$New_IrfanView_Language = "5"}
+                        3 {$New_IrfanView_Language = "6"}
+                        4 {$New_IrfanView_Language = "7"}
+                        5 {$New_IrfanView_Language = "8"}
+                        6 {$New_IrfanView_Language = "9"}
+                        7 {$New_IrfanView_Language = "12"}
+                        8 {$New_IrfanView_Language = "13"}
+                        9 {$New_IrfanView_Language = "14"}
+                        10 {$New_IrfanView_Language = "15"}
+                        11 {$New_IrfanView_Language = "16"}
+                        12 {$New_IrfanView_Language = "18"}
+                        13 {$New_IrfanView_Language = "21"}
+                        14 {$New_IrfanView_Language = "22"}
+                    }
+                    $LastSetting[138] = $New_IrfanView_Language
+                    $Change_MSOffice_Language = $LastSetting[139] -as [int]
+                    Switch ($Change_MSOffice_Language) {
+                        0 {$New_MSOffice_Language = "0"}
+                        1 {$New_MSOffice_Language = "5"}
+                        2 {$New_MSOffice_Language = "6"}
+                        3 {$New_MSOffice_Language = "7"}
+                        4 {$New_MSOffice_Language = "8"}
+                        5 {$New_MSOffice_Language = "9"}
+                        6 {$New_MSOffice_Language = "10"}
+                        7 {$New_MSOffice_Language = "13"}
+                        8 {$New_MSOffice_Language = "14"}
+                        9 {$New_MSOffice_Language = "15"}
+                        10 {$New_MSOffice_Language = "16"}
+                        11 {$New_MSOffice_Language = "18"}
+                        12 {$New_MSOffice_Language = "20"}
+                        13 {$New_MSOffice_Language = "23"}
+                        14 {$New_MSOffice_Language = "24"}
+                    }
+                    $LastSetting[139] = $New_MSOffice_Language
+                    $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
+                    Switch ($Change_MSOffice_Visio_Language) {
+                        0 {$New_MSOffice_Visio_Language = "0"}
+                        1 {$New_MSOffice_Visio_Language = "5"}
+                        2 {$New_MSOffice_Visio_Language = "6"}
+                        3 {$New_MSOffice_Visio_Language = "7"}
+                        4 {$New_MSOffice_Visio_Language = "8"}
+                        5 {$New_MSOffice_Visio_Language = "9"}
+                        6 {$New_MSOffice_Visio_Language = "10"}
+                        7 {$New_MSOffice_Visio_Language = "13"}
+                        8 {$New_MSOffice_Visio_Language = "14"}
+                        9 {$New_MSOffice_Visio_Language = "15"}
+                        10 {$New_MSOffice_Visio_Language = "16"}
+                        11 {$New_MSOffice_Visio_Language = "18"}
+                        12 {$New_MSOffice_Visio_Language = "20"}
+                        13 {$New_MSOffice_Visio_Language = "23"}
+                        14 {$New_MSOffice_Visio_Language = "24"}
+                    }
+                    $LastSetting[167] = $New_MSOffice_Visio_Language
+                    $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
+                    Switch ($Change_MSOffice_Project_Language) {
+                        0 {$New_MSOffice_Project_Language = "0"}
+                        1 {$New_MSOffice_Project_Language = "5"}
+                        2 {$New_MSOffice_Project_Language = "6"}
+                        3 {$New_MSOffice_Project_Language = "7"}
+                        4 {$New_MSOffice_Project_Language = "8"}
+                        5 {$New_MSOffice_Project_Language = "9"}
+                        6 {$New_MSOffice_Project_Language = "10"}
+                        7 {$New_MSOffice_Project_Language = "13"}
+                        8 {$New_MSOffice_Project_Language = "14"}
+                        9 {$New_MSOffice_Project_Language = "15"}
+                        10 {$New_MSOffice_Project_Language = "16"}
+                        11 {$New_MSOffice_Project_Language = "18"}
+                        12 {$New_MSOffice_Project_Language = "20"}
+                        13 {$New_MSOffice_Project_Language = "23"}
+                        14 {$New_MSOffice_Project_Language = "24"}
+                    }
+                    $LastSetting[169] = $New_MSOffice_Project_Language
+                    $Change_WinRAR_Language = $LastSetting[180] -as [int]
+                    Switch ($Change_WinRAR_Language) {
+                        0 {$New_WinRAR_Language = "0"}
+                        1 {$New_WinRAR_Language = "5"}
+                        2 {$New_WinRAR_Language = "6"}
+                        3 {$New_WinRAR_Language = "7"}
+                        4 {$New_WinRAR_Language = "8"}
+                        5 {$New_WinRAR_Language = "9"}
+                        6 {$New_WinRAR_Language = "10"}
+                        7 {$New_WinRAR_Language = "13"}
+                        8 {$New_WinRAR_Language = "14"}
+                        9 {$New_WinRAR_Language = "15"}
+                        10 {$New_WinRAR_Language = "16"}
+                        11 {$New_WinRAR_Language = "18"}
+                        12 {$New_WinRAR_Language = "20"}
+                        13 {$New_WinRAR_Language = "23"}
+                        14 {$New_WinRAR_Language = "24"}
+                    }
+                    $LastSetting[180] = $New_WinRAR_Language
+                    $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
+                    Switch ($Change_MozillaThunderbird_Language) {
+                        0 {$New_MozillaThunderbird_Language = "0"}
+                        1 {$New_MozillaThunderbird_Language = "3"}
+                        2 {$New_MozillaThunderbird_Language = "4"}
+                        3 {$New_MozillaThunderbird_Language = "5"}
+                        4 {$New_MozillaThunderbird_Language = "6"}
+                        5 {$New_MozillaThunderbird_Language = "7"}
+                        6 {$New_MozillaThunderbird_Language = "8"}
+                        7 {$New_MozillaThunderbird_Language = "9"}
+                        8 {$New_MozillaThunderbird_Language = "10"}
+                        9 {$New_MozillaThunderbird_Language = "11"}
+                        10 {$New_MozillaThunderbird_Language = "12"}
+                    }
+                    $LastSetting[183] = $New_MozillaThunderbird_Language
+                }
+                Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
+                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+                Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
+                Write-Output ""
+            }
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
@@ -2615,7 +3871,304 @@ If (!($NoUpdate)) {
             
         }
         ElseIf ($GUIfile) {
-            #Write-Host -Foregroundcolor Red "GUI File: $GUIfile."
+            # Change old LastSetting.txt files to the new format (AddScript)
+            If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
+                New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
+                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+            }
+            Else {
+                If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                    New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+                } Else {
+                    Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
+                }
+            }
+            If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
+            } Else {
+                If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
+                If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+                    Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
+                    Write-Output ""
+                    $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
+                    $Change_Language = $LastSetting[0] -as [int]
+                    Switch ($Change_Language) {
+                        0 {$New_Language = "4"}
+                        1 {$New_Language = "5"}
+                        2 {$New_Language = "6"}
+                        3 {$New_Language = "7"}
+                        4 {$New_Language = "8"}
+                        5 {$New_Language = "9"}
+                        6 {$New_Language = "12"}
+                        7 {$New_Language = "13"}
+                        8 {$New_Language = "14"}
+                        9 {$New_Language = "15"}
+                        10 {$New_Language = "16"}
+                        11 {$New_Language = "17"}
+                        12 {$New_Language = "19"}
+                        13 {$New_Language = "22"}
+                        14 {$New_Language = "23"}
+                    }
+                    $LastSetting[0] = $New_Language
+                    $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
+                    Switch ($Change_AdobeReaderDC_Language) {
+                        0 {$New_AdobeReaderDC_Language = "0"}
+                        1 {$New_AdobeReaderDC_Language = "3"}
+                        2 {$New_AdobeReaderDC_Language = "4"}
+                        3 {$New_AdobeReaderDC_Language = "5"}
+                        4 {$New_AdobeReaderDC_Language = "6"}
+                        5 {$New_AdobeReaderDC_Language = "7"}
+                        6 {$New_AdobeReaderDC_Language = "8"}
+                        7 {$New_AdobeReaderDC_Language = "10"}
+                        8 {$New_AdobeReaderDC_Language = "11"}
+                        9 {$New_AdobeReaderDC_Language = "12"}
+                        10 {$New_AdobeReaderDC_Language = "13"}
+                        11 {$New_AdobeReaderDC_Language = "14"}
+                        12 {$New_AdobeReaderDC_Language = "16"}
+                        13 {$New_AdobeReaderDC_Language = "19"}
+                        14 {$New_AdobeReaderDC_Language = "20"}
+                    }
+                    $LastSetting[95] = $New_AdobeReaderDC_Language
+                    $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
+                    Switch ($Change_FoxitPDFEditor_Language) {
+                        0 {$New_FoxitPDFEditor_Language = "0"}
+                        1 {$New_FoxitPDFEditor_Language = "1"}
+                        2 {$New_FoxitPDFEditor_Language = "2"}
+                        3 {$New_FoxitPDFEditor_Language = "3"}
+                        4 {$New_FoxitPDFEditor_Language = "4"}
+                        5 {$New_FoxitPDFEditor_Language = "5"}
+                        6 {$New_FoxitPDFEditor_Language = "6"}
+                        7 {$New_FoxitPDFEditor_Language = "7"}
+                        8 {$New_FoxitPDFEditor_Language = "8"}
+                        9 {$New_FoxitPDFEditor_Language = "8"}
+                        10 {$New_FoxitPDFEditor_Language = "9"}
+                        11 {$New_FoxitPDFEditor_Language = "10"}
+                        12 {$New_FoxitPDFEditor_Language = "11"}
+                        13 {$New_FoxitPDFEditor_Language = "12"}
+                        14 {$New_FoxitPDFEditor_Language = "13"}
+                    }
+                    $LastSetting[100] = $New_FoxitPDFEditor_Language
+                    $Change_KeePass_Language = $LastSetting[106] -as [int]
+                    Switch ($Change_KeePass_Language) {
+                        0 {$New_KeePass_Language = "0"}
+                        1 {$New_KeePass_Language = "5"}
+                        2 {$New_KeePass_Language = "6"}
+                        3 {$New_KeePass_Language = "7"}
+                        4 {$New_KeePass_Language = "8"}
+                        5 {$New_KeePass_Language = "9"}
+                        6 {$New_KeePass_Language = "10"}
+                        7 {$New_KeePass_Language = "13"}
+                        8 {$New_KeePass_Language = "14"}
+                        9 {$New_KeePass_Language = "15"}
+                        10 {$New_KeePass_Language = "16"}
+                        11 {$New_KeePass_Language = "17"}
+                        12 {$New_KeePass_Language = "18"}
+                        13 {$New_KeePass_Language = "20"}
+                        14 {$New_KeePass_Language = "23"}
+                        15 {$New_KeePass_Language = "24"}
+                    }
+                    $LastSetting[106] = $New_KeePass_Language
+                    $Change_MS365Apps_Language = $LastSetting[109] -as [int]
+                    Switch ($Change_MS365Apps_Language) {
+                        0 {$New_MS365Apps_Language = "0"}
+                        1 {$New_MS365Apps_Language = "5"}
+                        2 {$New_MS365Apps_Language = "6"}
+                        3 {$New_MS365Apps_Language = "7"}
+                        4 {$New_MS365Apps_Language = "8"}
+                        5 {$New_MS365Apps_Language = "9"}
+                        6 {$New_MS365Apps_Language = "10"}
+                        7 {$New_MS365Apps_Language = "13"}
+                        8 {$New_MS365Apps_Language = "14"}
+                        9 {$New_MS365Apps_Language = "15"}
+                        10 {$New_MS365Apps_Language = "16"}
+                        11 {$New_MS365Apps_Language = "18"}
+                        12 {$New_MS365Apps_Language = "20"}
+                        13 {$New_MS365Apps_Language = "23"}
+                        14 {$New_MS365Apps_Language = "24"}
+                    }
+                    $LastSetting[109] = $New_MS365Apps_Language
+                    $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
+                    Switch ($Change_MS365Apps_Visio_Language) {
+                        0 {$New_MS365Apps_Visio_Language = "0"}
+                        1 {$New_MS365Apps_Visio_Language = "5"}
+                        2 {$New_MS365Apps_Visio_Language = "6"}
+                        3 {$New_MS365Apps_Visio_Language = "7"}
+                        4 {$New_MS365Apps_Visio_Language = "8"}
+                        5 {$New_MS365Apps_Visio_Language = "9"}
+                        6 {$New_MS365Apps_Visio_Language = "10"}
+                        7 {$New_MS365Apps_Visio_Language = "13"}
+                        8 {$New_MS365Apps_Visio_Language = "14"}
+                        9 {$New_MS365Apps_Visio_Language = "15"}
+                        10 {$New_MS365Apps_Visio_Language = "16"}
+                        11 {$New_MS365Apps_Visio_Language = "18"}
+                        12 {$New_MS365Apps_Visio_Language = "20"}
+                        13 {$New_MS365Apps_Visio_Language = "23"}
+                        14 {$New_MS365Apps_Visio_Language = "24"}
+                    }
+                    $LastSetting[111] = $New_MS365Apps_Visio_Language
+                    $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
+                    Switch ($Change_MS365Apps_Project_Language) {
+                        0 {$New_MS365Apps_Project_Language = "0"}
+                        1 {$New_MS365Apps_Project_Language = "5"}
+                        2 {$New_MS365Apps_Project_Language = "6"}
+                        3 {$New_MS365Apps_Project_Language = "7"}
+                        4 {$New_MS365Apps_Project_Language = "8"}
+                        5 {$New_MS365Apps_Project_Language = "9"}
+                        6 {$New_MS365Apps_Project_Language = "10"}
+                        7 {$New_MS365Apps_Project_Language = "13"}
+                        8 {$New_MS365Apps_Project_Language = "14"}
+                        9 {$New_MS365Apps_Project_Language = "15"}
+                        10 {$New_MS365Apps_Project_Language = "16"}
+                        11 {$New_MS365Apps_Project_Language = "18"}
+                        12 {$New_MS365Apps_Project_Language = "20"}
+                        13 {$New_MS365Apps_Project_Language = "23"}
+                        14 {$New_MS365Apps_Project_Language = "24"}
+                    }
+                    $LastSetting[113] = $New_MS365Apps_Project_Language
+                    $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
+                    Switch ($Change_MSSQLServerManagementStudio_Language) {
+                        0 {$New_MSSQLServerManagementStudio_Language = "0"}
+                        1 {$New_MSSQLServerManagementStudio_Language = "2"}
+                        2 {$New_MSSQLServerManagementStudio_Language = "3"}
+                        3 {$New_MSSQLServerManagementStudio_Language = "4"}
+                        4 {$New_MSSQLServerManagementStudio_Language = "5"}
+                        5 {$New_MSSQLServerManagementStudio_Language = "6"}
+                        6 {$New_MSSQLServerManagementStudio_Language = "7"}
+                        7 {$New_MSSQLServerManagementStudio_Language = "8"}
+                        8 {$New_MSSQLServerManagementStudio_Language = "9"}
+                        9 {$New_MSSQLServerManagementStudio_Language = "10"}
+                    }
+                    $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
+                    $Change_Firefox_Language = $LastSetting[125] -as [int]
+                    Switch ($Change_Firefox_Language) {
+                        0 {$New_Firefox_Language = "0"}
+                        1 {$New_Firefox_Language = "6"}
+                        2 {$New_Firefox_Language = "7"}
+                        3 {$New_Firefox_Language = "9"}
+                        4 {$New_Firefox_Language = "10"}
+                        5 {$New_Firefox_Language = "13"}
+                        6 {$New_Firefox_Language = "14"}
+                        7 {$New_Firefox_Language = "18"}
+                        8 {$New_Firefox_Language = "20"}
+                        9 {$New_Firefox_Language = "23"}
+                        10 {$New_Firefox_Language = "24"}
+                    }
+                    $LastSetting[125] = $New_Firefox_Language
+                    $Change_IrfanView_Language = $LastSetting[138] -as [int]
+                    Switch ($Change_IrfanView_Language) {
+                        0 {$New_IrfanView_Language = "0"}
+                        1 {$New_IrfanView_Language = "4"}
+                        2 {$New_IrfanView_Language = "5"}
+                        3 {$New_IrfanView_Language = "6"}
+                        4 {$New_IrfanView_Language = "7"}
+                        5 {$New_IrfanView_Language = "8"}
+                        6 {$New_IrfanView_Language = "9"}
+                        7 {$New_IrfanView_Language = "12"}
+                        8 {$New_IrfanView_Language = "13"}
+                        9 {$New_IrfanView_Language = "14"}
+                        10 {$New_IrfanView_Language = "15"}
+                        11 {$New_IrfanView_Language = "16"}
+                        12 {$New_IrfanView_Language = "18"}
+                        13 {$New_IrfanView_Language = "21"}
+                        14 {$New_IrfanView_Language = "22"}
+                    }
+                    $LastSetting[138] = $New_IrfanView_Language
+                    $Change_MSOffice_Language = $LastSetting[139] -as [int]
+                    Switch ($Change_MSOffice_Language) {
+                        0 {$New_MSOffice_Language = "0"}
+                        1 {$New_MSOffice_Language = "5"}
+                        2 {$New_MSOffice_Language = "6"}
+                        3 {$New_MSOffice_Language = "7"}
+                        4 {$New_MSOffice_Language = "8"}
+                        5 {$New_MSOffice_Language = "9"}
+                        6 {$New_MSOffice_Language = "10"}
+                        7 {$New_MSOffice_Language = "13"}
+                        8 {$New_MSOffice_Language = "14"}
+                        9 {$New_MSOffice_Language = "15"}
+                        10 {$New_MSOffice_Language = "16"}
+                        11 {$New_MSOffice_Language = "18"}
+                        12 {$New_MSOffice_Language = "20"}
+                        13 {$New_MSOffice_Language = "23"}
+                        14 {$New_MSOffice_Language = "24"}
+                    }
+                    $LastSetting[139] = $New_MSOffice_Language
+                    $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
+                    Switch ($Change_MSOffice_Visio_Language) {
+                        0 {$New_MSOffice_Visio_Language = "0"}
+                        1 {$New_MSOffice_Visio_Language = "5"}
+                        2 {$New_MSOffice_Visio_Language = "6"}
+                        3 {$New_MSOffice_Visio_Language = "7"}
+                        4 {$New_MSOffice_Visio_Language = "8"}
+                        5 {$New_MSOffice_Visio_Language = "9"}
+                        6 {$New_MSOffice_Visio_Language = "10"}
+                        7 {$New_MSOffice_Visio_Language = "13"}
+                        8 {$New_MSOffice_Visio_Language = "14"}
+                        9 {$New_MSOffice_Visio_Language = "15"}
+                        10 {$New_MSOffice_Visio_Language = "16"}
+                        11 {$New_MSOffice_Visio_Language = "18"}
+                        12 {$New_MSOffice_Visio_Language = "20"}
+                        13 {$New_MSOffice_Visio_Language = "23"}
+                        14 {$New_MSOffice_Visio_Language = "24"}
+                    }
+                    $LastSetting[167] = $New_MSOffice_Visio_Language
+                    $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
+                    Switch ($Change_MSOffice_Project_Language) {
+                        0 {$New_MSOffice_Project_Language = "0"}
+                        1 {$New_MSOffice_Project_Language = "5"}
+                        2 {$New_MSOffice_Project_Language = "6"}
+                        3 {$New_MSOffice_Project_Language = "7"}
+                        4 {$New_MSOffice_Project_Language = "8"}
+                        5 {$New_MSOffice_Project_Language = "9"}
+                        6 {$New_MSOffice_Project_Language = "10"}
+                        7 {$New_MSOffice_Project_Language = "13"}
+                        8 {$New_MSOffice_Project_Language = "14"}
+                        9 {$New_MSOffice_Project_Language = "15"}
+                        10 {$New_MSOffice_Project_Language = "16"}
+                        11 {$New_MSOffice_Project_Language = "18"}
+                        12 {$New_MSOffice_Project_Language = "20"}
+                        13 {$New_MSOffice_Project_Language = "23"}
+                        14 {$New_MSOffice_Project_Language = "24"}
+                    }
+                    $LastSetting[169] = $New_MSOffice_Project_Language
+                    $Change_WinRAR_Language = $LastSetting[180] -as [int]
+                    Switch ($Change_WinRAR_Language) {
+                        0 {$New_WinRAR_Language = "0"}
+                        1 {$New_WinRAR_Language = "5"}
+                        2 {$New_WinRAR_Language = "6"}
+                        3 {$New_WinRAR_Language = "7"}
+                        4 {$New_WinRAR_Language = "8"}
+                        5 {$New_WinRAR_Language = "9"}
+                        6 {$New_WinRAR_Language = "10"}
+                        7 {$New_WinRAR_Language = "13"}
+                        8 {$New_WinRAR_Language = "14"}
+                        9 {$New_WinRAR_Language = "15"}
+                        10 {$New_WinRAR_Language = "16"}
+                        11 {$New_WinRAR_Language = "18"}
+                        12 {$New_WinRAR_Language = "20"}
+                        13 {$New_WinRAR_Language = "23"}
+                        14 {$New_WinRAR_Language = "24"}
+                    }
+                    $LastSetting[180] = $New_WinRAR_Language
+                    $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
+                    Switch ($Change_MozillaThunderbird_Language) {
+                        0 {$New_MozillaThunderbird_Language = "0"}
+                        1 {$New_MozillaThunderbird_Language = "3"}
+                        2 {$New_MozillaThunderbird_Language = "4"}
+                        3 {$New_MozillaThunderbird_Language = "5"}
+                        4 {$New_MozillaThunderbird_Language = "6"}
+                        5 {$New_MozillaThunderbird_Language = "7"}
+                        6 {$New_MozillaThunderbird_Language = "8"}
+                        7 {$New_MozillaThunderbird_Language = "9"}
+                        8 {$New_MozillaThunderbird_Language = "10"}
+                        9 {$New_MozillaThunderbird_Language = "11"}
+                        10 {$New_MozillaThunderbird_Language = "12"}
+                    }
+                    $LastSetting[183] = $New_MozillaThunderbird_Language
+                }
+                Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
+                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+                Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
+                Write-Output ""
+            }
             $update = @'
             Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
@@ -2631,6 +4184,304 @@ If (!($NoUpdate)) {
             $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
             If ($AnswerPending -eq "6") {
                 Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
+                # Change old LastSetting.txt files to the new format (AddScript)
+                If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
+                    New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
+                    New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+                }
+                Else {
+                    If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                        New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+                    } Else {
+                        Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
+                    }
+                }
+                If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
+                } Else {
+                    If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
+                    If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+                        Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
+                        Write-Output ""
+                        $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
+                        $Change_Language = $LastSetting[0] -as [int]
+                        Switch ($Change_Language) {
+                            0 {$New_Language = "4"}
+                            1 {$New_Language = "5"}
+                            2 {$New_Language = "6"}
+                            3 {$New_Language = "7"}
+                            4 {$New_Language = "8"}
+                            5 {$New_Language = "9"}
+                            6 {$New_Language = "12"}
+                            7 {$New_Language = "13"}
+                            8 {$New_Language = "14"}
+                            9 {$New_Language = "15"}
+                            10 {$New_Language = "16"}
+                            11 {$New_Language = "17"}
+                            12 {$New_Language = "19"}
+                            13 {$New_Language = "22"}
+                            14 {$New_Language = "23"}
+                        }
+                        $LastSetting[0] = $New_Language
+                        $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
+                        Switch ($Change_AdobeReaderDC_Language) {
+                            0 {$New_AdobeReaderDC_Language = "0"}
+                            1 {$New_AdobeReaderDC_Language = "3"}
+                            2 {$New_AdobeReaderDC_Language = "4"}
+                            3 {$New_AdobeReaderDC_Language = "5"}
+                            4 {$New_AdobeReaderDC_Language = "6"}
+                            5 {$New_AdobeReaderDC_Language = "7"}
+                            6 {$New_AdobeReaderDC_Language = "8"}
+                            7 {$New_AdobeReaderDC_Language = "10"}
+                            8 {$New_AdobeReaderDC_Language = "11"}
+                            9 {$New_AdobeReaderDC_Language = "12"}
+                            10 {$New_AdobeReaderDC_Language = "13"}
+                            11 {$New_AdobeReaderDC_Language = "14"}
+                            12 {$New_AdobeReaderDC_Language = "16"}
+                            13 {$New_AdobeReaderDC_Language = "19"}
+                            14 {$New_AdobeReaderDC_Language = "20"}
+                        }
+                        $LastSetting[95] = $New_AdobeReaderDC_Language
+                        $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
+                        Switch ($Change_FoxitPDFEditor_Language) {
+                            0 {$New_FoxitPDFEditor_Language = "0"}
+                            1 {$New_FoxitPDFEditor_Language = "1"}
+                            2 {$New_FoxitPDFEditor_Language = "2"}
+                            3 {$New_FoxitPDFEditor_Language = "3"}
+                            4 {$New_FoxitPDFEditor_Language = "4"}
+                            5 {$New_FoxitPDFEditor_Language = "5"}
+                            6 {$New_FoxitPDFEditor_Language = "6"}
+                            7 {$New_FoxitPDFEditor_Language = "7"}
+                            8 {$New_FoxitPDFEditor_Language = "8"}
+                            9 {$New_FoxitPDFEditor_Language = "8"}
+                            10 {$New_FoxitPDFEditor_Language = "9"}
+                            11 {$New_FoxitPDFEditor_Language = "10"}
+                            12 {$New_FoxitPDFEditor_Language = "11"}
+                            13 {$New_FoxitPDFEditor_Language = "12"}
+                            14 {$New_FoxitPDFEditor_Language = "13"}
+                        }
+                        $LastSetting[100] = $New_FoxitPDFEditor_Language
+                        $Change_KeePass_Language = $LastSetting[106] -as [int]
+                        Switch ($Change_KeePass_Language) {
+                            0 {$New_KeePass_Language = "0"}
+                            1 {$New_KeePass_Language = "5"}
+                            2 {$New_KeePass_Language = "6"}
+                            3 {$New_KeePass_Language = "7"}
+                            4 {$New_KeePass_Language = "8"}
+                            5 {$New_KeePass_Language = "9"}
+                            6 {$New_KeePass_Language = "10"}
+                            7 {$New_KeePass_Language = "13"}
+                            8 {$New_KeePass_Language = "14"}
+                            9 {$New_KeePass_Language = "15"}
+                            10 {$New_KeePass_Language = "16"}
+                            11 {$New_KeePass_Language = "17"}
+                            12 {$New_KeePass_Language = "18"}
+                            13 {$New_KeePass_Language = "20"}
+                            14 {$New_KeePass_Language = "23"}
+                            15 {$New_KeePass_Language = "24"}
+                        }
+                        $LastSetting[106] = $New_KeePass_Language
+                        $Change_MS365Apps_Language = $LastSetting[109] -as [int]
+                        Switch ($Change_MS365Apps_Language) {
+                            0 {$New_MS365Apps_Language = "0"}
+                            1 {$New_MS365Apps_Language = "5"}
+                            2 {$New_MS365Apps_Language = "6"}
+                            3 {$New_MS365Apps_Language = "7"}
+                            4 {$New_MS365Apps_Language = "8"}
+                            5 {$New_MS365Apps_Language = "9"}
+                            6 {$New_MS365Apps_Language = "10"}
+                            7 {$New_MS365Apps_Language = "13"}
+                            8 {$New_MS365Apps_Language = "14"}
+                            9 {$New_MS365Apps_Language = "15"}
+                            10 {$New_MS365Apps_Language = "16"}
+                            11 {$New_MS365Apps_Language = "18"}
+                            12 {$New_MS365Apps_Language = "20"}
+                            13 {$New_MS365Apps_Language = "23"}
+                            14 {$New_MS365Apps_Language = "24"}
+                        }
+                        $LastSetting[109] = $New_MS365Apps_Language
+                        $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
+                        Switch ($Change_MS365Apps_Visio_Language) {
+                            0 {$New_MS365Apps_Visio_Language = "0"}
+                            1 {$New_MS365Apps_Visio_Language = "5"}
+                            2 {$New_MS365Apps_Visio_Language = "6"}
+                            3 {$New_MS365Apps_Visio_Language = "7"}
+                            4 {$New_MS365Apps_Visio_Language = "8"}
+                            5 {$New_MS365Apps_Visio_Language = "9"}
+                            6 {$New_MS365Apps_Visio_Language = "10"}
+                            7 {$New_MS365Apps_Visio_Language = "13"}
+                            8 {$New_MS365Apps_Visio_Language = "14"}
+                            9 {$New_MS365Apps_Visio_Language = "15"}
+                            10 {$New_MS365Apps_Visio_Language = "16"}
+                            11 {$New_MS365Apps_Visio_Language = "18"}
+                            12 {$New_MS365Apps_Visio_Language = "20"}
+                            13 {$New_MS365Apps_Visio_Language = "23"}
+                            14 {$New_MS365Apps_Visio_Language = "24"}
+                        }
+                        $LastSetting[111] = $New_MS365Apps_Visio_Language
+                        $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
+                        Switch ($Change_MS365Apps_Project_Language) {
+                            0 {$New_MS365Apps_Project_Language = "0"}
+                            1 {$New_MS365Apps_Project_Language = "5"}
+                            2 {$New_MS365Apps_Project_Language = "6"}
+                            3 {$New_MS365Apps_Project_Language = "7"}
+                            4 {$New_MS365Apps_Project_Language = "8"}
+                            5 {$New_MS365Apps_Project_Language = "9"}
+                            6 {$New_MS365Apps_Project_Language = "10"}
+                            7 {$New_MS365Apps_Project_Language = "13"}
+                            8 {$New_MS365Apps_Project_Language = "14"}
+                            9 {$New_MS365Apps_Project_Language = "15"}
+                            10 {$New_MS365Apps_Project_Language = "16"}
+                            11 {$New_MS365Apps_Project_Language = "18"}
+                            12 {$New_MS365Apps_Project_Language = "20"}
+                            13 {$New_MS365Apps_Project_Language = "23"}
+                            14 {$New_MS365Apps_Project_Language = "24"}
+                        }
+                        $LastSetting[113] = $New_MS365Apps_Project_Language
+                        $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
+                        Switch ($Change_MSSQLServerManagementStudio_Language) {
+                            0 {$New_MSSQLServerManagementStudio_Language = "0"}
+                            1 {$New_MSSQLServerManagementStudio_Language = "2"}
+                            2 {$New_MSSQLServerManagementStudio_Language = "3"}
+                            3 {$New_MSSQLServerManagementStudio_Language = "4"}
+                            4 {$New_MSSQLServerManagementStudio_Language = "5"}
+                            5 {$New_MSSQLServerManagementStudio_Language = "6"}
+                            6 {$New_MSSQLServerManagementStudio_Language = "7"}
+                            7 {$New_MSSQLServerManagementStudio_Language = "8"}
+                            8 {$New_MSSQLServerManagementStudio_Language = "9"}
+                            9 {$New_MSSQLServerManagementStudio_Language = "10"}
+                        }
+                        $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
+                        $Change_Firefox_Language = $LastSetting[125] -as [int]
+                        Switch ($Change_Firefox_Language) {
+                            0 {$New_Firefox_Language = "0"}
+                            1 {$New_Firefox_Language = "6"}
+                            2 {$New_Firefox_Language = "7"}
+                            3 {$New_Firefox_Language = "9"}
+                            4 {$New_Firefox_Language = "10"}
+                            5 {$New_Firefox_Language = "13"}
+                            6 {$New_Firefox_Language = "14"}
+                            7 {$New_Firefox_Language = "18"}
+                            8 {$New_Firefox_Language = "20"}
+                            9 {$New_Firefox_Language = "23"}
+                            10 {$New_Firefox_Language = "24"}
+                        }
+                        $LastSetting[125] = $New_Firefox_Language
+                        $Change_IrfanView_Language = $LastSetting[138] -as [int]
+                        Switch ($Change_IrfanView_Language) {
+                            0 {$New_IrfanView_Language = "0"}
+                            1 {$New_IrfanView_Language = "4"}
+                            2 {$New_IrfanView_Language = "5"}
+                            3 {$New_IrfanView_Language = "6"}
+                            4 {$New_IrfanView_Language = "7"}
+                            5 {$New_IrfanView_Language = "8"}
+                            6 {$New_IrfanView_Language = "9"}
+                            7 {$New_IrfanView_Language = "12"}
+                            8 {$New_IrfanView_Language = "13"}
+                            9 {$New_IrfanView_Language = "14"}
+                            10 {$New_IrfanView_Language = "15"}
+                            11 {$New_IrfanView_Language = "16"}
+                            12 {$New_IrfanView_Language = "18"}
+                            13 {$New_IrfanView_Language = "21"}
+                            14 {$New_IrfanView_Language = "22"}
+                        }
+                        $LastSetting[138] = $New_IrfanView_Language
+                        $Change_MSOffice_Language = $LastSetting[139] -as [int]
+                        Switch ($Change_MSOffice_Language) {
+                            0 {$New_MSOffice_Language = "0"}
+                            1 {$New_MSOffice_Language = "5"}
+                            2 {$New_MSOffice_Language = "6"}
+                            3 {$New_MSOffice_Language = "7"}
+                            4 {$New_MSOffice_Language = "8"}
+                            5 {$New_MSOffice_Language = "9"}
+                            6 {$New_MSOffice_Language = "10"}
+                            7 {$New_MSOffice_Language = "13"}
+                            8 {$New_MSOffice_Language = "14"}
+                            9 {$New_MSOffice_Language = "15"}
+                            10 {$New_MSOffice_Language = "16"}
+                            11 {$New_MSOffice_Language = "18"}
+                            12 {$New_MSOffice_Language = "20"}
+                            13 {$New_MSOffice_Language = "23"}
+                            14 {$New_MSOffice_Language = "24"}
+                        }
+                        $LastSetting[139] = $New_MSOffice_Language
+                        $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
+                        Switch ($Change_MSOffice_Visio_Language) {
+                            0 {$New_MSOffice_Visio_Language = "0"}
+                            1 {$New_MSOffice_Visio_Language = "5"}
+                            2 {$New_MSOffice_Visio_Language = "6"}
+                            3 {$New_MSOffice_Visio_Language = "7"}
+                            4 {$New_MSOffice_Visio_Language = "8"}
+                            5 {$New_MSOffice_Visio_Language = "9"}
+                            6 {$New_MSOffice_Visio_Language = "10"}
+                            7 {$New_MSOffice_Visio_Language = "13"}
+                            8 {$New_MSOffice_Visio_Language = "14"}
+                            9 {$New_MSOffice_Visio_Language = "15"}
+                            10 {$New_MSOffice_Visio_Language = "16"}
+                            11 {$New_MSOffice_Visio_Language = "18"}
+                            12 {$New_MSOffice_Visio_Language = "20"}
+                            13 {$New_MSOffice_Visio_Language = "23"}
+                            14 {$New_MSOffice_Visio_Language = "24"}
+                        }
+                        $LastSetting[167] = $New_MSOffice_Visio_Language
+                        $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
+                        Switch ($Change_MSOffice_Project_Language) {
+                            0 {$New_MSOffice_Project_Language = "0"}
+                            1 {$New_MSOffice_Project_Language = "5"}
+                            2 {$New_MSOffice_Project_Language = "6"}
+                            3 {$New_MSOffice_Project_Language = "7"}
+                            4 {$New_MSOffice_Project_Language = "8"}
+                            5 {$New_MSOffice_Project_Language = "9"}
+                            6 {$New_MSOffice_Project_Language = "10"}
+                            7 {$New_MSOffice_Project_Language = "13"}
+                            8 {$New_MSOffice_Project_Language = "14"}
+                            9 {$New_MSOffice_Project_Language = "15"}
+                            10 {$New_MSOffice_Project_Language = "16"}
+                            11 {$New_MSOffice_Project_Language = "18"}
+                            12 {$New_MSOffice_Project_Language = "20"}
+                            13 {$New_MSOffice_Project_Language = "23"}
+                            14 {$New_MSOffice_Project_Language = "24"}
+                        }
+                        $LastSetting[169] = $New_MSOffice_Project_Language
+                        $Change_WinRAR_Language = $LastSetting[180] -as [int]
+                        Switch ($Change_WinRAR_Language) {
+                            0 {$New_WinRAR_Language = "0"}
+                            1 {$New_WinRAR_Language = "5"}
+                            2 {$New_WinRAR_Language = "6"}
+                            3 {$New_WinRAR_Language = "7"}
+                            4 {$New_WinRAR_Language = "8"}
+                            5 {$New_WinRAR_Language = "9"}
+                            6 {$New_WinRAR_Language = "10"}
+                            7 {$New_WinRAR_Language = "13"}
+                            8 {$New_WinRAR_Language = "14"}
+                            9 {$New_WinRAR_Language = "15"}
+                            10 {$New_WinRAR_Language = "16"}
+                            11 {$New_WinRAR_Language = "18"}
+                            12 {$New_WinRAR_Language = "20"}
+                            13 {$New_WinRAR_Language = "23"}
+                            14 {$New_WinRAR_Language = "24"}
+                        }
+                        $LastSetting[180] = $New_WinRAR_Language
+                        $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
+                        Switch ($Change_MozillaThunderbird_Language) {
+                            0 {$New_MozillaThunderbird_Language = "0"}
+                            1 {$New_MozillaThunderbird_Language = "3"}
+                            2 {$New_MozillaThunderbird_Language = "4"}
+                            3 {$New_MozillaThunderbird_Language = "5"}
+                            4 {$New_MozillaThunderbird_Language = "6"}
+                            5 {$New_MozillaThunderbird_Language = "7"}
+                            6 {$New_MozillaThunderbird_Language = "8"}
+                            7 {$New_MozillaThunderbird_Language = "9"}
+                            8 {$New_MozillaThunderbird_Language = "10"}
+                            9 {$New_MozillaThunderbird_Language = "11"}
+                            10 {$New_MozillaThunderbird_Language = "12"}
+                        }
+                        $LastSetting[183] = $New_MozillaThunderbird_Language
+                    }
+                    Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
+                    New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+                    Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
+                    Write-Output ""
+                }
                 $update = @'
                     Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
                     Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
@@ -2709,22 +4560,33 @@ $inputXML = @"
                     <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="12,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="100,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <Label x:Name="Label_SelectLanguage" Content="Select Language" HorizontalAlignment="Left" Margin="402,3,0,0" VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="2"/>
-                    <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="417,30,0,0" VerticalAlignment="Top" SelectedIndex="2" ToolTip="If this is selectable at download!" Grid.Row="0">
+                    <ComboBox x:Name="Box_Language" HorizontalAlignment="Left" Margin="417,30,0,0" VerticalAlignment="Top" SelectedIndex="6" ToolTip="If this is selectable at download!" Grid.Row="0">
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <Label x:Name="Label_SelectArchitecture" Content="Select Architecture" HorizontalAlignment="Left" Margin="12,3,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="0"/>
                     <ComboBox x:Name="Box_Architecture" HorizontalAlignment="Left" Margin="42,30,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" ToolTip="If this is selectable at download!" Grid.Row="0">
@@ -2992,20 +4854,28 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_AdobeReaderDC_Language" HorizontalAlignment="Left" Margin="286,77,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_CiscoWebexTeams_Detail" Content="Cisco Webex Teams" HorizontalAlignment="Left" Margin="12,105,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_CiscoWebexTeams_Architecture" HorizontalAlignment="Left" Margin="221,102,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
@@ -3041,7 +4911,6 @@ $inputXML = @"
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
                         <ListBoxItem Content="Italian"/>
-                        <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
@@ -3092,39 +4961,60 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_IrfanView_Language" HorizontalAlignment="Left" Margin="286,327,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_KeePass_Detail" Content="KeePass" HorizontalAlignment="Left" Margin="12,355,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_KeePass_Language" HorizontalAlignment="Left" Margin="286,352,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_LogMeInGoToMeeting_Detail" Content="LogMeIn GoToMeeting" HorizontalAlignment="Left" Margin="12,380,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_LogMeInGoToMeeting_Installer" HorizontalAlignment="Left" Margin="359,377,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
@@ -3146,21 +5036,32 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_MS365Apps_Language" HorizontalAlignment="Left" Margin="286,427,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <ComboBox x:Name="Box_MS365Apps_Installer" HorizontalAlignment="Left" Margin="359,427,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
                         <ListBoxItem Content="-"/>
@@ -3170,40 +5071,62 @@ $inputXML = @"
                     <CheckBox x:Name="Checkbox_MS365Apps_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="12,455,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MS365Apps_Visio_Language" HorizontalAlignment="Left" Margin="286,452,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MS365Apps_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="12,480,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MS365Apps_Project_Language" HorizontalAlignment="Left" Margin="286,477,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSAVDRemoteDesktop_Detail" Content="Microsoft AVD Remote Desktop" HorizontalAlignment="Left" Margin="12,505,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSAVDRemoteDesktop_Architecture" HorizontalAlignment="Left" Margin="221,502,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
@@ -3248,59 +5171,92 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_MSOffice_Language" HorizontalAlignment="Left" Margin="286,627,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSOffice_Visio_Detail" Content="     + Microsoft Visio" HorizontalAlignment="Left" Margin="12,655,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSOffice_Visio_Language" HorizontalAlignment="Left" Margin="286,652,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSOffice_Project_Detail" Content="     + Microsoft Project" HorizontalAlignment="Left" Margin="12,680,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSOffice_Project_Language" HorizontalAlignment="Left" Margin="286,677,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSOneDrive_Detail" Content="Microsoft OneDrive" HorizontalAlignment="Left" Margin="12,705,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSOneDrive_Architecture" HorizontalAlignment="Left" Margin="221,702,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
@@ -3331,6 +5287,7 @@ $inputXML = @"
                     <CheckBox x:Name="Checkbox_MSSQLServerManagementStudio_Detail" Content="Microsoft SQL Server Management Studio" Margin="12,80,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSSQLServerManagementStudio_Language" HorizontalAlignment="Left" Margin="286,77,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Chinese"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
@@ -3385,16 +5342,31 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_Firefox_Language" HorizontalAlignment="Left" Margin="286,202,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
+                        <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
+                        <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
+                        <ListBoxItem Content="Korean"/>
+                        <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MozillaThunderbird_Detail" Content="Mozilla Thunderbird" HorizontalAlignment="Left" Margin="12,230,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MozillaThunderbird_Architecture" HorizontalAlignment="Left" Margin="221,227,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
@@ -3404,6 +5376,8 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_MozillaThunderbird_Language" HorizontalAlignment="Left" Margin="286,227,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="French"/>
@@ -3506,21 +5480,32 @@ $inputXML = @"
                     </ComboBox>
                     <ComboBox x:Name="Box_WinRAR_Language" HorizontalAlignment="Left" Margin="286,577,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="Arabic"/>
+                        <ListBoxItem Content="Chinese"/>
+                        <ListBoxItem Content="Croatian"/>
+                        <ListBoxItem Content="Czech"/>
                         <ListBoxItem Content="Danish"/>
                         <ListBoxItem Content="Dutch"/>
                         <ListBoxItem Content="English"/>
                         <ListBoxItem Content="Finnish"/>
                         <ListBoxItem Content="French"/>
                         <ListBoxItem Content="German"/>
+                        <ListBoxItem Content="Hebrew"/>
+                        <ListBoxItem Content="Hungarian"/>
                         <ListBoxItem Content="Italian"/>
                         <ListBoxItem Content="Japanese"/>
                         <ListBoxItem Content="Korean"/>
                         <ListBoxItem Content="Norwegian"/>
                         <ListBoxItem Content="Polish"/>
                         <ListBoxItem Content="Portuguese"/>
+                        <ListBoxItem Content="Romanian"/>
                         <ListBoxItem Content="Russian"/>
+                        <ListBoxItem Content="Slovak"/>
+                        <ListBoxItem Content="Slovenian"/>
                         <ListBoxItem Content="Spanish"/>
                         <ListBoxItem Content="Swedish"/>
+                        <ListBoxItem Content="Turkish"/>
+                        <ListBoxItem Content="Ukrainian"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_Wireshark_Detail" Content="Wireshark" HorizontalAlignment="Left" Margin="12,605,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_Wireshark_Architecture" HorizontalAlignment="Left" Margin="221,602,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
@@ -6368,21 +8353,32 @@ Switch ($Architecture) {
 }
 
 Switch ($Language) {
-    0 { $LanguageClear = 'Danish'}
-    1 { $LanguageClear = 'Dutch'}
-    2 { $LanguageClear = 'English'}
-    3 { $LanguageClear = 'Finnish'}
-    4 { $LanguageClear = 'French'}
-    5 { $LanguageClear = 'German'}
-    6 { $LanguageClear = 'Italian'}
-    7 { $LanguageClear = 'Japanese'}
-    8 { $LanguageClear = 'Korean'}
-    9 { $LanguageClear = 'Norwegian'}
-    10 { $LanguageClear = 'Polish'}
-    11 { $LanguageClear = 'Portuguese'}
-    12 { $LanguageClear = 'Russian'}
-    13 { $LanguageClear = 'Spanish'}
-    14 { $LanguageClear = 'Swedish'}
+    0 { $LanguageClear = 'Arabic'}
+    1 { $LanguageClear = 'Chinese'}
+    2 { $LanguageClear = 'Croatian'}
+    3 { $LanguageClear = 'Czech'}
+    4 { $LanguageClear = 'Danish'}
+    5 { $LanguageClear = 'Dutch'}
+    6 { $LanguageClear = 'English'}
+    7 { $LanguageClear = 'Finnish'}
+    8 { $LanguageClear = 'French'}
+    9 { $LanguageClear = 'German'}
+    10 { $LanguageClear = 'Hebrew'}
+    11 { $LanguageClear = 'Hungarian'}
+    12 { $LanguageClear = 'Italian'}
+    13 { $LanguageClear = 'Japanese'}
+    14 { $LanguageClear = 'Korean'}
+    15 { $LanguageClear = 'Norwegian'}
+    16 { $LanguageClear = 'Polish'}
+    17 { $LanguageClear = 'Portuguese'}
+    18 { $LanguageClear = 'Romanian'}
+    19 { $LanguageClear = 'Russian'}
+    20 { $LanguageClear = 'Slovak'}
+    21 { $LanguageClear = 'Slovenian'}
+    22 { $LanguageClear = 'Spanish'}
+    23 { $LanguageClear = 'Swedish'}
+    24 { $LanguageClear = 'Turkish'}
+    25 { $LanguageClear = 'Ukrainian'}
 }
 
 Switch ($Installer) {
@@ -6422,26 +8418,37 @@ Else {
 
 If ($AdobeReaderDC_Language -ne "") {
     Switch ($AdobeReaderDC_Language) {
-        1 { $AdobeLanguageClear = 'Danish'}
-        2 { $AdobeLanguageClear = 'Dutch'}
-        3 { $AdobeLanguageClear = 'English'}
-        4 { $AdobeLanguageClear = 'Finnish'}
-        5 { $AdobeLanguageClear = 'French'}
-        6 { $AdobeLanguageClear = 'German'}
-        7 { $AdobeLanguageClear = 'Italian'}
-        8 { $AdobeLanguageClear = 'Japanese'}
-        9 { $AdobeLanguageClear = 'Korean'}
-        10 { $AdobeLanguageClear = 'Norwegian'}
-        11 { $AdobeLanguageClear = 'Polish'}
-        12 { $AdobeLanguageClear = 'Russian'}
-        13 { $AdobeLanguageClear = 'Spanish'}
-        14 { $AdobeLanguageClear = 'Swedish'}
+        1 { $AdobeLanguageClear = 'Croatian'}
+        2 { $AdobeLanguageClear = 'Czech'}
+        3 { $AdobeLanguageClear = 'Danish'}
+        4 { $AdobeLanguageClear = 'Dutch'}
+        5 { $AdobeLanguageClear = 'English'}
+        6 { $AdobeLanguageClear = 'Finnish'}
+        7 { $AdobeLanguageClear = 'French'}
+        8 { $AdobeLanguageClear = 'German'}
+        9 { $AdobeLanguageClear = 'Hungarian'}
+        10 { $AdobeLanguageClear = 'Italian'}
+        11 { $AdobeLanguageClear = 'Japanese'}
+        12 { $AdobeLanguageClear = 'Korean'}
+        13 { $AdobeLanguageClear = 'Norwegian'}
+        14 { $AdobeLanguageClear = 'Polish'}
+        15 { $AdobeLanguageClear = 'Romanian'}
+        16 { $AdobeLanguageClear = 'Russian'}
+        17 { $AdobeLanguageClear = 'Slovak'}
+        18 { $AdobeLanguageClear = 'Slovenian'}
+        19 { $AdobeLanguageClear = 'Spanish'}
+        20 { $AdobeLanguageClear = 'Swedish'}
+        21 { $AdobeLanguageClear = 'Turkish'}
+        22 { $AdobeLanguageClear = 'Ukrainian'}
     }
 }
 Else {
     $AdobeLanguageClear = $LanguageClear
     Switch ($LanguageClear) {
         Portuguese { $AdobeLanguageClear = 'English'}
+        Arabic { $AdobeLanguageClear = 'English'}
+        Chinese { $AdobeLanguageClear = 'English'}
+        Hebrew { $AdobeLanguageClear = 'English'}
     }
 }
 
@@ -6516,19 +8523,30 @@ If ($FoxitPDFEditor_Language -ne "") {
         5 { $FoxitPDFEditorLanguageClear = 'French'}
         6 { $FoxitPDFEditorLanguageClear = 'German'}
         7 { $FoxitPDFEditorLanguageClear = 'Italian'}
-        8 { $FoxitPDFEditorLanguageClear = 'Korean'}
-        9 { $FoxitPDFEditorLanguageClear = 'Norwegian'}
-        10 { $FoxitPDFEditorLanguageClear = 'Polish'}
-        11 { $FoxitPDFEditorLanguageClear = 'Portuguese'}
-        12 { $FoxitPDFEditorLanguageClear = 'Russian'}
-        13 { $FoxitPDFEditorLanguageClear = 'Spanish'}
-        14 { $FoxitPDFEditorLanguageClear = 'Swedish'}
+        8 { $FoxitPDFEditorLanguageClear = 'Norwegian'}
+        9 { $FoxitPDFEditorLanguageClear = 'Polish'}
+        10 { $FoxitPDFEditorLanguageClear = 'Portuguese'}
+        11 { $FoxitPDFEditorLanguageClear = 'Russian'}
+        12 { $FoxitPDFEditorLanguageClear = 'Spanish'}
+        13 { $FoxitPDFEditorLanguageClear = 'Swedish'}
     }
 }
 Else {
     $FoxitPDFEditorLanguageClear = $LanguageClear
     Switch ($LanguageClear) {
+        Korean { $FoxitPDFEditorLanguageClear = 'English'}
         Japanese { $FoxitPDFEditorLanguageClear = 'English'}
+        Arabic { $FoxitPDFEditorLanguageClear = 'English'}
+        Chinese { $FoxitPDFEditorLanguageClear = 'English'}
+        Croatian { $FoxitPDFEditorLanguageClear = 'English'}
+        Czech { $FoxitPDFEditorLanguageClear = 'English'}
+        Hebrew { $FoxitPDFEditorLanguageClear = 'English'}
+        Hungarian { $FoxitPDFEditorLanguageClear = 'English'}
+        Romanian { $FoxitPDFEditorLanguageClear = 'English'}
+        Slovak { $FoxitPDFEditorLanguageClear = 'English'}
+        Slovenian { $FoxitPDFEditorLanguageClear = 'English'}
+        Turkish { $FoxitPDFEditorLanguageClear = 'English'}
+        Ukrainian { $FoxitPDFEditorLanguageClear = 'English'}
     }
 }
 
@@ -6554,6 +8572,17 @@ Else {
     Switch ($LanguageClear) {
         Japanese { $FoxitReaderLanguageClear = 'English'}
         Korean { $FoxitReaderLanguageClear = 'English'}
+        Arabic { $FoxitReaderLanguageClear = 'English'}
+        Chinese { $FoxitReaderLanguageClear = 'English'}
+        Croatian { $FoxitReaderLanguageClear = 'English'}
+        Czech { $FoxitReaderLanguageClear = 'English'}
+        Hebrew { $FoxitReaderLanguageClear = 'English'}
+        Hungarian { $FoxitReaderLanguageClear = 'English'}
+        Romanian { $FoxitReaderLanguageClear = 'English'}
+        Slovak { $FoxitReaderLanguageClear = 'English'}
+        Slovenian { $FoxitReaderLanguageClear = 'English'}
+        Turkish { $FoxitReaderLanguageClear = 'English'}
+        Ukrainian { $FoxitReaderLanguageClear = 'English'}
     }
 }
 
@@ -6605,89 +8634,142 @@ Else {
 
 If ($IrfanView_Language -ne "") {
     Switch ($IrfanView_Language) {
-        1 { $IrfanViewLanguageClear = 'da'}
-        2 { $IrfanViewLanguageClear = 'nl-NL'}
-        4 { $IrfanViewLanguageClear = 'fi'}
-        5 { $IrfanViewLanguageClear = 'fr'}
-        6 { $IrfanViewLanguageClear = 'de'}
-        7 { $IrfanViewLanguageClear = 'it'}
-        8 { $IrfanViewLanguageClear = 'ja'}
-        9 { $IrfanViewLanguageClear = 'ko'}
-        10 { $IrfanViewLanguageClear = 'pl'}
-        11 { $IrfanViewLanguageClear = 'pt-PT'}
-        12 { $IrfanViewLanguageClear = 'ru'}
-        13 { $IrfanViewLanguageClear = 'es'}
-        14 { $IrfanViewLanguageClear = 'sv'}
+        1 { $IrfanViewLanguageClear = 'ar'}
+        2 { $IrfanViewLanguageClear = 'zh'}
+        3 { $IrfanViewLanguageClear = 'cs'}
+        4 { $IrfanViewLanguageClear = 'da'}
+        5 { $IrfanViewLanguageClear = 'nl-NL'}
+        7 { $IrfanViewLanguageClear = 'fi'}
+        8 { $IrfanViewLanguageClear = 'fr'}
+        9 { $IrfanViewLanguageClear = 'de'}
+        10 { $IrfanViewLanguageClear = 'he'}
+        11 { $IrfanViewLanguageClear = 'hu'}
+        12 { $IrfanViewLanguageClear = 'it'}
+        13 { $IrfanViewLanguageClear = 'ja'}
+        14 { $IrfanViewLanguageClear = 'ko'}
+        15 { $IrfanViewLanguageClear = 'pl'}
+        16 { $IrfanViewLanguageClear = 'pt-PT'}
+        17 { $IrfanViewLanguageClear = 'ro'}
+        18 { $IrfanViewLanguageClear = 'ru'}
+        19 { $IrfanViewLanguageClear = 'sk'}
+        20 { $IrfanViewLanguageClear = 'sl'}
+        21 { $IrfanViewLanguageClear = 'es'}
+        22 { $IrfanViewLanguageClear = 'sv'}
+        23 { $IrfanViewLanguageClear = 'tr'}
+        24 { $IrfanViewLanguageClear = 'uk'}
     }
     Switch ($IrfanView_Language) {
-        1 { $IrfanViewLanguageLongClear = 'Danish'}
-        2 { $IrfanViewLanguageLongClear = 'Dutch'}
-        3 { $IrfanViewLanguageLongClear = 'English'}
-        4 { $IrfanViewLanguageLongClear = 'Finnish'}
-        5 { $IrfanViewLanguageLongClear = 'French'}
-        6 { $IrfanViewLanguageLongClear = 'German'}
-        7 { $IrfanViewLanguageLongClear = 'Italian'}
-        8 { $IrfanViewLanguageLongClear = 'Japanese'}
-        9 { $IrfanViewLanguageLongClear = 'Korean'}
-        10 { $IrfanViewLanguageLongClear = 'Polish'}
-        11 { $IrfanViewLanguageLongClear = 'Portuguese'}
-        12 { $IrfanViewLanguageLongClear = 'Russian'}
-        13 { $IrfanViewLanguageLongClear = 'Spanish'}
-        14 { $IrfanViewLanguageLongClear = 'Swedish'}
+        1 { $IrfanViewLanguageLongClear = 'Arabic'}
+        2 { $IrfanViewLanguageLongClear = 'Chinese'}
+        3 { $IrfanViewLanguageLongClear = 'Czech'}
+        4 { $IrfanViewLanguageLongClear = 'Danish'}
+        5 { $IrfanViewLanguageLongClear = 'Dutch'}
+        6 { $IrfanViewLanguageLongClear = 'English'}
+        7 { $IrfanViewLanguageLongClear = 'Finnish'}
+        8 { $IrfanViewLanguageLongClear = 'French'}
+        9 { $IrfanViewLanguageLongClear = 'German'}
+        10 { $IrfanViewLanguageLongClear = 'Hebrew'}
+        11 { $IrfanViewLanguageLongClear = 'Hungarian'}
+        12 { $IrfanViewLanguageLongClear = 'Italian'}
+        13 { $IrfanViewLanguageLongClear = 'Japanese'}
+        14 { $IrfanViewLanguageLongClear = 'Korean'}
+        15 { $IrfanViewLanguageLongClear = 'Polish'}
+        16 { $IrfanViewLanguageLongClear = 'Portuguese'}
+        17 { $IrfanViewLanguageLongClear = 'Romanian'}
+        18 { $IrfanViewLanguageLongClear = 'Russian'}
+        19 { $IrfanViewLanguageLongClear = 'Slovak'}
+        20 { $IrfanViewLanguageLongClear = 'Slovenian'}
+        21 { $IrfanViewLanguageLongClear = 'Spanish'}
+        22 { $IrfanViewLanguageLongClear = 'Swedish'}
+        23 { $IrfanViewLanguageLongClear = 'Turkish'}
+        24 { $IrfanViewLanguageLongClear = 'Ukrainian'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $IrfanViewLanguageClear = 'da'}
-        1 { $IrfanViewLanguageClear = 'nl-NL'}
-        3 { $IrfanViewLanguageClear = 'fi'}
-        4 { $IrfanViewLanguageClear = 'fr'}
-        5 { $IrfanViewLanguageClear = 'de'}
-        6 { $IrfanViewLanguageClear = 'it'}
-        7 { $IrfanViewLanguageClear = 'ja'}
-        8 { $IrfanViewLanguageClear = 'ko'}
-        10 { $IrfanViewLanguageClear = 'pl'}
-        11 { $IrfanViewLanguageClear = 'pt-PT'}
-        12 { $IrfanViewLanguageClear = 'ru'}
-        13 { $IrfanViewLanguageClear = 'es'}
-        14 { $IrfanViewLanguageClear = 'sv'}
+        0 { $IrfanViewLanguageClear = 'ar'}
+        1 { $IrfanViewLanguageClear = 'zh'}
+        3 { $IrfanViewLanguageClear = 'cs'}
+        4 { $IrfanViewLanguageClear = 'da'}
+        5 { $IrfanViewLanguageClear = 'nl-NL'}
+        7 { $IrfanViewLanguageClear = 'fi'}
+        8 { $IrfanViewLanguageClear = 'fr'}
+        9 { $IrfanViewLanguageClear = 'de'}
+        10 { $IrfanViewLanguageClear = 'he'}
+        11 { $IrfanViewLanguageClear = 'hu'}
+        12 { $IrfanViewLanguageClear = 'it'}
+        13 { $IrfanViewLanguageClear = 'ja'}
+        14 { $IrfanViewLanguageClear = 'ko'}
+        16 { $IrfanViewLanguageClear = 'pl'}
+        17 { $IrfanViewLanguageClear = 'pt-PT'}
+        18 { $IrfanViewLanguageClear = 'ro'}
+        19 { $IrfanViewLanguageClear = 'ru'}
+        20 { $IrfanViewLanguageClear = 'sk'}
+        21 { $IrfanViewLanguageClear = 'sl'}
+        22 { $IrfanViewLanguageClear = 'es'}
+        23 { $IrfanViewLanguageClear = 'sv'}
+        24 { $IrfanViewLanguageClear = 'tr'}
+        25 { $IrfanViewLanguageClear = 'uk'}
+        
     }
     Switch ($Language) {
-        0 { $IrfanViewLanguageLongClear = 'Danish'}
-        1 { $IrfanViewLanguageLongClear = 'Dutch'}
+        0 { $IrfanViewLanguageLongClear = 'Arabic'}
+        1 { $IrfanViewLanguageLongClear = 'Chinese'}
         2 { $IrfanViewLanguageLongClear = 'English'}
-        3 { $IrfanViewLanguageLongClear = 'Finnish'}
-        4 { $IrfanViewLanguageLongClear = 'French'}
-        5 { $IrfanViewLanguageLongClear = 'German'}
-        6 { $IrfanViewLanguageLongClear = 'Italian'}
-        7 { $IrfanViewLanguageLongClear = 'Japanese'}
-        8 { $IrfanViewLanguageLongClear = 'Korean'}
-        9 { $IrfanViewLanguageLongClear = 'English'}
-        10 { $IrfanViewLanguageLongClear = 'Polish'}
-        11 { $IrfanViewLanguageLongClear = 'Portuguese'}
-        12 { $IrfanViewLanguageLongClear = 'Russian'}
-        13 { $IrfanViewLanguageLongClear = 'Spanish'}
-        14 { $IrfanViewLanguageLongClear = 'Swedish'}
+        3 { $IrfanViewLanguageLongClear = 'Czech'}
+        4 { $IrfanViewLanguageLongClear = 'Danish'}
+        5 { $IrfanViewLanguageLongClear = 'Dutch'}
+        6 { $IrfanViewLanguageLongClear = 'English'}
+        7 { $IrfanViewLanguageLongClear = 'Finnish'}
+        8 { $IrfanViewLanguageLongClear = 'French'}
+        9 { $IrfanViewLanguageLongClear = 'German'}
+        10 { $IrfanViewLanguageLongClear = 'Hebrew'}
+        11 { $IrfanViewLanguageLongClear = 'Hungarian'}
+        12 { $IrfanViewLanguageLongClear = 'Italian'}
+        13 { $IrfanViewLanguageLongClear = 'Japanese'}
+        14 { $IrfanViewLanguageLongClear = 'Korean'}
+        15 { $IrfanViewLanguageLongClear = 'English'}
+        16 { $IrfanViewLanguageLongClear = 'Polish'}
+        17 { $IrfanViewLanguageLongClear = 'Portuguese'}
+        18 { $IrfanViewLanguageLongClear = 'Romanian'}
+        19 { $IrfanViewLanguageLongClear = 'Russian'}
+        20 { $IrfanViewLanguageLongClear = 'Slovak'}
+        21 { $IrfanViewLanguageLongClear = 'Slovenian'}
+        22 { $IrfanViewLanguageLongClear = 'Spanish'}
+        23 { $IrfanViewLanguageLongClear = 'Swedish'}
+        24 { $IrfanViewLanguageLongClear = 'Turkish'}
+        25 { $IrfanViewLanguageLongClear = 'Ukrainian'}
     }
 }
 
 If ($KeePass_Language -ne "") {
     Switch ($KeePass_Language) {
-        1 { $KeePassLanguageClear = 'Danish'}
-        2 { $KeePassLanguageClear = 'Dutch'}
-        3 { $KeePassLanguageClear = 'English'}
-        4 { $KeePassLanguageClear = 'Finnish'}
-        5 { $KeePassLanguageClear = 'French'}
-        6 { $KeePassLanguageClear = 'German'}
-        7 { $KeePassLanguageClear = 'Italian'}
-        8 { $KeePassLanguageClear = 'Japanese'}
-        9 { $KeePassLanguageClear = 'Korean'}
-        10 { $KeePassLanguageClear = 'Norwegian'}
-        11 { $KeePassLanguageClear = 'Polish'}
-        12 { $KeePassLanguageClear = 'Portuguese'}
-        13 { $KeePassLanguageClear = 'Russian'}
-        14 { $KeePassLanguageClear = 'Spanish'}
-        15 { $KeePassLanguageClear = 'Swedish'}
+        1 { $KeePassLanguageClear = 'Arabic'}
+        2 { $KeePassLanguageClear = 'Chinese'}
+        3 { $KeePassLanguageClear = 'Croatian'}
+        4 { $KeePassLanguageClear = 'Czech'}
+        5 { $KeePassLanguageClear = 'Danish'}
+        6 { $KeePassLanguageClear = 'Dutch'}
+        7 { $KeePassLanguageClear = 'English'}
+        8 { $KeePassLanguageClear = 'Finnish'}
+        9 { $KeePassLanguageClear = 'French'}
+        10 { $KeePassLanguageClear = 'German'}
+        11 { $KeePassLanguageClear = 'Hebrew'}
+        12 { $KeePassLanguageClear = 'Hungarian'}
+        13 { $KeePassLanguageClear = 'Italian'}
+        14 { $KeePassLanguageClear = 'Japanese'}
+        15 { $KeePassLanguageClear = 'Korean'}
+        16 { $KeePassLanguageClear = 'Norwegian'}
+        17 { $KeePassLanguageClear = 'Polish'}
+        18 { $KeePassLanguageClear = 'Portuguese'}
+        19 { $KeePassLanguageClear = 'Romanian'}
+        20 { $KeePassLanguageClear = 'Russian'}
+        21 { $KeePassLanguageClear = 'Slovak'}
+        22 { $KeePassLanguageClear = 'Slovenian'}
+        23 { $KeePassLanguageClear = 'Spanish'}
+        24 { $KeePassLanguageClear = 'Swedish'}
+        25 { $KeePassLanguageClear = 'Turkish'}
+        26 { $KeePassLanguageClear = 'Ukrainian'}
     }
 }
 Else {
@@ -6746,40 +8828,62 @@ Else {
 
 If ($MS365Apps_Language -ne "") {
     Switch ($MS365Apps_Language) {
-        1 { $MS365AppsLanguageClear = 'da-DK'}
-        2 { $MS365AppsLanguageClear = 'nl-NL'}
-        3 { $MS365AppsLanguageClear = 'en-US'}
-        4 { $MS365AppsLanguageClear = 'fi-FI'}
-        5 { $MS365AppsLanguageClear = 'fr-FR'}
-        6 { $MS365AppsLanguageClear = 'de-DE'}
-        7 { $MS365AppsLanguageClear = 'it-IT'}
-        8 { $MS365AppsLanguageClear = 'ja-JP'}
-        9 { $MS365AppsLanguageClear = 'ko-KR'}
-        10 { $MS365AppsLanguageClear = 'nb-NO'}
-        11 { $MS365AppsLanguageClear = 'pl-PL'}
-        12 { $MS365AppsLanguageClear = 'pt-PT'}
-        13 { $MS365AppsLanguageClear = 'ru-RU'}
-        14 { $MS365AppsLanguageClear = 'es-ES'}
-        15 { $MS365AppsLanguageClear = 'sv-SE'}
+        1 { $MS365AppsLanguageClear = 'ar-SA'}
+        2 { $MS365AppsLanguageClear = 'zh-CN'}
+        3 { $MS365AppsLanguageClear = 'hr-HR'}
+        4 { $MS365AppsLanguageClear = 'cs-CZ'}
+        5 { $MS365AppsLanguageClear = 'da-DK'}
+        6 { $MS365AppsLanguageClear = 'nl-NL'}
+        7 { $MS365AppsLanguageClear = 'en-US'}
+        8 { $MS365AppsLanguageClear = 'fi-FI'}
+        9 { $MS365AppsLanguageClear = 'fr-FR'}
+        10 { $MS365AppsLanguageClear = 'de-DE'}
+        11 { $MS365AppsLanguageClear = 'he-IL'}
+        12 { $MS365AppsLanguageClear = 'hu-HU'}
+        13 { $MS365AppsLanguageClear = 'it-IT'}
+        14 { $MS365AppsLanguageClear = 'ja-JP'}
+        15 { $MS365AppsLanguageClear = 'ko-KR'}
+        16 { $MS365AppsLanguageClear = 'nb-NO'}
+        17 { $MS365AppsLanguageClear = 'pl-PL'}
+        18 { $MS365AppsLanguageClear = 'pt-PT'}
+        19 { $MS365AppsLanguageClear = 'ro-RO'}
+        20 { $MS365AppsLanguageClear = 'ru-RU'}
+        21 { $MS365AppsLanguageClear = 'sk-SK'}
+        22 { $MS365AppsLanguageClear = 'sl-SL'}
+        23 { $MS365AppsLanguageClear = 'es-ES'}
+        24 { $MS365AppsLanguageClear = 'sv-SE'}
+        25 { $MS365AppsLanguageClear = 'tr-TR'}
+        26 { $MS365AppsLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MS365AppsLanguageClear = 'da-DK'}
-        1 { $MS365AppsLanguageClear = 'nl-NL'}
-        2 { $MS365AppsLanguageClear = 'en-US'}
-        3 { $MS365AppsLanguageClear = 'fi-FI'}
-        4 { $MS365AppsLanguageClear = 'fr-FR'}
-        5 { $MS365AppsLanguageClear = 'de-DE'}
-        6 { $MS365AppsLanguageClear = 'it-IT'}
-        7 { $MS365AppsLanguageClear = 'ja-JP'}
-        8 { $MS365AppsLanguageClear = 'ko-KR'}
-        9 { $MS365AppsLanguageClear = 'nb-NO'}
-        10 { $MS365AppsLanguageClear = 'pl-PL'}
-        11 { $MS365AppsLanguageClear = 'pt-PT'}
-        12 { $MS365AppsLanguageClear = 'ru-RU'}
-        13 { $MS365AppsLanguageClear = 'es-ES'}
-        14 { $MS365AppsLanguageClear = 'sv-SE'}
+        0 { $MS365AppsLanguageClear = 'ar-SA'}
+        1 { $MS365AppsLanguageClear = 'zh-CN'}
+        2 { $MS365AppsLanguageClear = 'hr-HR'}
+        3 { $MS365AppsLanguageClear = 'cs-CZ'}
+        4 { $MS365AppsLanguageClear = 'da-DK'}
+        5 { $MS365AppsLanguageClear = 'nl-NL'}
+        6 { $MS365AppsLanguageClear = 'en-US'}
+        7 { $MS365AppsLanguageClear = 'fi-FI'}
+        8 { $MS365AppsLanguageClear = 'fr-FR'}
+        9 { $MS365AppsLanguageClear = 'de-DE'}
+        10 { $MS365AppsLanguageClear = 'he-IL'}
+        11 { $MS365AppsLanguageClear = 'hu-HU'}
+        12 { $MS365AppsLanguageClear = 'it-IT'}
+        13 { $MS365AppsLanguageClear = 'ja-JP'}
+        14 { $MS365AppsLanguageClear = 'ko-KR'}
+        15 { $MS365AppsLanguageClear = 'nb-NO'}
+        16 { $MS365AppsLanguageClear = 'pl-PL'}
+        17 { $MS365AppsLanguageClear = 'pt-PT'}
+        18 { $MS365AppsLanguageClear = 'ro-RO'}
+        19 { $MS365AppsLanguageClear = 'ru-RU'}
+        20 { $MS365AppsLanguageClear = 'sk-SK'}
+        21 { $MS365AppsLanguageClear = 'sl-SL'}
+        22 { $MS365AppsLanguageClear = 'es-ES'}
+        23 { $MS365AppsLanguageClear = 'sv-SE'}
+        24 { $MS365AppsLanguageClear = 'tr-TR'}
+        25 { $MS365AppsLanguageClear = 'uk-UA'}
     }
 }
 If ($MS365Apps_Installer -ne "") {
@@ -6812,79 +8916,123 @@ Switch ($MS365AppsChannel) {
 
 If ($MS365Apps_Project_Language -ne "") {
     Switch ($MS365Apps_Project_Language) {
-        1 { $MS365AppsProjectLanguageClear = 'da-DK'}
-        2 { $MS365AppsProjectLanguageClear = 'nl-NL'}
-        3 { $MS365AppsProjectLanguageClear = 'en-US'}
-        4 { $MS365AppsProjectLanguageClear = 'fi-FI'}
-        5 { $MS365AppsProjectLanguageClear = 'fr-FR'}
-        6 { $MS365AppsProjectLanguageClear = 'de-DE'}
-        7 { $MS365AppsProjectLanguageClear = 'it-IT'}
-        8 { $MS365AppsProjectLanguageClear = 'ja-JP'}
-        9 { $MS365AppsProjectLanguageClear = 'ko-KR'}
-        10 { $MS365AppsProjectLanguageClear = 'nb-NO'}
-        11 { $MS365AppsProjectLanguageClear = 'pl-PL'}
-        12 { $MS365AppsProjectLanguageClear = 'pt-PT'}
-        13 { $MS365AppsProjectLanguageClear = 'ru-RU'}
-        14 { $MS365AppsProjectLanguageClear = 'es-ES'}
-        15 { $MS365AppsProjectLanguageClear = 'sv-SE'}
+        1 { $MS365AppsProjectLanguageClear = 'ar-SA'}
+        2 { $MS365AppsProjectLanguageClear = 'zh-CN'}
+        3 { $MS365AppsProjectLanguageClear = 'hr-HR'}
+        4 { $MS365AppsProjectLanguageClear = 'cs-CZ'}
+        5 { $MS365AppsProjectLanguageClear = 'da-DK'}
+        6 { $MS365AppsProjectLanguageClear = 'nl-NL'}
+        7 { $MS365AppsProjectLanguageClear = 'en-US'}
+        8 { $MS365AppsProjectLanguageClear = 'fi-FI'}
+        9 { $MS365AppsProjectLanguageClear = 'fr-FR'}
+        10 { $MS365AppsProjectLanguageClear = 'de-DE'}
+        11 { $MS365AppsProjectLanguageClear = 'he-IL'}
+        12 { $MS365AppsProjectLanguageClear = 'hu-HU'}
+        13 { $MS365AppsProjectLanguageClear = 'it-IT'}
+        14 { $MS365AppsProjectLanguageClear = 'ja-JP'}
+        15 { $MS365AppsProjectLanguageClear = 'ko-KR'}
+        16 { $MS365AppsProjectLanguageClear = 'nb-NO'}
+        17 { $MS365AppsProjectLanguageClear = 'pl-PL'}
+        18 { $MS365AppsProjectLanguageClear = 'pt-PT'}
+        19 { $MS365AppsProjectLanguageClear = 'ro-RO'}
+        20 { $MS365AppsProjectLanguageClear = 'ru-RU'}
+        21 { $MS365AppsProjectLanguageClear = 'sk-SK'}
+        22 { $MS365AppsProjectLanguageClear = 'sl-SL'}
+        23 { $MS365AppsProjectLanguageClear = 'es-ES'}
+        24 { $MS365AppsProjectLanguageClear = 'sv-SE'}
+        25 { $MS365AppsProjectLanguageClear = 'tr-TR'}
+        26 { $MS365AppsProjectLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MS365AppsProjectLanguageClear = 'da-DK'}
-        1 { $MS365AppsProjectLanguageClear = 'nl-NL'}
-        2 { $MS365AppsProjectLanguageClear = 'en-US'}
-        3 { $MS365AppsProjectLanguageClear = 'fi-FI'}
-        4 { $MS365AppsProjectLanguageClear = 'fr-FR'}
-        5 { $MS365AppsProjectLanguageClear = 'de-DE'}
-        6 { $MS365AppsProjectLanguageClear = 'it-IT'}
-        7 { $MS365AppsProjectLanguageClear = 'ja-JP'}
-        8 { $MS365AppsProjectLanguageClear = 'ko-KR'}
-        9 { $MS365AppsProjectLanguageClear = 'nb-NO'}
-        10 { $MS365AppsProjectLanguageClear = 'pl-PL'}
-        11 { $MS365AppsProjectLanguageClear = 'pt-PT'}
-        12 { $MS365AppsProjectLanguageClear = 'ru-RU'}
-        13 { $MS365AppsProjectLanguageClear = 'es-ES'}
-        14 { $MS365AppsProjectLanguageClear = 'sv-SE'}
+        0 { $MS365AppsProjectLanguageClear = 'ar-SA'}
+        1 { $MS365AppsProjectLanguageClear = 'zh-CN'}
+        2 { $MS365AppsProjectLanguageClear = 'hr-HR'}
+        3 { $MS365AppsProjectLanguageClear = 'cs-CZ'}
+        4 { $MS365AppsProjectLanguageClear = 'da-DK'}
+        5 { $MS365AppsProjectLanguageClear = 'nl-NL'}
+        6 { $MS365AppsProjectLanguageClear = 'en-US'}
+        7 { $MS365AppsProjectLanguageClear = 'fi-FI'}
+        8 { $MS365AppsProjectLanguageClear = 'fr-FR'}
+        9 { $MS365AppsProjectLanguageClear = 'de-DE'}
+        10 { $MS365AppsProjectLanguageClear = 'he-IL'}
+        11 { $MS365AppsProjectLanguageClear = 'hu-HU'}
+        12 { $MS365AppsProjectLanguageClear = 'it-IT'}
+        13 { $MS365AppsProjectLanguageClear = 'ja-JP'}
+        14 { $MS365AppsProjectLanguageClear = 'ko-KR'}
+        15 { $MS365AppsProjectLanguageClear = 'nb-NO'}
+        16 { $MS365AppsProjectLanguageClear = 'pl-PL'}
+        17 { $MS365AppsProjectLanguageClear = 'pt-PT'}
+        18 { $MS365AppsProjectLanguageClear = 'ro-RO'}
+        19 { $MS365AppsProjectLanguageClear = 'ru-RU'}
+        20 { $MS365AppsProjectLanguageClear = 'sk-SK'}
+        21 { $MS365AppsProjectLanguageClear = 'sl-SL'}
+        22 { $MS365AppsProjectLanguageClear = 'es-ES'}
+        23 { $MS365AppsProjectLanguageClear = 'sv-SE'}
+        24 { $MS365AppsProjectLanguageClear = 'tr-TR'}
+        25 { $MS365AppsProjectLanguageClear = 'uk-UA'}
     }
 }
 
 If ($MS365Apps_Visio_Language -ne "") {
     Switch ($MS365Apps_Visio_Language) {
-        1 { $MS365AppsVisioLanguageClear = 'da-DK'}
-        2 { $MS365AppsVisioLanguageClear = 'nl-NL'}
-        3 { $MS365AppsVisioLanguageClear = 'en-US'}
-        4 { $MS365AppsVisioLanguageClear = 'fi-FI'}
-        5 { $MS365AppsVisioLanguageClear = 'fr-FR'}
-        6 { $MS365AppsVisioLanguageClear = 'de-DE'}
-        7 { $MS365AppsVisioLanguageClear = 'it-IT'}
-        8 { $MS365AppsVisioLanguageClear = 'ja-JP'}
-        9 { $MS365AppsVisioLanguageClear = 'ko-KR'}
-        10 { $MS365AppsVisioLanguageClear = 'nb-NO'}
-        11 { $MS365AppsVisioLanguageClear = 'pl-PL'}
-        12 { $MS365AppsVisioLanguageClear = 'pt-PT'}
-        13 { $MS365AppsVisioLanguageClear = 'ru-RU'}
-        14 { $MS365AppsVisioLanguageClear = 'es-ES'}
-        15 { $MS365AppsVisioLanguageClear = 'sv-SE'}
+        1 { $MS365AppsVisioLanguageClear = 'ar-SA'}
+        2 { $MS365AppsVisioLanguageClear = 'zh-CN'}
+        3 { $MS365AppsVisioLanguageClear = 'hr-HR'}
+        4 { $MS365AppsVisioLanguageClear = 'cs-CZ'}
+        5 { $MS365AppsVisioLanguageClear = 'da-DK'}
+        6 { $MS365AppsVisioLanguageClear = 'nl-NL'}
+        7 { $MS365AppsVisioLanguageClear = 'en-US'}
+        8 { $MS365AppsVisioLanguageClear = 'fi-FI'}
+        9 { $MS365AppsVisioLanguageClear = 'fr-FR'}
+        10 { $MS365AppsVisioLanguageClear = 'de-DE'}
+        11 { $MS365AppsVisioLanguageClear = 'he-IL'}
+        12 { $MS365AppsVisioLanguageClear = 'hu-HU'}
+        13 { $MS365AppsVisioLanguageClear = 'it-IT'}
+        14 { $MS365AppsVisioLanguageClear = 'ja-JP'}
+        15 { $MS365AppsVisioLanguageClear = 'ko-KR'}
+        16 { $MS365AppsVisioLanguageClear = 'nb-NO'}
+        17 { $MS365AppsVisioLanguageClear = 'pl-PL'}
+        18 { $MS365AppsVisioLanguageClear = 'pt-PT'}
+        19 { $MS365AppsVisioLanguageClear = 'ro-RO'}
+        20 { $MS365AppsVisioLanguageClear = 'ru-RU'}
+        21 { $MS365AppsVisioLanguageClear = 'sk-SK'}
+        22 { $MS365AppsVisioLanguageClear = 'sl-SL'}
+        23 { $MS365AppsVisioLanguageClear = 'es-ES'}
+        24 { $MS365AppsVisioLanguageClear = 'sv-SE'}
+        25 { $MS365AppsVisioLanguageClear = 'tr-TR'}
+        26 { $MS365AppsVisioLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MS365AppsVisioLanguageClear = 'da-DK'}
-        1 { $MS365AppsVisioLanguageClear = 'nl-NL'}
-        2 { $MS365AppsVisioLanguageClear = 'en-US'}
-        3 { $MS365AppsVisioLanguageClear = 'fi-FI'}
-        4 { $MS365AppsVisioLanguageClear = 'fr-FR'}
-        5 { $MS365AppsVisioLanguageClear = 'de-DE'}
-        6 { $MS365AppsVisioLanguageClear = 'it-IT'}
-        7 { $MS365AppsVisioLanguageClear = 'ja-JP'}
-        8 { $MS365AppsVisioLanguageClear = 'ko-KR'}
-        9 { $MS365AppsVisioLanguageClear = 'nb-NO'}
-        10 { $MS365AppsVisioLanguageClear = 'pl-PL'}
-        11 { $MS365AppsVisioLanguageClear = 'pt-PT'}
-        12 { $MS365AppsVisioLanguageClear = 'ru-RU'}
-        13 { $MS365AppsVisioLanguageClear = 'es-ES'}
-        14 { $MS365AppsVisioLanguageClear = 'sv-SE'}
+        0 { $MS365AppsVisioLanguageClear = 'ar-SA'}
+        1 { $MS365AppsVisioLanguageClear = 'zh-CN'}
+        2 { $MS365AppsVisioLanguageClear = 'hr-HR'}
+        3 { $MS365AppsVisioLanguageClear = 'cs-CZ'}
+        4 { $MS365AppsVisioLanguageClear = 'da-DK'}
+        5 { $MS365AppsVisioLanguageClear = 'nl-NL'}
+        6 { $MS365AppsVisioLanguageClear = 'en-US'}
+        7 { $MS365AppsVisioLanguageClear = 'fi-FI'}
+        8 { $MS365AppsVisioLanguageClear = 'fr-FR'}
+        9 { $MS365AppsVisioLanguageClear = 'de-DE'}
+        10 { $MS365AppsVisioLanguageClear = 'he-IL'}
+        11 { $MS365AppsVisioLanguageClear = 'hu-HU'}
+        12 { $MS365AppsVisioLanguageClear = 'it-IT'}
+        13 { $MS365AppsVisioLanguageClear = 'ja-JP'}
+        14 { $MS365AppsVisioLanguageClear = 'ko-KR'}
+        15 { $MS365AppsVisioLanguageClear = 'nb-NO'}
+        16 { $MS365AppsVisioLanguageClear = 'pl-PL'}
+        17 { $MS365AppsVisioLanguageClear = 'pt-PT'}
+        18 { $MS365AppsVisioLanguageClear = 'ro-RO'}
+        19 { $MS365AppsVisioLanguageClear = 'ru-RU'}
+        20 { $MS365AppsVisioLanguageClear = 'sk-SK'}
+        21 { $MS365AppsVisioLanguageClear = 'sl-SL'}
+        22 { $MS365AppsVisioLanguageClear = 'es-ES'}
+        23 { $MS365AppsVisioLanguageClear = 'sv-SE'}
+        24 { $MS365AppsVisioLanguageClear = 'tr-TR'}
+        25 { $MS365AppsVisioLanguageClear = 'uk-UA'}
     }
 }
 
@@ -7041,40 +9189,62 @@ Else {
 
 If ($MSOffice_Language -ne "") {
     Switch ($MSOffice_Language) {
-        1 { $MSOfficeLanguageClear = 'da-DK'}
-        2 { $MSOfficeLanguageClear = 'nl-NL'}
-        3 { $MSOfficeLanguageClear = 'en-US'}
-        4 { $MSOfficeLanguageClear = 'fi-FI'}
-        5 { $MSOfficeLanguageClear = 'fr-FR'}
-        6 { $MSOfficeLanguageClear = 'de-DE'}
-        7 { $MSOfficeLanguageClear = 'it-IT'}
-        8 { $MSOfficeLanguageClear = 'ja-JP'}
-        9 { $MSOfficeLanguageClear = 'ko-KR'}
-        10 { $MSOfficeLanguageClear = 'nb-NO'}
-        11 { $MSOfficeLanguageClear = 'pl-PL'}
-        12 { $MSOfficeLanguageClear = 'pt-PT'}
-        13 { $MSOfficeLanguageClear = 'ru-RU'}
-        14 { $MSOfficeLanguageClear = 'es-ES'}
-        15 { $MSOfficeLanguageClear = 'sv-SE'}
+        1 { $MSOfficeLanguageClear = 'ar-SA'}
+        2 { $MSOfficeLanguageClear = 'zh-CN'}
+        3 { $MSOfficeLanguageClear = 'hr-HR'}
+        4 { $MSOfficeLanguageClear = 'cs-CZ'}
+        5 { $MSOfficeLanguageClear = 'da-DK'}
+        6 { $MSOfficeLanguageClear = 'nl-NL'}
+        7 { $MSOfficeLanguageClear = 'en-US'}
+        8 { $MSOfficeLanguageClear = 'fi-FI'}
+        9 { $MSOfficeLanguageClear = 'fr-FR'}
+        10 { $MSOfficeLanguageClear = 'de-DE'}
+        11 { $MSOfficeLanguageClear = 'he-IL'}
+        12 { $MSOfficeLanguageClear = 'hu-HU'}
+        13 { $MSOfficeLanguageClear = 'it-IT'}
+        14 { $MSOfficeLanguageClear = 'ja-JP'}
+        15 { $MSOfficeLanguageClear = 'ko-KR'}
+        16 { $MSOfficeLanguageClear = 'nb-NO'}
+        17 { $MSOfficeLanguageClear = 'pl-PL'}
+        18 { $MSOfficeLanguageClear = 'pt-PT'}
+        19 { $MSOfficeLanguageClear = 'ro-RO'}
+        20 { $MSOfficeLanguageClear = 'ru-RU'}
+        21 { $MSOfficeLanguageClear = 'sk-SK'}
+        22 { $MSOfficeLanguageClear = 'sl-SL'}
+        23 { $MSOfficeLanguageClear = 'es-ES'}
+        24 { $MSOfficeLanguageClear = 'sv-SE'}
+        25 { $MSOfficeLanguageClear = 'tr-TR'}
+        26 { $MSOfficeLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MSOfficeLanguageClear = 'da-DK'}
-        1 { $MSOfficeLanguageClear = 'nl-NL'}
-        2 { $MSOfficeLanguageClear = 'en-US'}
-        3 { $MSOfficeLanguageClear = 'fi-FI'}
-        4 { $MSOfficeLanguageClear = 'fr-FR'}
-        5 { $MSOfficeLanguageClear = 'de-DE'}
-        6 { $MSOfficeLanguageClear = 'it-IT'}
-        7 { $MSOfficeLanguageClear = 'ja-JP'}
-        8 { $MSOfficeLanguageClear = 'ko-KR'}
-        9 { $MSOfficeLanguageClear = 'nb-NO'}
-        10 { $MSOfficeLanguageClear = 'pl-PL'}
-        11 { $MSOfficeLanguageClear = 'pt-PT'}
-        12 { $MSOfficeLanguageClear = 'ru-RU'}
-        13 { $MSOfficeLanguageClear = 'es-ES'}
-        14 { $MSOfficeLanguageClear = 'sv-SE'}
+        0 { $MSOfficeLanguageClear = 'ar-SA'}
+        1 { $MSOfficeLanguageClear = 'zh-CN'}
+        2 { $MSOfficeLanguageClear = 'hr-HR'}
+        3 { $MSOfficeLanguageClear = 'cs-CZ'}
+        4 { $MSOfficeLanguageClear = 'da-DK'}
+        5 { $MSOfficeLanguageClear = 'nl-NL'}
+        6 { $MSOfficeLanguageClear = 'en-US'}
+        7 { $MSOfficeLanguageClear = 'fi-FI'}
+        8 { $MSOfficeLanguageClear = 'fr-FR'}
+        9 { $MSOfficeLanguageClear = 'de-DE'}
+        10 { $MSOfficeLanguageClear = 'he-IL'}
+        11 { $MSOfficeLanguageClear = 'hu-HU'}
+        12 { $MSOfficeLanguageClear = 'it-IT'}
+        13 { $MSOfficeLanguageClear = 'ja-JP'}
+        14 { $MSOfficeLanguageClear = 'ko-KR'}
+        15 { $MSOfficeLanguageClear = 'nb-NO'}
+        16 { $MSOfficeLanguageClear = 'pl-PL'}
+        17 { $MSOfficeLanguageClear = 'pt-PT'}
+        18 { $MSOfficeLanguageClear = 'ro-RO'}
+        19 { $MSOfficeLanguageClear = 'ru-RU'}
+        20 { $MSOfficeLanguageClear = 'sk-SK'}
+        21 { $MSOfficeLanguageClear = 'sl-SL'}
+        22 { $MSOfficeLanguageClear = 'es-ES'}
+        23 { $MSOfficeLanguageClear = 'sv-SE'}
+        24 { $MSOfficeLanguageClear = 'tr-TR'}
+        25 { $MSOfficeLanguageClear = 'uk-UA'}
     }
 }
 
@@ -7097,79 +9267,123 @@ Switch ($MSOfficeVersion) {
 
 If ($MSOffice_Project_Language -ne "") {
     Switch ($MSOffice_Project_Language) {
-        1 { $MSOfficeProjectLanguageClear = 'da-DK'}
-        2 { $MSOfficeProjectLanguageClear = 'nl-NL'}
-        3 { $MSOfficeProjectLanguageClear = 'en-US'}
-        4 { $MSOfficeProjectLanguageClear = 'fi-FI'}
-        5 { $MSOfficeProjectLanguageClear = 'fr-FR'}
-        6 { $MSOfficeProjectLanguageClear = 'de-DE'}
-        7 { $MSOfficeProjectLanguageClear = 'it-IT'}
-        8 { $MSOfficeProjectLanguageClear = 'ja-JP'}
-        9 { $MSOfficeProjectLanguageClear = 'ko-KR'}
-        10 { $MSOfficeProjectLanguageClear = 'nb-NO'}
-        11 { $MSOfficeProjectLanguageClear = 'pl-PL'}
-        12 { $MSOfficeProjectLanguageClear = 'pt-PT'}
-        13 { $MSOfficeProjectLanguageClear = 'ru-RU'}
-        14 { $MSOfficeProjectLanguageClear = 'es-ES'}
-        15 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+        1 { $MSOfficeProjectLanguageClear = 'ar-SA'}
+        2 { $MSOfficeProjectLanguageClear = 'zh-CN'}
+        3 { $MSOfficeProjectLanguageClear = 'hr-HR'}
+        4 { $MSOfficeProjectLanguageClear = 'cs-CZ'}
+        5 { $MSOfficeProjectLanguageClear = 'da-DK'}
+        6 { $MSOfficeProjectLanguageClear = 'nl-NL'}
+        7 { $MSOfficeProjectLanguageClear = 'en-US'}
+        8 { $MSOfficeProjectLanguageClear = 'fi-FI'}
+        9 { $MSOfficeProjectLanguageClear = 'fr-FR'}
+        10 { $MSOfficeProjectLanguageClear = 'de-DE'}
+        11 { $MSOfficeProjectLanguageClear = 'he-IL'}
+        12 { $MSOfficeProjectLanguageClear = 'hu-HU'}
+        13 { $MSOfficeProjectLanguageClear = 'it-IT'}
+        14 { $MSOfficeProjectLanguageClear = 'ja-JP'}
+        15 { $MSOfficeProjectLanguageClear = 'ko-KR'}
+        16 { $MSOfficeProjectLanguageClear = 'nb-NO'}
+        17 { $MSOfficeProjectLanguageClear = 'pl-PL'}
+        18 { $MSOfficeProjectLanguageClear = 'pt-PT'}
+        19 { $MSOfficeProjectLanguageClear = 'ro-RO'}
+        20 { $MSOfficeProjectLanguageClear = 'ru-RU'}
+        21 { $MSOfficeProjectLanguageClear = 'sk-SK'}
+        22 { $MSOfficeProjectLanguageClear = 'sl-SL'}
+        23 { $MSOfficeProjectLanguageClear = 'es-ES'}
+        24 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+        25 { $MSOfficeProjectLanguageClear = 'tr-TR'}
+        26 { $MSOfficeProjectLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MSOfficeProjectLanguageClear = 'da-DK'}
-        1 { $MSOfficeProjectLanguageClear = 'nl-NL'}
-        2 { $MSOfficeProjectLanguageClear = 'en-US'}
-        3 { $MSOfficeProjectLanguageClear = 'fi-FI'}
-        4 { $MSOfficeProjectLanguageClear = 'fr-FR'}
-        5 { $MSOfficeProjectLanguageClear = 'de-DE'}
-        6 { $MSOfficeProjectLanguageClear = 'it-IT'}
-        7 { $MSOfficeProjectLanguageClear = 'ja-JP'}
-        8 { $MSOfficeProjectLanguageClear = 'ko-KR'}
-        9 { $MSOfficeProjectLanguageClear = 'nb-NO'}
-        10 { $MSOfficeProjectLanguageClear = 'pl-PL'}
-        11 { $MSOfficeProjectLanguageClear = 'pt-PT'}
-        12 { $MSOfficeProjectLanguageClear = 'ru-RU'}
-        13 { $MSOfficeProjectLanguageClear = 'es-ES'}
-        14 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+        0 { $MSOfficeProjectLanguageClear = 'ar-SA'}
+        1 { $MSOfficeProjectLanguageClear = 'zh-CN'}
+        2 { $MSOfficeProjectLanguageClear = 'hr-HR'}
+        3 { $MSOfficeProjectLanguageClear = 'cs-CZ'}
+        4 { $MSOfficeProjectLanguageClear = 'da-DK'}
+        5 { $MSOfficeProjectLanguageClear = 'nl-NL'}
+        6 { $MSOfficeProjectLanguageClear = 'en-US'}
+        7 { $MSOfficeProjectLanguageClear = 'fi-FI'}
+        8 { $MSOfficeProjectLanguageClear = 'fr-FR'}
+        9 { $MSOfficeProjectLanguageClear = 'de-DE'}
+        10 { $MSOfficeProjectLanguageClear = 'he-IL'}
+        11 { $MSOfficeProjectLanguageClear = 'hu-HU'}
+        12 { $MSOfficeProjectLanguageClear = 'it-IT'}
+        13 { $MSOfficeProjectLanguageClear = 'ja-JP'}
+        14 { $MSOfficeProjectLanguageClear = 'ko-KR'}
+        15 { $MSOfficeProjectLanguageClear = 'nb-NO'}
+        16 { $MSOfficeProjectLanguageClear = 'pl-PL'}
+        17 { $MSOfficeProjectLanguageClear = 'pt-PT'}
+        18 { $MSOfficeProjectLanguageClear = 'ro-RO'}
+        19 { $MSOfficeProjectLanguageClear = 'ru-RU'}
+        20 { $MSOfficeProjectLanguageClear = 'sk-SK'}
+        21 { $MSOfficeProjectLanguageClear = 'sl-SL'}
+        22 { $MSOfficeProjectLanguageClear = 'es-ES'}
+        23 { $MSOfficeProjectLanguageClear = 'sv-SE'}
+        24 { $MSOfficeProjectLanguageClear = 'tr-TR'}
+        25 { $MSOfficeProjectLanguageClear = 'uk-UA'}
     }
 }
 
 If ($MSOffice_Visio_Language -ne "") {
     Switch ($MSOffice_Visio_Language) {
-        1 { $MSOfficeVisioLanguageClear = 'da-DK'}
-        2 { $MSOfficeVisioLanguageClear = 'nl-NL'}
-        3 { $MSOfficeVisioLanguageClear = 'en-US'}
-        4 { $MSOfficeVisioLanguageClear = 'fi-FI'}
-        5 { $MSOfficeVisioLanguageClear = 'fr-FR'}
-        6 { $MSOfficeVisioLanguageClear = 'de-DE'}
-        7 { $MSOfficeVisioLanguageClear = 'it-IT'}
-        8 { $MSOfficeVisioLanguageClear = 'ja-JP'}
-        9 { $MSOfficeVisioLanguageClear = 'ko-KR'}
-        10 { $MSOfficeVisioLanguageClear = 'nb-NO'}
-        11 { $MSOfficeVisioLanguageClear = 'pl-PL'}
-        12 { $MSOfficeVisioLanguageClear = 'pt-PT'}
-        13 { $MSOfficeVisioLanguageClear = 'ru-RU'}
-        14 { $MSOfficeVisioLanguageClear = 'es-ES'}
-        15 { $MSOfficeVisioLanguageClear = 'sv-SE'}
+        1 { $MSOfficeVisioLanguageClear = 'ar-SA'}
+        2 { $MSOfficeVisioLanguageClear = 'zh-CN'}
+        3 { $MSOfficeVisioLanguageClear = 'hr-HR'}
+        4 { $MSOfficeVisioLanguageClear = 'cs-CZ'}
+        5 { $MSOfficeVisioLanguageClear = 'da-DK'}
+        6 { $MSOfficeVisioLanguageClear = 'nl-NL'}
+        7 { $MSOfficeVisioLanguageClear = 'en-US'}
+        8 { $MSOfficeVisioLanguageClear = 'fi-FI'}
+        9 { $MSOfficeVisioLanguageClear = 'fr-FR'}
+        10 { $MSOfficeVisioLanguageClear = 'de-DE'}
+        11 { $MSOfficeVisioLanguageClear = 'he-IL'}
+        12 { $MSOfficeVisioLanguageClear = 'hu-HU'}
+        13 { $MSOfficeVisioLanguageClear = 'it-IT'}
+        14 { $MSOfficeVisioLanguageClear = 'ja-JP'}
+        15 { $MSOfficeVisioLanguageClear = 'ko-KR'}
+        16 { $MSOfficeVisioLanguageClear = 'nb-NO'}
+        17 { $MSOfficeVisioLanguageClear = 'pl-PL'}
+        18 { $MSOfficeVisioLanguageClear = 'pt-PT'}
+        19 { $MSOfficeVisioLanguageClear = 'ro-RO'}
+        20 { $MSOfficeVisioLanguageClear = 'ru-RU'}
+        21 { $MSOfficeVisioLanguageClear = 'sk-SK'}
+        22 { $MSOfficeVisioLanguageClear = 'sl-SL'}
+        23 { $MSOfficeVisioLanguageClear = 'es-ES'}
+        24 { $MSOfficeVisioLanguageClear = 'sv-SE'}
+        25 { $MSOfficeVisioLanguageClear = 'tr-TR'}
+        26 { $MSOfficeVisioLanguageClear = 'uk-UA'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MSOfficeVisioLanguageClear = 'da-DK'}
-        1 { $MSOfficeVisioLanguageClear = 'nl-NL'}
-        2 { $MSOfficeVisioLanguageClear = 'en-US'}
-        3 { $MSOfficeVisioLanguageClear = 'fi-FI'}
-        4 { $MSOfficeVisioLanguageClear = 'fr-FR'}
-        5 { $MSOfficeVisioLanguageClear = 'de-DE'}
-        6 { $MSOfficeVisioLanguageClear = 'it-IT'}
-        7 { $MSOfficeVisioLanguageClear = 'ja-JP'}
-        8 { $MSOfficeVisioLanguageClear = 'ko-KR'}
-        9 { $MSOfficeVisioLanguageClear = 'nb-NO'}
-        10 { $MSOfficeVisioLanguageClear = 'pl-PL'}
-        11 { $MSOfficeVisioLanguageClear = 'pt-PT'}
-        12 { $MSOfficeVisioLanguageClear = 'ru-RU'}
-        13 { $MSOfficeVisioLanguageClear = 'es-ES'}
-        14 { $MSOfficeVisioLanguageClear = 'sv-SE'}
+        0 { $MSOfficeVisioLanguageClear = 'ar-SA'}
+        1 { $MSOfficeVisioLanguageClear = 'zh-CN'}
+        2 { $MSOfficeVisioLanguageClear = 'hr-HR'}
+        3 { $MSOfficeVisioLanguageClear = 'cs-CZ'}
+        4 { $MSOfficeVisioLanguageClear = 'da-DK'}
+        5 { $MSOfficeVisioLanguageClear = 'nl-NL'}
+        6 { $MSOfficeVisioLanguageClear = 'en-US'}
+        7 { $MSOfficeVisioLanguageClear = 'fi-FI'}
+        8 { $MSOfficeVisioLanguageClear = 'fr-FR'}
+        9 { $MSOfficeVisioLanguageClear = 'de-DE'}
+        10 { $MSOfficeVisioLanguageClear = 'he-IL'}
+        11 { $MSOfficeVisioLanguageClear = 'hu-HU'}
+        12 { $MSOfficeVisioLanguageClear = 'it-IT'}
+        13 { $MSOfficeVisioLanguageClear = 'ja-JP'}
+        14 { $MSOfficeVisioLanguageClear = 'ko-KR'}
+        15 { $MSOfficeVisioLanguageClear = 'nb-NO'}
+        16 { $MSOfficeVisioLanguageClear = 'pl-PL'}
+        17 { $MSOfficeVisioLanguageClear = 'pt-PT'}
+        18 { $MSOfficeVisioLanguageClear = 'ro-RO'}
+        19 { $MSOfficeVisioLanguageClear = 'ru-RU'}
+        20 { $MSOfficeVisioLanguageClear = 'sk-SK'}
+        21 { $MSOfficeVisioLanguageClear = 'sl-SL'}
+        22 { $MSOfficeVisioLanguageClear = 'es-ES'}
+        23 { $MSOfficeVisioLanguageClear = 'sv-SE'}
+        24 { $MSOfficeVisioLanguageClear = 'tr-TR'}
+        25 { $MSOfficeVisioLanguageClear = 'uk-UA'}
     }
 }
 
@@ -7230,27 +9444,38 @@ Switch ($MSPowerShellRelease) {
 
 If ($MSSQLServerManagementStudio_Language -ne "") {
     Switch ($MSSQLServerManagementStudio_Language) {
-        1 { $MSSQLServerManagementStudioLanguageClear = 'English'}
-        2 { $MSSQLServerManagementStudioLanguageClear = 'French'}
-        3 { $MSSQLServerManagementStudioLanguageClear = 'German'}
-        4 { $MSSQLServerManagementStudioLanguageClear = 'Italian'}
-        5 { $MSSQLServerManagementStudioLanguageClear = 'Japanese'}
-        6 { $MSSQLServerManagementStudioLanguageClear = 'Korean'}
-        7 { $MSSQLServerManagementStudioLanguageClear = 'Portuguese (Brazil)'}
-        8 { $MSSQLServerManagementStudioLanguageClear = 'Russian'}
-        9 { $MSSQLServerManagementStudioLanguageClear = 'Spanish'}
+        1 { $MSSQLServerManagementStudioLanguageClear = 'Chinese'}
+        2 { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        3 { $MSSQLServerManagementStudioLanguageClear = 'French'}
+        4 { $MSSQLServerManagementStudioLanguageClear = 'German'}
+        5 { $MSSQLServerManagementStudioLanguageClear = 'Italian'}
+        6 { $MSSQLServerManagementStudioLanguageClear = 'Japanese'}
+        7 { $MSSQLServerManagementStudioLanguageClear = 'Korean'}
+        8 { $MSSQLServerManagementStudioLanguageClear = 'Portuguese (Brazil)'}
+        9 { $MSSQLServerManagementStudioLanguageClear = 'Russian'}
+        10 { $MSSQLServerManagementStudioLanguageClear = 'Spanish'}
     }
 }
 Else {
     $MSSQLServerManagementStudioLanguageClear = $LanguageClear
     Switch ($LanguageClear) {
+        Arabic { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Croatian { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Czech { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Danish { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Dutch { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Finnish { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Hebrew { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Hungarian { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Norwegian { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Polish { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Portuguese { $MSSQLServerManagementStudioLanguageClear = 'Portuguese (Brazil)'}
+        Romanian { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Slovak { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Slovenian { $MSSQLServerManagementStudioLanguageClear = 'English'}
         Swedish { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Turkish { $MSSQLServerManagementStudioLanguageClear = 'English'}
+        Ukrainian { $MSSQLServerManagementStudioLanguageClear = 'English'}
     }
 }
 
@@ -7372,7 +9597,13 @@ If ($MindView7_Language -ne "") {
 Else {
     $MindView7LanguageClear = $LanguageClear
     Switch ($LanguageClear) {
+        Arabic { $MindView7LanguageClear = 'English'}
+        Chinese { $MindView7LanguageClear = 'English'}
+        Croatian { $MindView7LanguageClear = 'English'}
+        Czech { $MindView7LanguageClear = 'English'}
         Dutch { $MindView7LanguageClear = 'English'}
+        Hebrew { $MindView7LanguageClear = 'English'}
+        Hungarian { $MindView7LanguageClear = 'English'}
         Italian { $MindView7LanguageClear = 'English'}
         Finnish { $MindView7LanguageClear = 'English'}
         Norwegian { $MindView7LanguageClear = 'English'}
@@ -7384,6 +9615,11 @@ Else {
         Polish { $MindView7LanguageClear = 'English'}
         Russian { $MindView7LanguageClear = 'English'}
         Spanish { $MindView7LanguageClear = 'English'}
+        Romanian { $MindView7LanguageClear = 'English'}
+        Slovak { $MindView7LanguageClear = 'English'}
+        Slovenian { $MindView7LanguageClear = 'English'}
+        Turkish { $MindView7LanguageClear = 'English'}
+        Ukrainian { $MindView7LanguageClear = 'English'}
     }
 }
 
@@ -7404,64 +9640,118 @@ Else {
 
 If ($Firefox_Language -ne "") {
     Switch ($Firefox_Language) {
-        1 { $FFLanguageClear = 'nl'}
-        2 { $FFLanguageClear = 'en-US'}
-        3 { $FFLanguageClear = 'fr'}
-        4 { $FFLanguageClear = 'de'}
-        5 { $FFLanguageClear = 'it'}
-        6 { $FFLanguageClear = 'ja'}
-        7 { $FFLanguageClear = 'pt-PT'}
-        8 { $FFLanguageClear = 'ru'}
-        9 { $FFLanguageClear = 'es-ES'}
-        10 { $FFLanguageClear = 'sv-SE'}
+        1 { $FFLanguageClear = 'ar'}
+        2 { $FFLanguageClear = 'zh-CN'}
+        3 { $FFLanguageClear = 'hr'}
+        4 { $FFLanguageClear = 'cs'}
+        5 { $FFLanguageClear = 'da'}
+        6 { $FFLanguageClear = 'nl'}
+        7 { $FFLanguageClear = 'en-US'}
+        8 { $FFLanguageClear = 'fi'}
+        9 { $FFLanguageClear = 'fr'}
+        10 { $FFLanguageClear = 'de'}
+        11 { $FFLanguageClear = 'he'}
+        12 { $FFLanguageClear = 'hu'}
+        13 { $FFLanguageClear = 'it'}
+        14 { $FFLanguageClear = 'ja'}
+        15 { $FFLanguageClear = 'ko'}
+        16 { $FFLanguageClear = 'nb-NO'}
+        17 { $FFLanguageClear = 'pl'}
+        18 { $FFLanguageClear = 'pt-PT'}
+        19 { $FFLanguageClear = 'ro'}
+        20 { $FFLanguageClear = 'ru'}
+        21 { $FFLanguageClear = 'sk'}
+        22 { $FFLanguageClear = 'sl'}
+        23 { $FFLanguageClear = 'es-ES'}
+        24 { $FFLanguageClear = 'sv-SE'}
+        25 { $FFLanguageClear = 'tr'}
+        26 { $FFLanguageClear = 'uk'}
     }
     Switch ($Firefox_Language) {
-        1 { $FFLanguageLongClear = 'Dutch'}
-        2 { $FFLanguageLongClear = 'English'}
-        3 { $FFLanguageLongClear = 'French'}
-        4 { $FFLanguageLongClear = 'German'}
-        5 { $FFLanguageLongClear = 'Italian'}
-        6 { $FFLanguageLongClear = 'Japanese'}
-        7 { $FFLanguageLongClear = 'Portuguese'}
-        8 { $FFLanguageLongClear = 'Russian'}
-        9 { $FFLanguageLongClear = 'Spanish'}
-        10 { $FFLanguageLongClear = 'Swedish'}
+        1 { $FFLanguageLongClear = 'Arabic'}
+        2 { $FFLanguageLongClear = 'Chinese'}
+        3 { $FFLanguageLongClear = 'Croatian'}
+        4 { $FFLanguageLongClear = 'Czech'}
+        5 { $FFLanguageLongClear = 'Danish'}
+        6 { $FFLanguageLongClear = 'Dutch'}
+        7 { $FFLanguageLongClear = 'English'}
+        8 { $FFLanguageLongClear = 'Finnish'}
+        9 { $FFLanguageLongClear = 'French'}
+        10 { $FFLanguageLongClear = 'German'}
+        11 { $FFLanguageLongClear = 'Hebrew'}
+        12 { $FFLanguageLongClear = 'Hungarian'}
+        13 { $FFLanguageLongClear = 'Italian'}
+        14 { $FFLanguageLongClear = 'Japanese'}
+        15 { $FFLanguageLongClear = 'Korean'}
+        16 { $FFLanguageLongClear = 'Norwegian'}
+        17 { $FFLanguageLongClear = 'Polish'}
+        18 { $FFLanguageLongClear = 'Portuguese'}
+        19 { $FFLanguageLongClear = 'Romanian'}
+        20 { $FFLanguageLongClear = 'Russian'}
+        21 { $FFLanguageLongClear = 'Slovak'}
+        22 { $FFLanguageLongClear = 'Slovenian'}
+        23 { $FFLanguageLongClear = 'Spanish'}
+        24 { $FFLanguageLongClear = 'Swedish'}
+        25 { $FFLanguageLongClear = 'Turkish'}
+        26 { $FFLanguageLongClear = 'Ukrainian'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $FFLanguageClear = 'en-US'}
-        1 { $FFLanguageClear = 'nl'}
-        2 { $FFLanguageClear = 'en-US'}
-        3 { $FFLanguageClear = 'en-US'}
-        4 { $FFLanguageClear = 'fr'}
-        5 { $FFLanguageClear = 'de'}
-        6 { $FFLanguageClear = 'it'}
-        7 { $FFLanguageClear = 'ja'}
-        8 { $FFLanguageClear = 'en-US'}
-        9 { $FFLanguageClear = 'en-US'}
-        10 { $FFLanguageClear = 'en-US'}
-        11 { $FFLanguageClear = 'pt-PT'}
-        12 { $FFLanguageClear = 'ru'}
-        13 { $FFLanguageClear = 'es-ES'}
-        14 { $FFLanguageClear = 'sv-SE'}
+        0 { $FFLanguageClear = 'ar'}
+        1 { $FFLanguageClear = 'zh-CN'}
+        2 { $FFLanguageClear = 'hr'}
+        3 { $FFLanguageClear = 'cs'}
+        4 { $FFLanguageClear = 'da'}
+        5 { $FFLanguageClear = 'nl'}
+        6 { $FFLanguageClear = 'en-US'}
+        7 { $FFLanguageClear = 'fi'}
+        8 { $FFLanguageClear = 'fr'}
+        9 { $FFLanguageClear = 'de'}
+        10 { $FFLanguageClear = 'he'}
+        11 { $FFLanguageClear = 'hu'}
+        12 { $FFLanguageClear = 'it'}
+        13 { $FFLanguageClear = 'ja'}
+        14 { $FFLanguageClear = 'ko'}
+        15 { $FFLanguageClear = 'nb-NO'}
+        16 { $FFLanguageClear = 'pl'}
+        17 { $FFLanguageClear = 'pt-PT'}
+        18 { $FFLanguageClear = 'ro'}
+        19 { $FFLanguageClear = 'ru'}
+        20 { $FFLanguageClear = 'sk'}
+        21 { $FFLanguageClear = 'sl'}
+        22 { $FFLanguageClear = 'es-ES'}
+        23 { $FFLanguageClear = 'sv-SE'}
+        24 { $FFLanguageClear = 'tr'}
+        25 { $FFLanguageClear = 'uk'}
     }
     Switch ($Language) {
-        0 { $FFLanguageLongClear = 'English'}
-        1 { $FFLanguageLongClear = 'Dutch'}
-        2 { $FFLanguageLongClear = 'English'}
-        3 { $FFLanguageLongClear = 'English'}
-        4 { $FFLanguageLongClear = 'French'}
-        5 { $FFLanguageLongClear = 'German'}
-        6 { $FFLanguageLongClear = 'Italian'}
-        7 { $FFLanguageLongClear = 'Japanese'}
-        8 { $FFLanguageLongClear = 'English'}
-        9 { $FFLanguageLongClear = 'English'}
-        10 { $FFLanguageLongClear = 'English'}
-        11 { $FFLanguageLongClear = 'Portuguese'}
-        12 { $FFLanguageLongClear = 'Russian'}
-        13 { $FFLanguageLongClear = 'Spanish'}
-        14 { $FFLanguageLongClear = 'Swedish'}
+        0 { $FFLanguageLongClear = 'Arabic'}
+        1 { $FFLanguageLongClear = 'Chinese'}
+        2 { $FFLanguageLongClear = 'Croatian'}
+        3 { $FFLanguageLongClear = 'Czech'}
+        4 { $FFLanguageLongClear = 'Danish'}
+        5 { $FFLanguageLongClear = 'Dutch'}
+        6 { $FFLanguageLongClear = 'English'}
+        7 { $FFLanguageLongClear = 'Finnish'}
+        8 { $FFLanguageLongClear = 'French'}
+        9 { $FFLanguageLongClear = 'German'}
+        10 { $FFLanguageLongClear = 'Hebrew'}
+        11 { $FFLanguageLongClear = 'Hungarian'}
+        12 { $FFLanguageLongClear = 'Italian'}
+        13 { $FFLanguageLongClear = 'Japanese'}
+        14 { $FFLanguageLongClear = 'Korean'}
+        15 { $FFLanguageLongClear = 'Norwegian'}
+        16 { $FFLanguageLongClear = 'Polish'}
+        17 { $FFLanguageLongClear = 'Portuguese'}
+        18 { $FFLanguageLongClear = 'Romanian'}
+        19 { $FFLanguageLongClear = 'Russian'}
+        20 { $FFLanguageLongClear = 'Slovak'}
+        21 { $FFLanguageLongClear = 'Slovenian'}
+        22 { $FFLanguageLongClear = 'Spanish'}
+        23 { $FFLanguageLongClear = 'Swedish'}
+        24 { $FFLanguageLongClear = 'Turkish'}
+        25 { $FFLanguageLongClear = 'Ukrainian'}
     }
 }
 
@@ -7477,64 +9767,90 @@ Else {
 
 If ($MozillaThunderbird_Language -ne "") {
     Switch ($MozillaThunderbird_Language) {
-        1 { $MozillaThunderbirdLanguageClear = 'nl'}
-        2 { $MozillaThunderbirdLanguageClear = 'en-US'}
-        3 { $MozillaThunderbirdLanguageClear = 'fr'}
-        4 { $MozillaThunderbirdLanguageClear = 'de'}
-        5 { $MozillaThunderbirdLanguageClear = 'it'}
-        6 { $MozillaThunderbirdLanguageClear = 'ja'}
-        7 { $MozillaThunderbirdLanguageClear = 'pt-PT'}
-        8 { $MozillaThunderbirdLanguageClear = 'ru'}
-        9 { $MozillaThunderbirdLanguageClear = 'es-ES'}
-        10 { $MozillaThunderbirdLanguageClear = 'sv-SE'}
+        1 { $MozillaThunderbirdLanguageClear = 'ar'}
+        2 { $MozillaThunderbirdLanguageClear = 'zh-CN'}
+        3 { $MozillaThunderbirdLanguageClear = 'nl'}
+        4 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        5 { $MozillaThunderbirdLanguageClear = 'fr'}
+        6 { $MozillaThunderbirdLanguageClear = 'de'}
+        7 { $MozillaThunderbirdLanguageClear = 'it'}
+        8 { $MozillaThunderbirdLanguageClear = 'ja'}
+        9 { $MozillaThunderbirdLanguageClear = 'pt-PT'}
+        10 { $MozillaThunderbirdLanguageClear = 'ru'}
+        11 { $MozillaThunderbirdLanguageClear = 'es-ES'}
+        12 { $MozillaThunderbirdLanguageClear = 'sv-SE'}
     }
     Switch ($MozillaThunderbird_Language) {
-        1 { $MozillaThunderbirdLanguageLongClear = 'Dutch'}
-        2 { $MozillaThunderbirdLanguageLongClear = 'English'}
-        3 { $MozillaThunderbirdLanguageLongClear = 'French'}
-        4 { $MozillaThunderbirdLanguageLongClear = 'German'}
-        5 { $MozillaThunderbirdLanguageLongClear = 'Italian'}
-        6 { $MozillaThunderbirdLanguageLongClear = 'Japanese'}
-        7 { $MozillaThunderbirdLanguageLongClear = 'Portuguese'}
-        8 { $MozillaThunderbirdLanguageLongClear = 'Russian'}
-        9 { $MozillaThunderbirdLanguageLongClear = 'Spanish'}
-        10 { $MozillaThunderbirdLanguageLongClear = 'Swedish'}
+        1 { $MozillaThunderbirdLanguageLongClear = 'Arabic'}
+        2 { $MozillaThunderbirdLanguageLongClear = 'Chinese'}
+        3 { $MozillaThunderbirdLanguageLongClear = 'Dutch'}
+        4 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        5 { $MozillaThunderbirdLanguageLongClear = 'French'}
+        6 { $MozillaThunderbirdLanguageLongClear = 'German'}
+        7 { $MozillaThunderbirdLanguageLongClear = 'Italian'}
+        8 { $MozillaThunderbirdLanguageLongClear = 'Japanese'}
+        9 { $MozillaThunderbirdLanguageLongClear = 'Portuguese'}
+        10 { $MozillaThunderbirdLanguageLongClear = 'Russian'}
+        11 { $MozillaThunderbirdLanguageLongClear = 'Spanish'}
+        12 { $MozillaThunderbirdLanguageLongClear = 'Swedish'}
     }
 }
 Else {
     Switch ($Language) {
-        0 { $MozillaThunderbirdLanguageClear = 'en-US'}
-        1 { $MozillaThunderbirdLanguageClear = 'nl'}
+        0 { $MozillaThunderbirdLanguageClear = 'ar'}
+        1 { $MozillaThunderbirdLanguageClear = 'zh-CN'}
         2 { $MozillaThunderbirdLanguageClear = 'en-US'}
         3 { $MozillaThunderbirdLanguageClear = 'en-US'}
-        4 { $MozillaThunderbirdLanguageClear = 'fr'}
-        5 { $MozillaThunderbirdLanguageClear = 'de'}
-        6 { $MozillaThunderbirdLanguageClear = 'it'}
-        7 { $MozillaThunderbirdLanguageClear = 'ja'}
-        8 { $MozillaThunderbirdLanguageClear = 'en-US'}
-        9 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        4 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        5 { $MozillaThunderbirdLanguageClear = 'nl'}
+        6 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        7 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        8 { $MozillaThunderbirdLanguageClear = 'fr'}
+        9 { $MozillaThunderbirdLanguageClear = 'de'}
         10 { $MozillaThunderbirdLanguageClear = 'en-US'}
-        11 { $MozillaThunderbirdLanguageClear = 'pt-PT'}
-        12 { $MozillaThunderbirdLanguageClear = 'ru'}
-        13 { $MozillaThunderbirdLanguageClear = 'es-ES'}
-        14 { $MozillaThunderbirdLanguageClear = 'sv-SE'}
+        11 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        12 { $MozillaThunderbirdLanguageClear = 'it'}
+        13 { $MozillaThunderbirdLanguageClear = 'ja'}
+        14 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        15 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        16 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        17 { $MozillaThunderbirdLanguageClear = 'pt-PT'}
+        18 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        19 { $MozillaThunderbirdLanguageClear = 'ru'}
+        20 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        21 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        22 { $MozillaThunderbirdLanguageClear = 'es-ES'}
+        23 { $MozillaThunderbirdLanguageClear = 'sv-SE'}
+        24 { $MozillaThunderbirdLanguageClear = 'en-US'}
+        25 { $MozillaThunderbirdLanguageClear = 'en-US'}
     }
     Switch ($Language) {
-        0 { $MozillaThunderbirdLanguageLongClear = 'English'}
-        1 { $MozillaThunderbirdLanguageLongClear = 'Dutch'}
+        0 { $MozillaThunderbirdLanguageLongClear = 'Arabic'}
+        1 { $MozillaThunderbirdLanguageLongClear = 'Chinese'}
         2 { $MozillaThunderbirdLanguageLongClear = 'English'}
         3 { $MozillaThunderbirdLanguageLongClear = 'English'}
-        4 { $MozillaThunderbirdLanguageLongClear = 'French'}
-        5 { $MozillaThunderbirdLanguageLongClear = 'German'}
-        6 { $MozillaThunderbirdLanguageLongClear = 'Italian'}
-        7 { $MozillaThunderbirdLanguageLongClear = 'Japanese'}
-        8 { $MozillaThunderbirdLanguageLongClear = 'English'}
-        9 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        4 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        5 { $MozillaThunderbirdLanguageLongClear = 'Dutch'}
+        6 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        7 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        8 { $MozillaThunderbirdLanguageLongClear = 'French'}
+        9 { $MozillaThunderbirdLanguageLongClear = 'German'}
         10 { $MozillaThunderbirdLanguageLongClear = 'English'}
-        11 { $MozillaThunderbirdLanguageLongClear = 'Portuguese'}
-        12 { $MozillaThunderbirdLanguageLongClear = 'Russian'}
-        13 { $MozillaThunderbirdLanguageLongClear = 'Spanish'}
-        14 { $MozillaThunderbirdLanguageLongClear = 'Swedish'}
+        11 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        12 { $MozillaThunderbirdLanguageLongClear = 'Italian'}
+        13 { $MozillaThunderbirdLanguageLongClear = 'Japanese'}
+        14 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        15 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        16 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        17 { $MozillaThunderbirdLanguageLongClear = 'Portuguese'}
+        18 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        19 { $MozillaThunderbirdLanguageLongClear = 'Russian'}
+        20 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        21 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        22 { $MozillaThunderbirdLanguageLongClear = 'Spanish'}
+        23 { $MozillaThunderbirdLanguageLongClear = 'Swedish'}
+        24 { $MozillaThunderbirdLanguageLongClear = 'English'}
+        25 { $MozillaThunderbirdLanguageLongClear = 'English'}
     }
 }
 
@@ -7725,21 +10041,32 @@ Else {
 
 If ($WinRAR_Language -ne "") {
     Switch ($WinRAR_Language) {
-        1 { $WinRARLanguageClear = 'Danish'}
-        2 { $WinRARLanguageClear = 'Dutch'}
-        3 { $WinRARLanguageClear = 'English'}
-        4 { $WinRARLanguageClear = 'Finnish'}
-        5 { $WinRARLanguageClear = 'French'}
-        6 { $WinRARLanguageClear = 'German'}
-        7 { $WinRARLanguageClear = 'Italian'}
-        8 { $WinRARLanguageClear = 'Japanese'}
-        9 { $WinRARLanguageClear = 'Korean'}
-        10 { $WinRARLanguageClear = 'Norwegian'}
-        11 { $WinRARLanguageClear = 'Polish'}
-        12 { $WinRARLanguageClear = 'Portuguese'}
-        13 { $WinRARLanguageClear = 'Russian'}
-        14 { $WinRARLanguageClear = 'Spanish'}
-        15 { $WinRARLanguageClear = 'Swedish'}
+        1 { $WinRARLanguageClear = 'Arabic'}
+        2 { $WinRARLanguageClear = 'Chinese'}
+        3 { $WinRARLanguageClear = 'Croatian'}
+        4 { $WinRARLanguageClear = 'Czech'}
+        5 { $WinRARLanguageClear = 'Danish'}
+        6 { $WinRARLanguageClear = 'Dutch'}
+        7 { $WinRARLanguageClear = 'English'}
+        8 { $WinRARLanguageClear = 'Finnish'}
+        9 { $WinRARLanguageClear = 'French'}
+        10 { $WinRARLanguageClear = 'German'}
+        11 { $WinRARLanguageClear = 'Hebrew'}
+        12 { $WinRARLanguageClear = 'Hungarian'}
+        13 { $WinRARLanguageClear = 'Italian'}
+        14 { $WinRARLanguageClear = 'Japanese'}
+        15 { $WinRARLanguageClear = 'Korean'}
+        16 { $WinRARLanguageClear = 'Norwegian'}
+        17 { $WinRARLanguageClear = 'Polish'}
+        18 { $WinRARLanguageClear = 'Portuguese'}
+        19 { $WinRARLanguageClear = 'Romanian'}
+        20 { $WinRARLanguageClear = 'Russian'}
+        21 { $WinRARLanguageClear = 'Slovak'}
+        22 { $WinRARLanguageClear = 'Slovenian'}
+        23 { $WinRARLanguageClear = 'Spanish'}
+        24 { $WinRARLanguageClear = 'Swedish'}
+        25 { $WinRARLanguageClear = 'Turkish'}
+        26 { $WinRARLanguageClear = 'Ukrainian'}
     }
 }
 Else {
@@ -18966,7 +21293,7 @@ If ($Install -eq "1") {
             $Options = @(
                 "/s"
                 "/v"
-                "/qn REBOOT=Y"
+                "/qn REBOOT=ReallySuppress"
             )
             DS_WriteLog "I" "Install $Product $VMWareToolsArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
