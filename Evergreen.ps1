@@ -10187,6 +10187,7 @@ If ($Download -eq "1") {
             Write-Host "Install Nuget include dependencies."
             Find-PackageProvider -Name 'Nuget' -ForceBootstrap -IncludeDependencies | Install-PackageProvider -Force | Out-Null
             Write-Host -ForegroundColor Green "Install Nuget include dependencies done."
+            Write-Output ""
         }
 
         If (!(Get-Module -ListAvailable -Name Evergreen)) {
