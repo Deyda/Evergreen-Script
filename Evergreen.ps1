@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.1
+  Version:          2.07.2
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -136,6 +136,7 @@ the script checks the version number and will update the package.
   2021-12-07        Change IrfanView download site / Additional filter parameter for Microsoft .Net Framework
   2021-12-08        Add Global Language Arabic, Chinese, Croatian, Czech, Hebrew, Hungarian, Romanian, Slovak, Slovenian, Turkish and Ukrainian / Add new language to KeePass and WinRAR download function / Add new language to Adobe Reader DC, IrfanView, Microsoft 365 Apps, Microsoft Office, Firefox, Thnderbird, Microsoft SQL Server Management Studio, Foxit PDF Editor and KeePass
   2021-12-10        Implement method to rewrite the language keys in the LastSetting.txt
+  2921-12-13        Add RegKey for new script user (no update of the language keys at update)
 
 .PARAMETER file
 
@@ -3477,7 +3478,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.1"
+$eVersion = "2.07.2"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -3554,6 +3555,21 @@ If (!($NoUpdate)) {
     
     If ($NewerVersion -eq $false) {
         # No new version available
+        If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
+            New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
+            New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+        }
+        Else {
+            If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+            } Else {
+                Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
+            }
+        }
+        If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
+        } else {
+            New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+        }
         Write-Host -Foregroundcolor Green "OK, script is newest version!"
         Write-Output ""
     }
