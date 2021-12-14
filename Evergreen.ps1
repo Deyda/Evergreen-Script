@@ -3560,7 +3560,7 @@ If (!($NoUpdate)) {
             New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
         }
         Else {
-            If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+            If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
                 New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
             } Else {
                 Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
@@ -3584,7 +3584,7 @@ If (!($NoUpdate)) {
                 New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
             }
             Else {
-                If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
                     New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
                 } Else {
                     Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
@@ -3893,7 +3893,7 @@ If (!($NoUpdate)) {
                 New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
             }
             Else {
-                If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
                     New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
                 } Else {
                     Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
@@ -4206,7 +4206,7 @@ If (!($NoUpdate)) {
                     New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
                 }
                 Else {
-                    If ((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+                    If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
                         New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
                     } Else {
                         Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
