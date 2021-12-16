@@ -3570,6 +3570,9 @@ If (!($NoUpdate)) {
     Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
     
     If ($NewerVersion -eq $false) {
+        # No new version available
+        Write-Host -Foregroundcolor Green "OK, script is newest version!"
+        Write-Output ""
         # Change old LastSetting.txt files to the new format (AddScript)
         If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
             New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
@@ -3586,6 +3589,7 @@ If (!($NoUpdate)) {
         } Else {
             If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
             If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+                Write-Host -Foregroundcolor DarkGray "Update from version pre 2.7 --> Change LastSetting.txt file!"
                 Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
                 Write-Output ""
                 $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
@@ -3868,9 +3872,6 @@ If (!($NoUpdate)) {
             Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
             Write-Output ""
         }
-        # No new version available
-        Write-Host -Foregroundcolor Green "OK, script is newest version!"
-        Write-Output ""
     }
     Else {
         # There is a new Evergreen Script Version
