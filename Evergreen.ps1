@@ -136,7 +136,8 @@ the script checks the version number and will update the package.
   2021-12-07        Change IrfanView download site / Additional filter parameter for Microsoft .Net Framework
   2021-12-08        Add Global Language Arabic, Chinese, Croatian, Czech, Hebrew, Hungarian, Romanian, Slovak, Slovenian, Turkish and Ukrainian / Add new language to KeePass and WinRAR download function / Add new language to Adobe Reader DC, IrfanView, Microsoft 365 Apps, Microsoft Office, Firefox, Thnderbird, Microsoft SQL Server Management Studio, Foxit PDF Editor and KeePass
   2021-12-10        Implement method to rewrite the language keys in the LastSetting.txt
-  2921-12-13        Add RegKey for new script user (no update of the language keys at update)
+  2021-12-13        Add RegKey for new script user (no update of the language keys at update)
+  2021-12-16        Change language key update function
 
 .PARAMETER file
 
@@ -3546,15 +3547,29 @@ Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                 
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
+    If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
+        New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
+        New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+    }
+    Else {
+        If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
+            New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
+        } Else {
+            Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+    If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
+    } else {
+        New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+    }
 }
 
 If (!($NoUpdate)) {
-    
     Write-Output ""
     Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
     
     If ($NewerVersion -eq $false) {
-        # No new version available
+        # Change old LastSetting.txt files to the new format (AddScript)
         If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
             New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
             New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
@@ -3567,9 +3582,292 @@ If (!($NoUpdate)) {
             }
         }
         If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
-        } else {
+        } Else {
+            If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
+            If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
+                Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
+                Write-Output ""
+                $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
+                $Change_Language = $LastSetting[0] -as [int]
+                Switch ($Change_Language) {
+                    0 {$New_Language = "4"}
+                    1 {$New_Language = "5"}
+                    2 {$New_Language = "6"}
+                    3 {$New_Language = "7"}
+                    4 {$New_Language = "8"}
+                    5 {$New_Language = "9"}
+                    6 {$New_Language = "12"}
+                    7 {$New_Language = "13"}
+                    8 {$New_Language = "14"}
+                    9 {$New_Language = "15"}
+                    10 {$New_Language = "16"}
+                    11 {$New_Language = "17"}
+                    12 {$New_Language = "19"}
+                    13 {$New_Language = "22"}
+                    14 {$New_Language = "23"}
+                }
+                $LastSetting[0] = $New_Language
+                $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
+                Switch ($Change_AdobeReaderDC_Language) {
+                    0 {$New_AdobeReaderDC_Language = "0"}
+                    1 {$New_AdobeReaderDC_Language = "3"}
+                    2 {$New_AdobeReaderDC_Language = "4"}
+                    3 {$New_AdobeReaderDC_Language = "5"}
+                    4 {$New_AdobeReaderDC_Language = "6"}
+                    5 {$New_AdobeReaderDC_Language = "7"}
+                    6 {$New_AdobeReaderDC_Language = "8"}
+                    7 {$New_AdobeReaderDC_Language = "10"}
+                    8 {$New_AdobeReaderDC_Language = "11"}
+                    9 {$New_AdobeReaderDC_Language = "12"}
+                    10 {$New_AdobeReaderDC_Language = "13"}
+                    11 {$New_AdobeReaderDC_Language = "14"}
+                    12 {$New_AdobeReaderDC_Language = "16"}
+                    13 {$New_AdobeReaderDC_Language = "19"}
+                    14 {$New_AdobeReaderDC_Language = "20"}
+                }
+                $LastSetting[95] = $New_AdobeReaderDC_Language
+                $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
+                Switch ($Change_FoxitPDFEditor_Language) {
+                    0 {$New_FoxitPDFEditor_Language = "0"}
+                    1 {$New_FoxitPDFEditor_Language = "1"}
+                    2 {$New_FoxitPDFEditor_Language = "2"}
+                    3 {$New_FoxitPDFEditor_Language = "3"}
+                    4 {$New_FoxitPDFEditor_Language = "4"}
+                    5 {$New_FoxitPDFEditor_Language = "5"}
+                    6 {$New_FoxitPDFEditor_Language = "6"}
+                    7 {$New_FoxitPDFEditor_Language = "7"}
+                    8 {$New_FoxitPDFEditor_Language = "8"}
+                    9 {$New_FoxitPDFEditor_Language = "8"}
+                    10 {$New_FoxitPDFEditor_Language = "9"}
+                    11 {$New_FoxitPDFEditor_Language = "10"}
+                    12 {$New_FoxitPDFEditor_Language = "11"}
+                    13 {$New_FoxitPDFEditor_Language = "12"}
+                    14 {$New_FoxitPDFEditor_Language = "13"}
+                }
+                $LastSetting[100] = $New_FoxitPDFEditor_Language
+                $Change_KeePass_Language = $LastSetting[106] -as [int]
+                Switch ($Change_KeePass_Language) {
+                    0 {$New_KeePass_Language = "0"}
+                    1 {$New_KeePass_Language = "5"}
+                    2 {$New_KeePass_Language = "6"}
+                    3 {$New_KeePass_Language = "7"}
+                    4 {$New_KeePass_Language = "8"}
+                    5 {$New_KeePass_Language = "9"}
+                    6 {$New_KeePass_Language = "10"}
+                    7 {$New_KeePass_Language = "13"}
+                    8 {$New_KeePass_Language = "14"}
+                    9 {$New_KeePass_Language = "15"}
+                    10 {$New_KeePass_Language = "16"}
+                    11 {$New_KeePass_Language = "17"}
+                    12 {$New_KeePass_Language = "18"}
+                    13 {$New_KeePass_Language = "20"}
+                    14 {$New_KeePass_Language = "23"}
+                    15 {$New_KeePass_Language = "24"}
+                }
+                $LastSetting[106] = $New_KeePass_Language
+                $Change_MS365Apps_Language = $LastSetting[109] -as [int]
+                Switch ($Change_MS365Apps_Language) {
+                    0 {$New_MS365Apps_Language = "0"}
+                    1 {$New_MS365Apps_Language = "5"}
+                    2 {$New_MS365Apps_Language = "6"}
+                    3 {$New_MS365Apps_Language = "7"}
+                    4 {$New_MS365Apps_Language = "8"}
+                    5 {$New_MS365Apps_Language = "9"}
+                    6 {$New_MS365Apps_Language = "10"}
+                    7 {$New_MS365Apps_Language = "13"}
+                    8 {$New_MS365Apps_Language = "14"}
+                    9 {$New_MS365Apps_Language = "15"}
+                    10 {$New_MS365Apps_Language = "16"}
+                    11 {$New_MS365Apps_Language = "18"}
+                    12 {$New_MS365Apps_Language = "20"}
+                    13 {$New_MS365Apps_Language = "23"}
+                    14 {$New_MS365Apps_Language = "24"}
+                }
+                $LastSetting[109] = $New_MS365Apps_Language
+                $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
+                Switch ($Change_MS365Apps_Visio_Language) {
+                    0 {$New_MS365Apps_Visio_Language = "0"}
+                    1 {$New_MS365Apps_Visio_Language = "5"}
+                    2 {$New_MS365Apps_Visio_Language = "6"}
+                    3 {$New_MS365Apps_Visio_Language = "7"}
+                    4 {$New_MS365Apps_Visio_Language = "8"}
+                    5 {$New_MS365Apps_Visio_Language = "9"}
+                    6 {$New_MS365Apps_Visio_Language = "10"}
+                    7 {$New_MS365Apps_Visio_Language = "13"}
+                    8 {$New_MS365Apps_Visio_Language = "14"}
+                    9 {$New_MS365Apps_Visio_Language = "15"}
+                    10 {$New_MS365Apps_Visio_Language = "16"}
+                    11 {$New_MS365Apps_Visio_Language = "18"}
+                    12 {$New_MS365Apps_Visio_Language = "20"}
+                    13 {$New_MS365Apps_Visio_Language = "23"}
+                    14 {$New_MS365Apps_Visio_Language = "24"}
+                }
+                $LastSetting[111] = $New_MS365Apps_Visio_Language
+                $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
+                Switch ($Change_MS365Apps_Project_Language) {
+                    0 {$New_MS365Apps_Project_Language = "0"}
+                    1 {$New_MS365Apps_Project_Language = "5"}
+                    2 {$New_MS365Apps_Project_Language = "6"}
+                    3 {$New_MS365Apps_Project_Language = "7"}
+                    4 {$New_MS365Apps_Project_Language = "8"}
+                    5 {$New_MS365Apps_Project_Language = "9"}
+                    6 {$New_MS365Apps_Project_Language = "10"}
+                    7 {$New_MS365Apps_Project_Language = "13"}
+                    8 {$New_MS365Apps_Project_Language = "14"}
+                    9 {$New_MS365Apps_Project_Language = "15"}
+                    10 {$New_MS365Apps_Project_Language = "16"}
+                    11 {$New_MS365Apps_Project_Language = "18"}
+                    12 {$New_MS365Apps_Project_Language = "20"}
+                    13 {$New_MS365Apps_Project_Language = "23"}
+                    14 {$New_MS365Apps_Project_Language = "24"}
+                }
+                $LastSetting[113] = $New_MS365Apps_Project_Language
+                $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
+                Switch ($Change_MSSQLServerManagementStudio_Language) {
+                    0 {$New_MSSQLServerManagementStudio_Language = "0"}
+                    1 {$New_MSSQLServerManagementStudio_Language = "2"}
+                    2 {$New_MSSQLServerManagementStudio_Language = "3"}
+                    3 {$New_MSSQLServerManagementStudio_Language = "4"}
+                    4 {$New_MSSQLServerManagementStudio_Language = "5"}
+                    5 {$New_MSSQLServerManagementStudio_Language = "6"}
+                    6 {$New_MSSQLServerManagementStudio_Language = "7"}
+                    7 {$New_MSSQLServerManagementStudio_Language = "8"}
+                    8 {$New_MSSQLServerManagementStudio_Language = "9"}
+                    9 {$New_MSSQLServerManagementStudio_Language = "10"}
+                }
+                $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
+                $Change_Firefox_Language = $LastSetting[125] -as [int]
+                Switch ($Change_Firefox_Language) {
+                    0 {$New_Firefox_Language = "0"}
+                    1 {$New_Firefox_Language = "6"}
+                    2 {$New_Firefox_Language = "7"}
+                    3 {$New_Firefox_Language = "9"}
+                    4 {$New_Firefox_Language = "10"}
+                    5 {$New_Firefox_Language = "13"}
+                    6 {$New_Firefox_Language = "14"}
+                    7 {$New_Firefox_Language = "18"}
+                    8 {$New_Firefox_Language = "20"}
+                    9 {$New_Firefox_Language = "23"}
+                    10 {$New_Firefox_Language = "24"}
+                }
+                $LastSetting[125] = $New_Firefox_Language
+                $Change_IrfanView_Language = $LastSetting[138] -as [int]
+                Switch ($Change_IrfanView_Language) {
+                    0 {$New_IrfanView_Language = "0"}
+                    1 {$New_IrfanView_Language = "4"}
+                    2 {$New_IrfanView_Language = "5"}
+                    3 {$New_IrfanView_Language = "6"}
+                    4 {$New_IrfanView_Language = "7"}
+                    5 {$New_IrfanView_Language = "8"}
+                    6 {$New_IrfanView_Language = "9"}
+                    7 {$New_IrfanView_Language = "12"}
+                    8 {$New_IrfanView_Language = "13"}
+                    9 {$New_IrfanView_Language = "14"}
+                    10 {$New_IrfanView_Language = "15"}
+                    11 {$New_IrfanView_Language = "16"}
+                    12 {$New_IrfanView_Language = "18"}
+                    13 {$New_IrfanView_Language = "21"}
+                    14 {$New_IrfanView_Language = "22"}
+                }
+                $LastSetting[138] = $New_IrfanView_Language
+                $Change_MSOffice_Language = $LastSetting[139] -as [int]
+                Switch ($Change_MSOffice_Language) {
+                    0 {$New_MSOffice_Language = "0"}
+                    1 {$New_MSOffice_Language = "5"}
+                    2 {$New_MSOffice_Language = "6"}
+                    3 {$New_MSOffice_Language = "7"}
+                    4 {$New_MSOffice_Language = "8"}
+                    5 {$New_MSOffice_Language = "9"}
+                    6 {$New_MSOffice_Language = "10"}
+                    7 {$New_MSOffice_Language = "13"}
+                    8 {$New_MSOffice_Language = "14"}
+                    9 {$New_MSOffice_Language = "15"}
+                    10 {$New_MSOffice_Language = "16"}
+                    11 {$New_MSOffice_Language = "18"}
+                    12 {$New_MSOffice_Language = "20"}
+                    13 {$New_MSOffice_Language = "23"}
+                    14 {$New_MSOffice_Language = "24"}
+                }
+                $LastSetting[139] = $New_MSOffice_Language
+                $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
+                Switch ($Change_MSOffice_Visio_Language) {
+                    0 {$New_MSOffice_Visio_Language = "0"}
+                    1 {$New_MSOffice_Visio_Language = "5"}
+                    2 {$New_MSOffice_Visio_Language = "6"}
+                    3 {$New_MSOffice_Visio_Language = "7"}
+                    4 {$New_MSOffice_Visio_Language = "8"}
+                    5 {$New_MSOffice_Visio_Language = "9"}
+                    6 {$New_MSOffice_Visio_Language = "10"}
+                    7 {$New_MSOffice_Visio_Language = "13"}
+                    8 {$New_MSOffice_Visio_Language = "14"}
+                    9 {$New_MSOffice_Visio_Language = "15"}
+                    10 {$New_MSOffice_Visio_Language = "16"}
+                    11 {$New_MSOffice_Visio_Language = "18"}
+                    12 {$New_MSOffice_Visio_Language = "20"}
+                    13 {$New_MSOffice_Visio_Language = "23"}
+                    14 {$New_MSOffice_Visio_Language = "24"}
+                }
+                $LastSetting[167] = $New_MSOffice_Visio_Language
+                $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
+                Switch ($Change_MSOffice_Project_Language) {
+                    0 {$New_MSOffice_Project_Language = "0"}
+                    1 {$New_MSOffice_Project_Language = "5"}
+                    2 {$New_MSOffice_Project_Language = "6"}
+                    3 {$New_MSOffice_Project_Language = "7"}
+                    4 {$New_MSOffice_Project_Language = "8"}
+                    5 {$New_MSOffice_Project_Language = "9"}
+                    6 {$New_MSOffice_Project_Language = "10"}
+                    7 {$New_MSOffice_Project_Language = "13"}
+                    8 {$New_MSOffice_Project_Language = "14"}
+                    9 {$New_MSOffice_Project_Language = "15"}
+                    10 {$New_MSOffice_Project_Language = "16"}
+                    11 {$New_MSOffice_Project_Language = "18"}
+                    12 {$New_MSOffice_Project_Language = "20"}
+                    13 {$New_MSOffice_Project_Language = "23"}
+                    14 {$New_MSOffice_Project_Language = "24"}
+                }
+                $LastSetting[169] = $New_MSOffice_Project_Language
+                $Change_WinRAR_Language = $LastSetting[180] -as [int]
+                Switch ($Change_WinRAR_Language) {
+                    0 {$New_WinRAR_Language = "0"}
+                    1 {$New_WinRAR_Language = "5"}
+                    2 {$New_WinRAR_Language = "6"}
+                    3 {$New_WinRAR_Language = "7"}
+                    4 {$New_WinRAR_Language = "8"}
+                    5 {$New_WinRAR_Language = "9"}
+                    6 {$New_WinRAR_Language = "10"}
+                    7 {$New_WinRAR_Language = "13"}
+                    8 {$New_WinRAR_Language = "14"}
+                    9 {$New_WinRAR_Language = "15"}
+                    10 {$New_WinRAR_Language = "16"}
+                    11 {$New_WinRAR_Language = "18"}
+                    12 {$New_WinRAR_Language = "20"}
+                    13 {$New_WinRAR_Language = "23"}
+                    14 {$New_WinRAR_Language = "24"}
+                }
+                $LastSetting[180] = $New_WinRAR_Language
+                $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
+                Switch ($Change_MozillaThunderbird_Language) {
+                    0 {$New_MozillaThunderbird_Language = "0"}
+                    1 {$New_MozillaThunderbird_Language = "3"}
+                    2 {$New_MozillaThunderbird_Language = "4"}
+                    3 {$New_MozillaThunderbird_Language = "5"}
+                    4 {$New_MozillaThunderbird_Language = "6"}
+                    5 {$New_MozillaThunderbird_Language = "7"}
+                    6 {$New_MozillaThunderbird_Language = "8"}
+                    7 {$New_MozillaThunderbird_Language = "9"}
+                    8 {$New_MozillaThunderbird_Language = "10"}
+                    9 {$New_MozillaThunderbird_Language = "11"}
+                    10 {$New_MozillaThunderbird_Language = "12"}
+                }
+                $LastSetting[183] = $New_MozillaThunderbird_Language
+            }
+            Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
             New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+            Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
+            Write-Output ""
         }
+        # No new version available
         Write-Host -Foregroundcolor Green "OK, script is newest version!"
         Write-Output ""
     }
@@ -3578,617 +3876,20 @@ If (!($NoUpdate)) {
         Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
         Write-Output ""
         If ($file) {
-            # Change old LastSetting.txt files to the new format (AddScript)
-            If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
-                New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
-                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-            }
-            Else {
-                If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
-                    New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-                } Else {
-                    Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
-                }
-            }
-            If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
-            } Else {
-                If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
-                If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
-                    Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
-                    Write-Output ""
-                    $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
-                    $Change_Language = $LastSetting[0] -as [int]
-                    Switch ($Change_Language) {
-                        0 {$New_Language = "4"}
-                        1 {$New_Language = "5"}
-                        2 {$New_Language = "6"}
-                        3 {$New_Language = "7"}
-                        4 {$New_Language = "8"}
-                        5 {$New_Language = "9"}
-                        6 {$New_Language = "12"}
-                        7 {$New_Language = "13"}
-                        8 {$New_Language = "14"}
-                        9 {$New_Language = "15"}
-                        10 {$New_Language = "16"}
-                        11 {$New_Language = "17"}
-                        12 {$New_Language = "19"}
-                        13 {$New_Language = "22"}
-                        14 {$New_Language = "23"}
-                    }
-                    $LastSetting[0] = $New_Language
-                    $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
-                    Switch ($Change_AdobeReaderDC_Language) {
-                        0 {$New_AdobeReaderDC_Language = "0"}
-                        1 {$New_AdobeReaderDC_Language = "3"}
-                        2 {$New_AdobeReaderDC_Language = "4"}
-                        3 {$New_AdobeReaderDC_Language = "5"}
-                        4 {$New_AdobeReaderDC_Language = "6"}
-                        5 {$New_AdobeReaderDC_Language = "7"}
-                        6 {$New_AdobeReaderDC_Language = "8"}
-                        7 {$New_AdobeReaderDC_Language = "10"}
-                        8 {$New_AdobeReaderDC_Language = "11"}
-                        9 {$New_AdobeReaderDC_Language = "12"}
-                        10 {$New_AdobeReaderDC_Language = "13"}
-                        11 {$New_AdobeReaderDC_Language = "14"}
-                        12 {$New_AdobeReaderDC_Language = "16"}
-                        13 {$New_AdobeReaderDC_Language = "19"}
-                        14 {$New_AdobeReaderDC_Language = "20"}
-                    }
-                    $LastSetting[95] = $New_AdobeReaderDC_Language
-                    $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
-                    Switch ($Change_FoxitPDFEditor_Language) {
-                        0 {$New_FoxitPDFEditor_Language = "0"}
-                        1 {$New_FoxitPDFEditor_Language = "1"}
-                        2 {$New_FoxitPDFEditor_Language = "2"}
-                        3 {$New_FoxitPDFEditor_Language = "3"}
-                        4 {$New_FoxitPDFEditor_Language = "4"}
-                        5 {$New_FoxitPDFEditor_Language = "5"}
-                        6 {$New_FoxitPDFEditor_Language = "6"}
-                        7 {$New_FoxitPDFEditor_Language = "7"}
-                        8 {$New_FoxitPDFEditor_Language = "8"}
-                        9 {$New_FoxitPDFEditor_Language = "8"}
-                        10 {$New_FoxitPDFEditor_Language = "9"}
-                        11 {$New_FoxitPDFEditor_Language = "10"}
-                        12 {$New_FoxitPDFEditor_Language = "11"}
-                        13 {$New_FoxitPDFEditor_Language = "12"}
-                        14 {$New_FoxitPDFEditor_Language = "13"}
-                    }
-                    $LastSetting[100] = $New_FoxitPDFEditor_Language
-                    $Change_KeePass_Language = $LastSetting[106] -as [int]
-                    Switch ($Change_KeePass_Language) {
-                        0 {$New_KeePass_Language = "0"}
-                        1 {$New_KeePass_Language = "5"}
-                        2 {$New_KeePass_Language = "6"}
-                        3 {$New_KeePass_Language = "7"}
-                        4 {$New_KeePass_Language = "8"}
-                        5 {$New_KeePass_Language = "9"}
-                        6 {$New_KeePass_Language = "10"}
-                        7 {$New_KeePass_Language = "13"}
-                        8 {$New_KeePass_Language = "14"}
-                        9 {$New_KeePass_Language = "15"}
-                        10 {$New_KeePass_Language = "16"}
-                        11 {$New_KeePass_Language = "17"}
-                        12 {$New_KeePass_Language = "18"}
-                        13 {$New_KeePass_Language = "20"}
-                        14 {$New_KeePass_Language = "23"}
-                        15 {$New_KeePass_Language = "24"}
-                    }
-                    $LastSetting[106] = $New_KeePass_Language
-                    $Change_MS365Apps_Language = $LastSetting[109] -as [int]
-                    Switch ($Change_MS365Apps_Language) {
-                        0 {$New_MS365Apps_Language = "0"}
-                        1 {$New_MS365Apps_Language = "5"}
-                        2 {$New_MS365Apps_Language = "6"}
-                        3 {$New_MS365Apps_Language = "7"}
-                        4 {$New_MS365Apps_Language = "8"}
-                        5 {$New_MS365Apps_Language = "9"}
-                        6 {$New_MS365Apps_Language = "10"}
-                        7 {$New_MS365Apps_Language = "13"}
-                        8 {$New_MS365Apps_Language = "14"}
-                        9 {$New_MS365Apps_Language = "15"}
-                        10 {$New_MS365Apps_Language = "16"}
-                        11 {$New_MS365Apps_Language = "18"}
-                        12 {$New_MS365Apps_Language = "20"}
-                        13 {$New_MS365Apps_Language = "23"}
-                        14 {$New_MS365Apps_Language = "24"}
-                    }
-                    $LastSetting[109] = $New_MS365Apps_Language
-                    $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
-                    Switch ($Change_MS365Apps_Visio_Language) {
-                        0 {$New_MS365Apps_Visio_Language = "0"}
-                        1 {$New_MS365Apps_Visio_Language = "5"}
-                        2 {$New_MS365Apps_Visio_Language = "6"}
-                        3 {$New_MS365Apps_Visio_Language = "7"}
-                        4 {$New_MS365Apps_Visio_Language = "8"}
-                        5 {$New_MS365Apps_Visio_Language = "9"}
-                        6 {$New_MS365Apps_Visio_Language = "10"}
-                        7 {$New_MS365Apps_Visio_Language = "13"}
-                        8 {$New_MS365Apps_Visio_Language = "14"}
-                        9 {$New_MS365Apps_Visio_Language = "15"}
-                        10 {$New_MS365Apps_Visio_Language = "16"}
-                        11 {$New_MS365Apps_Visio_Language = "18"}
-                        12 {$New_MS365Apps_Visio_Language = "20"}
-                        13 {$New_MS365Apps_Visio_Language = "23"}
-                        14 {$New_MS365Apps_Visio_Language = "24"}
-                    }
-                    $LastSetting[111] = $New_MS365Apps_Visio_Language
-                    $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
-                    Switch ($Change_MS365Apps_Project_Language) {
-                        0 {$New_MS365Apps_Project_Language = "0"}
-                        1 {$New_MS365Apps_Project_Language = "5"}
-                        2 {$New_MS365Apps_Project_Language = "6"}
-                        3 {$New_MS365Apps_Project_Language = "7"}
-                        4 {$New_MS365Apps_Project_Language = "8"}
-                        5 {$New_MS365Apps_Project_Language = "9"}
-                        6 {$New_MS365Apps_Project_Language = "10"}
-                        7 {$New_MS365Apps_Project_Language = "13"}
-                        8 {$New_MS365Apps_Project_Language = "14"}
-                        9 {$New_MS365Apps_Project_Language = "15"}
-                        10 {$New_MS365Apps_Project_Language = "16"}
-                        11 {$New_MS365Apps_Project_Language = "18"}
-                        12 {$New_MS365Apps_Project_Language = "20"}
-                        13 {$New_MS365Apps_Project_Language = "23"}
-                        14 {$New_MS365Apps_Project_Language = "24"}
-                    }
-                    $LastSetting[113] = $New_MS365Apps_Project_Language
-                    $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
-                    Switch ($Change_MSSQLServerManagementStudio_Language) {
-                        0 {$New_MSSQLServerManagementStudio_Language = "0"}
-                        1 {$New_MSSQLServerManagementStudio_Language = "2"}
-                        2 {$New_MSSQLServerManagementStudio_Language = "3"}
-                        3 {$New_MSSQLServerManagementStudio_Language = "4"}
-                        4 {$New_MSSQLServerManagementStudio_Language = "5"}
-                        5 {$New_MSSQLServerManagementStudio_Language = "6"}
-                        6 {$New_MSSQLServerManagementStudio_Language = "7"}
-                        7 {$New_MSSQLServerManagementStudio_Language = "8"}
-                        8 {$New_MSSQLServerManagementStudio_Language = "9"}
-                        9 {$New_MSSQLServerManagementStudio_Language = "10"}
-                    }
-                    $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
-                    $Change_Firefox_Language = $LastSetting[125] -as [int]
-                    Switch ($Change_Firefox_Language) {
-                        0 {$New_Firefox_Language = "0"}
-                        1 {$New_Firefox_Language = "6"}
-                        2 {$New_Firefox_Language = "7"}
-                        3 {$New_Firefox_Language = "9"}
-                        4 {$New_Firefox_Language = "10"}
-                        5 {$New_Firefox_Language = "13"}
-                        6 {$New_Firefox_Language = "14"}
-                        7 {$New_Firefox_Language = "18"}
-                        8 {$New_Firefox_Language = "20"}
-                        9 {$New_Firefox_Language = "23"}
-                        10 {$New_Firefox_Language = "24"}
-                    }
-                    $LastSetting[125] = $New_Firefox_Language
-                    $Change_IrfanView_Language = $LastSetting[138] -as [int]
-                    Switch ($Change_IrfanView_Language) {
-                        0 {$New_IrfanView_Language = "0"}
-                        1 {$New_IrfanView_Language = "4"}
-                        2 {$New_IrfanView_Language = "5"}
-                        3 {$New_IrfanView_Language = "6"}
-                        4 {$New_IrfanView_Language = "7"}
-                        5 {$New_IrfanView_Language = "8"}
-                        6 {$New_IrfanView_Language = "9"}
-                        7 {$New_IrfanView_Language = "12"}
-                        8 {$New_IrfanView_Language = "13"}
-                        9 {$New_IrfanView_Language = "14"}
-                        10 {$New_IrfanView_Language = "15"}
-                        11 {$New_IrfanView_Language = "16"}
-                        12 {$New_IrfanView_Language = "18"}
-                        13 {$New_IrfanView_Language = "21"}
-                        14 {$New_IrfanView_Language = "22"}
-                    }
-                    $LastSetting[138] = $New_IrfanView_Language
-                    $Change_MSOffice_Language = $LastSetting[139] -as [int]
-                    Switch ($Change_MSOffice_Language) {
-                        0 {$New_MSOffice_Language = "0"}
-                        1 {$New_MSOffice_Language = "5"}
-                        2 {$New_MSOffice_Language = "6"}
-                        3 {$New_MSOffice_Language = "7"}
-                        4 {$New_MSOffice_Language = "8"}
-                        5 {$New_MSOffice_Language = "9"}
-                        6 {$New_MSOffice_Language = "10"}
-                        7 {$New_MSOffice_Language = "13"}
-                        8 {$New_MSOffice_Language = "14"}
-                        9 {$New_MSOffice_Language = "15"}
-                        10 {$New_MSOffice_Language = "16"}
-                        11 {$New_MSOffice_Language = "18"}
-                        12 {$New_MSOffice_Language = "20"}
-                        13 {$New_MSOffice_Language = "23"}
-                        14 {$New_MSOffice_Language = "24"}
-                    }
-                    $LastSetting[139] = $New_MSOffice_Language
-                    $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
-                    Switch ($Change_MSOffice_Visio_Language) {
-                        0 {$New_MSOffice_Visio_Language = "0"}
-                        1 {$New_MSOffice_Visio_Language = "5"}
-                        2 {$New_MSOffice_Visio_Language = "6"}
-                        3 {$New_MSOffice_Visio_Language = "7"}
-                        4 {$New_MSOffice_Visio_Language = "8"}
-                        5 {$New_MSOffice_Visio_Language = "9"}
-                        6 {$New_MSOffice_Visio_Language = "10"}
-                        7 {$New_MSOffice_Visio_Language = "13"}
-                        8 {$New_MSOffice_Visio_Language = "14"}
-                        9 {$New_MSOffice_Visio_Language = "15"}
-                        10 {$New_MSOffice_Visio_Language = "16"}
-                        11 {$New_MSOffice_Visio_Language = "18"}
-                        12 {$New_MSOffice_Visio_Language = "20"}
-                        13 {$New_MSOffice_Visio_Language = "23"}
-                        14 {$New_MSOffice_Visio_Language = "24"}
-                    }
-                    $LastSetting[167] = $New_MSOffice_Visio_Language
-                    $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
-                    Switch ($Change_MSOffice_Project_Language) {
-                        0 {$New_MSOffice_Project_Language = "0"}
-                        1 {$New_MSOffice_Project_Language = "5"}
-                        2 {$New_MSOffice_Project_Language = "6"}
-                        3 {$New_MSOffice_Project_Language = "7"}
-                        4 {$New_MSOffice_Project_Language = "8"}
-                        5 {$New_MSOffice_Project_Language = "9"}
-                        6 {$New_MSOffice_Project_Language = "10"}
-                        7 {$New_MSOffice_Project_Language = "13"}
-                        8 {$New_MSOffice_Project_Language = "14"}
-                        9 {$New_MSOffice_Project_Language = "15"}
-                        10 {$New_MSOffice_Project_Language = "16"}
-                        11 {$New_MSOffice_Project_Language = "18"}
-                        12 {$New_MSOffice_Project_Language = "20"}
-                        13 {$New_MSOffice_Project_Language = "23"}
-                        14 {$New_MSOffice_Project_Language = "24"}
-                    }
-                    $LastSetting[169] = $New_MSOffice_Project_Language
-                    $Change_WinRAR_Language = $LastSetting[180] -as [int]
-                    Switch ($Change_WinRAR_Language) {
-                        0 {$New_WinRAR_Language = "0"}
-                        1 {$New_WinRAR_Language = "5"}
-                        2 {$New_WinRAR_Language = "6"}
-                        3 {$New_WinRAR_Language = "7"}
-                        4 {$New_WinRAR_Language = "8"}
-                        5 {$New_WinRAR_Language = "9"}
-                        6 {$New_WinRAR_Language = "10"}
-                        7 {$New_WinRAR_Language = "13"}
-                        8 {$New_WinRAR_Language = "14"}
-                        9 {$New_WinRAR_Language = "15"}
-                        10 {$New_WinRAR_Language = "16"}
-                        11 {$New_WinRAR_Language = "18"}
-                        12 {$New_WinRAR_Language = "20"}
-                        13 {$New_WinRAR_Language = "23"}
-                        14 {$New_WinRAR_Language = "24"}
-                    }
-                    $LastSetting[180] = $New_WinRAR_Language
-                    $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
-                    Switch ($Change_MozillaThunderbird_Language) {
-                        0 {$New_MozillaThunderbird_Language = "0"}
-                        1 {$New_MozillaThunderbird_Language = "3"}
-                        2 {$New_MozillaThunderbird_Language = "4"}
-                        3 {$New_MozillaThunderbird_Language = "5"}
-                        4 {$New_MozillaThunderbird_Language = "6"}
-                        5 {$New_MozillaThunderbird_Language = "7"}
-                        6 {$New_MozillaThunderbird_Language = "8"}
-                        7 {$New_MozillaThunderbird_Language = "9"}
-                        8 {$New_MozillaThunderbird_Language = "10"}
-                        9 {$New_MozillaThunderbird_Language = "11"}
-                        10 {$New_MozillaThunderbird_Language = "12"}
-                    }
-                    $LastSetting[183] = $New_MozillaThunderbird_Language
-                }
-                Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
-                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
-                Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
-                Write-Output ""
-            }
             $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-        & "$PSScriptRoot\evergreen.ps1" -download -file $file
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -download -file $file
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
             Break
-            
         }
         ElseIf ($GUIfile) {
-            # Change old LastSetting.txt files to the new format (AddScript)
-            If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
-                New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
-                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-            }
-            Else {
-                If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
-                    New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-                } Else {
-                    Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
-                }
-            }
-            If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
-            } Else {
-                If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
-                If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
-                    Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
-                    Write-Output ""
-                    $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
-                    $Change_Language = $LastSetting[0] -as [int]
-                    Switch ($Change_Language) {
-                        0 {$New_Language = "4"}
-                        1 {$New_Language = "5"}
-                        2 {$New_Language = "6"}
-                        3 {$New_Language = "7"}
-                        4 {$New_Language = "8"}
-                        5 {$New_Language = "9"}
-                        6 {$New_Language = "12"}
-                        7 {$New_Language = "13"}
-                        8 {$New_Language = "14"}
-                        9 {$New_Language = "15"}
-                        10 {$New_Language = "16"}
-                        11 {$New_Language = "17"}
-                        12 {$New_Language = "19"}
-                        13 {$New_Language = "22"}
-                        14 {$New_Language = "23"}
-                    }
-                    $LastSetting[0] = $New_Language
-                    $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
-                    Switch ($Change_AdobeReaderDC_Language) {
-                        0 {$New_AdobeReaderDC_Language = "0"}
-                        1 {$New_AdobeReaderDC_Language = "3"}
-                        2 {$New_AdobeReaderDC_Language = "4"}
-                        3 {$New_AdobeReaderDC_Language = "5"}
-                        4 {$New_AdobeReaderDC_Language = "6"}
-                        5 {$New_AdobeReaderDC_Language = "7"}
-                        6 {$New_AdobeReaderDC_Language = "8"}
-                        7 {$New_AdobeReaderDC_Language = "10"}
-                        8 {$New_AdobeReaderDC_Language = "11"}
-                        9 {$New_AdobeReaderDC_Language = "12"}
-                        10 {$New_AdobeReaderDC_Language = "13"}
-                        11 {$New_AdobeReaderDC_Language = "14"}
-                        12 {$New_AdobeReaderDC_Language = "16"}
-                        13 {$New_AdobeReaderDC_Language = "19"}
-                        14 {$New_AdobeReaderDC_Language = "20"}
-                    }
-                    $LastSetting[95] = $New_AdobeReaderDC_Language
-                    $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
-                    Switch ($Change_FoxitPDFEditor_Language) {
-                        0 {$New_FoxitPDFEditor_Language = "0"}
-                        1 {$New_FoxitPDFEditor_Language = "1"}
-                        2 {$New_FoxitPDFEditor_Language = "2"}
-                        3 {$New_FoxitPDFEditor_Language = "3"}
-                        4 {$New_FoxitPDFEditor_Language = "4"}
-                        5 {$New_FoxitPDFEditor_Language = "5"}
-                        6 {$New_FoxitPDFEditor_Language = "6"}
-                        7 {$New_FoxitPDFEditor_Language = "7"}
-                        8 {$New_FoxitPDFEditor_Language = "8"}
-                        9 {$New_FoxitPDFEditor_Language = "8"}
-                        10 {$New_FoxitPDFEditor_Language = "9"}
-                        11 {$New_FoxitPDFEditor_Language = "10"}
-                        12 {$New_FoxitPDFEditor_Language = "11"}
-                        13 {$New_FoxitPDFEditor_Language = "12"}
-                        14 {$New_FoxitPDFEditor_Language = "13"}
-                    }
-                    $LastSetting[100] = $New_FoxitPDFEditor_Language
-                    $Change_KeePass_Language = $LastSetting[106] -as [int]
-                    Switch ($Change_KeePass_Language) {
-                        0 {$New_KeePass_Language = "0"}
-                        1 {$New_KeePass_Language = "5"}
-                        2 {$New_KeePass_Language = "6"}
-                        3 {$New_KeePass_Language = "7"}
-                        4 {$New_KeePass_Language = "8"}
-                        5 {$New_KeePass_Language = "9"}
-                        6 {$New_KeePass_Language = "10"}
-                        7 {$New_KeePass_Language = "13"}
-                        8 {$New_KeePass_Language = "14"}
-                        9 {$New_KeePass_Language = "15"}
-                        10 {$New_KeePass_Language = "16"}
-                        11 {$New_KeePass_Language = "17"}
-                        12 {$New_KeePass_Language = "18"}
-                        13 {$New_KeePass_Language = "20"}
-                        14 {$New_KeePass_Language = "23"}
-                        15 {$New_KeePass_Language = "24"}
-                    }
-                    $LastSetting[106] = $New_KeePass_Language
-                    $Change_MS365Apps_Language = $LastSetting[109] -as [int]
-                    Switch ($Change_MS365Apps_Language) {
-                        0 {$New_MS365Apps_Language = "0"}
-                        1 {$New_MS365Apps_Language = "5"}
-                        2 {$New_MS365Apps_Language = "6"}
-                        3 {$New_MS365Apps_Language = "7"}
-                        4 {$New_MS365Apps_Language = "8"}
-                        5 {$New_MS365Apps_Language = "9"}
-                        6 {$New_MS365Apps_Language = "10"}
-                        7 {$New_MS365Apps_Language = "13"}
-                        8 {$New_MS365Apps_Language = "14"}
-                        9 {$New_MS365Apps_Language = "15"}
-                        10 {$New_MS365Apps_Language = "16"}
-                        11 {$New_MS365Apps_Language = "18"}
-                        12 {$New_MS365Apps_Language = "20"}
-                        13 {$New_MS365Apps_Language = "23"}
-                        14 {$New_MS365Apps_Language = "24"}
-                    }
-                    $LastSetting[109] = $New_MS365Apps_Language
-                    $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
-                    Switch ($Change_MS365Apps_Visio_Language) {
-                        0 {$New_MS365Apps_Visio_Language = "0"}
-                        1 {$New_MS365Apps_Visio_Language = "5"}
-                        2 {$New_MS365Apps_Visio_Language = "6"}
-                        3 {$New_MS365Apps_Visio_Language = "7"}
-                        4 {$New_MS365Apps_Visio_Language = "8"}
-                        5 {$New_MS365Apps_Visio_Language = "9"}
-                        6 {$New_MS365Apps_Visio_Language = "10"}
-                        7 {$New_MS365Apps_Visio_Language = "13"}
-                        8 {$New_MS365Apps_Visio_Language = "14"}
-                        9 {$New_MS365Apps_Visio_Language = "15"}
-                        10 {$New_MS365Apps_Visio_Language = "16"}
-                        11 {$New_MS365Apps_Visio_Language = "18"}
-                        12 {$New_MS365Apps_Visio_Language = "20"}
-                        13 {$New_MS365Apps_Visio_Language = "23"}
-                        14 {$New_MS365Apps_Visio_Language = "24"}
-                    }
-                    $LastSetting[111] = $New_MS365Apps_Visio_Language
-                    $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
-                    Switch ($Change_MS365Apps_Project_Language) {
-                        0 {$New_MS365Apps_Project_Language = "0"}
-                        1 {$New_MS365Apps_Project_Language = "5"}
-                        2 {$New_MS365Apps_Project_Language = "6"}
-                        3 {$New_MS365Apps_Project_Language = "7"}
-                        4 {$New_MS365Apps_Project_Language = "8"}
-                        5 {$New_MS365Apps_Project_Language = "9"}
-                        6 {$New_MS365Apps_Project_Language = "10"}
-                        7 {$New_MS365Apps_Project_Language = "13"}
-                        8 {$New_MS365Apps_Project_Language = "14"}
-                        9 {$New_MS365Apps_Project_Language = "15"}
-                        10 {$New_MS365Apps_Project_Language = "16"}
-                        11 {$New_MS365Apps_Project_Language = "18"}
-                        12 {$New_MS365Apps_Project_Language = "20"}
-                        13 {$New_MS365Apps_Project_Language = "23"}
-                        14 {$New_MS365Apps_Project_Language = "24"}
-                    }
-                    $LastSetting[113] = $New_MS365Apps_Project_Language
-                    $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
-                    Switch ($Change_MSSQLServerManagementStudio_Language) {
-                        0 {$New_MSSQLServerManagementStudio_Language = "0"}
-                        1 {$New_MSSQLServerManagementStudio_Language = "2"}
-                        2 {$New_MSSQLServerManagementStudio_Language = "3"}
-                        3 {$New_MSSQLServerManagementStudio_Language = "4"}
-                        4 {$New_MSSQLServerManagementStudio_Language = "5"}
-                        5 {$New_MSSQLServerManagementStudio_Language = "6"}
-                        6 {$New_MSSQLServerManagementStudio_Language = "7"}
-                        7 {$New_MSSQLServerManagementStudio_Language = "8"}
-                        8 {$New_MSSQLServerManagementStudio_Language = "9"}
-                        9 {$New_MSSQLServerManagementStudio_Language = "10"}
-                    }
-                    $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
-                    $Change_Firefox_Language = $LastSetting[125] -as [int]
-                    Switch ($Change_Firefox_Language) {
-                        0 {$New_Firefox_Language = "0"}
-                        1 {$New_Firefox_Language = "6"}
-                        2 {$New_Firefox_Language = "7"}
-                        3 {$New_Firefox_Language = "9"}
-                        4 {$New_Firefox_Language = "10"}
-                        5 {$New_Firefox_Language = "13"}
-                        6 {$New_Firefox_Language = "14"}
-                        7 {$New_Firefox_Language = "18"}
-                        8 {$New_Firefox_Language = "20"}
-                        9 {$New_Firefox_Language = "23"}
-                        10 {$New_Firefox_Language = "24"}
-                    }
-                    $LastSetting[125] = $New_Firefox_Language
-                    $Change_IrfanView_Language = $LastSetting[138] -as [int]
-                    Switch ($Change_IrfanView_Language) {
-                        0 {$New_IrfanView_Language = "0"}
-                        1 {$New_IrfanView_Language = "4"}
-                        2 {$New_IrfanView_Language = "5"}
-                        3 {$New_IrfanView_Language = "6"}
-                        4 {$New_IrfanView_Language = "7"}
-                        5 {$New_IrfanView_Language = "8"}
-                        6 {$New_IrfanView_Language = "9"}
-                        7 {$New_IrfanView_Language = "12"}
-                        8 {$New_IrfanView_Language = "13"}
-                        9 {$New_IrfanView_Language = "14"}
-                        10 {$New_IrfanView_Language = "15"}
-                        11 {$New_IrfanView_Language = "16"}
-                        12 {$New_IrfanView_Language = "18"}
-                        13 {$New_IrfanView_Language = "21"}
-                        14 {$New_IrfanView_Language = "22"}
-                    }
-                    $LastSetting[138] = $New_IrfanView_Language
-                    $Change_MSOffice_Language = $LastSetting[139] -as [int]
-                    Switch ($Change_MSOffice_Language) {
-                        0 {$New_MSOffice_Language = "0"}
-                        1 {$New_MSOffice_Language = "5"}
-                        2 {$New_MSOffice_Language = "6"}
-                        3 {$New_MSOffice_Language = "7"}
-                        4 {$New_MSOffice_Language = "8"}
-                        5 {$New_MSOffice_Language = "9"}
-                        6 {$New_MSOffice_Language = "10"}
-                        7 {$New_MSOffice_Language = "13"}
-                        8 {$New_MSOffice_Language = "14"}
-                        9 {$New_MSOffice_Language = "15"}
-                        10 {$New_MSOffice_Language = "16"}
-                        11 {$New_MSOffice_Language = "18"}
-                        12 {$New_MSOffice_Language = "20"}
-                        13 {$New_MSOffice_Language = "23"}
-                        14 {$New_MSOffice_Language = "24"}
-                    }
-                    $LastSetting[139] = $New_MSOffice_Language
-                    $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
-                    Switch ($Change_MSOffice_Visio_Language) {
-                        0 {$New_MSOffice_Visio_Language = "0"}
-                        1 {$New_MSOffice_Visio_Language = "5"}
-                        2 {$New_MSOffice_Visio_Language = "6"}
-                        3 {$New_MSOffice_Visio_Language = "7"}
-                        4 {$New_MSOffice_Visio_Language = "8"}
-                        5 {$New_MSOffice_Visio_Language = "9"}
-                        6 {$New_MSOffice_Visio_Language = "10"}
-                        7 {$New_MSOffice_Visio_Language = "13"}
-                        8 {$New_MSOffice_Visio_Language = "14"}
-                        9 {$New_MSOffice_Visio_Language = "15"}
-                        10 {$New_MSOffice_Visio_Language = "16"}
-                        11 {$New_MSOffice_Visio_Language = "18"}
-                        12 {$New_MSOffice_Visio_Language = "20"}
-                        13 {$New_MSOffice_Visio_Language = "23"}
-                        14 {$New_MSOffice_Visio_Language = "24"}
-                    }
-                    $LastSetting[167] = $New_MSOffice_Visio_Language
-                    $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
-                    Switch ($Change_MSOffice_Project_Language) {
-                        0 {$New_MSOffice_Project_Language = "0"}
-                        1 {$New_MSOffice_Project_Language = "5"}
-                        2 {$New_MSOffice_Project_Language = "6"}
-                        3 {$New_MSOffice_Project_Language = "7"}
-                        4 {$New_MSOffice_Project_Language = "8"}
-                        5 {$New_MSOffice_Project_Language = "9"}
-                        6 {$New_MSOffice_Project_Language = "10"}
-                        7 {$New_MSOffice_Project_Language = "13"}
-                        8 {$New_MSOffice_Project_Language = "14"}
-                        9 {$New_MSOffice_Project_Language = "15"}
-                        10 {$New_MSOffice_Project_Language = "16"}
-                        11 {$New_MSOffice_Project_Language = "18"}
-                        12 {$New_MSOffice_Project_Language = "20"}
-                        13 {$New_MSOffice_Project_Language = "23"}
-                        14 {$New_MSOffice_Project_Language = "24"}
-                    }
-                    $LastSetting[169] = $New_MSOffice_Project_Language
-                    $Change_WinRAR_Language = $LastSetting[180] -as [int]
-                    Switch ($Change_WinRAR_Language) {
-                        0 {$New_WinRAR_Language = "0"}
-                        1 {$New_WinRAR_Language = "5"}
-                        2 {$New_WinRAR_Language = "6"}
-                        3 {$New_WinRAR_Language = "7"}
-                        4 {$New_WinRAR_Language = "8"}
-                        5 {$New_WinRAR_Language = "9"}
-                        6 {$New_WinRAR_Language = "10"}
-                        7 {$New_WinRAR_Language = "13"}
-                        8 {$New_WinRAR_Language = "14"}
-                        9 {$New_WinRAR_Language = "15"}
-                        10 {$New_WinRAR_Language = "16"}
-                        11 {$New_WinRAR_Language = "18"}
-                        12 {$New_WinRAR_Language = "20"}
-                        13 {$New_WinRAR_Language = "23"}
-                        14 {$New_WinRAR_Language = "24"}
-                    }
-                    $LastSetting[180] = $New_WinRAR_Language
-                    $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
-                    Switch ($Change_MozillaThunderbird_Language) {
-                        0 {$New_MozillaThunderbird_Language = "0"}
-                        1 {$New_MozillaThunderbird_Language = "3"}
-                        2 {$New_MozillaThunderbird_Language = "4"}
-                        3 {$New_MozillaThunderbird_Language = "5"}
-                        4 {$New_MozillaThunderbird_Language = "6"}
-                        5 {$New_MozillaThunderbird_Language = "7"}
-                        6 {$New_MozillaThunderbird_Language = "8"}
-                        7 {$New_MozillaThunderbird_Language = "9"}
-                        8 {$New_MozillaThunderbird_Language = "10"}
-                        9 {$New_MozillaThunderbird_Language = "11"}
-                        10 {$New_MozillaThunderbird_Language = "12"}
-                    }
-                    $LastSetting[183] = $New_MozillaThunderbird_Language
-                }
-                Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
-                New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
-                Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
-                Write-Output ""
-            }
             $update = @'
-            Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-            & "$PSScriptRoot\evergreen.ps1" -download -GUIfile $GUIfile
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
+                & "$PSScriptRoot\evergreen.ps1" -download -GUIfile $GUIfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
@@ -4200,304 +3901,6 @@ If (!($NoUpdate)) {
             $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
             If ($AnswerPending -eq "6") {
                 Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
-                # Change old LastSetting.txt files to the new format (AddScript)
-                If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
-                    New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
-                    New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-                }
-                Else {
-                    If (!(Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.Version).Version -ne "") {
-                        New-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -PropertyType STRING -ErrorAction SilentlyContinue | Out-Null
-                    } Else {
-                        Set-ItemProperty -Path HKLM:\SOFTWARE\EvergreenScript -Name Version -Value "$eVersion" -ErrorAction SilentlyContinue | Out-Null
-                    }
-                }
-                If (((Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\EvergreenScript | Select-Object $_.UpdateLanguage).UpdateLanguage -eq "1") -eq $true) {
-                } Else {
-                    If (!$GUIfile) {$GUIfile = "LastSetting.txt"}
-                    If (Test-Path "$PSScriptRoot\$GUIfile" -PathType leaf) {
-                        Write-Host -Foregroundcolor Red "Change language fields in $GUIfile to new format."
-                        Write-Output ""
-                        $LastSetting = Get-Content "$PSScriptRoot\$GUIfile"
-                        $Change_Language = $LastSetting[0] -as [int]
-                        Switch ($Change_Language) {
-                            0 {$New_Language = "4"}
-                            1 {$New_Language = "5"}
-                            2 {$New_Language = "6"}
-                            3 {$New_Language = "7"}
-                            4 {$New_Language = "8"}
-                            5 {$New_Language = "9"}
-                            6 {$New_Language = "12"}
-                            7 {$New_Language = "13"}
-                            8 {$New_Language = "14"}
-                            9 {$New_Language = "15"}
-                            10 {$New_Language = "16"}
-                            11 {$New_Language = "17"}
-                            12 {$New_Language = "19"}
-                            13 {$New_Language = "22"}
-                            14 {$New_Language = "23"}
-                        }
-                        $LastSetting[0] = $New_Language
-                        $Change_AdobeReaderDC_Language = $LastSetting[95] -as [int]
-                        Switch ($Change_AdobeReaderDC_Language) {
-                            0 {$New_AdobeReaderDC_Language = "0"}
-                            1 {$New_AdobeReaderDC_Language = "3"}
-                            2 {$New_AdobeReaderDC_Language = "4"}
-                            3 {$New_AdobeReaderDC_Language = "5"}
-                            4 {$New_AdobeReaderDC_Language = "6"}
-                            5 {$New_AdobeReaderDC_Language = "7"}
-                            6 {$New_AdobeReaderDC_Language = "8"}
-                            7 {$New_AdobeReaderDC_Language = "10"}
-                            8 {$New_AdobeReaderDC_Language = "11"}
-                            9 {$New_AdobeReaderDC_Language = "12"}
-                            10 {$New_AdobeReaderDC_Language = "13"}
-                            11 {$New_AdobeReaderDC_Language = "14"}
-                            12 {$New_AdobeReaderDC_Language = "16"}
-                            13 {$New_AdobeReaderDC_Language = "19"}
-                            14 {$New_AdobeReaderDC_Language = "20"}
-                        }
-                        $LastSetting[95] = $New_AdobeReaderDC_Language
-                        $Change_FoxitPDFEditor_Language = $LastSetting[100] -as [int]
-                        Switch ($Change_FoxitPDFEditor_Language) {
-                            0 {$New_FoxitPDFEditor_Language = "0"}
-                            1 {$New_FoxitPDFEditor_Language = "1"}
-                            2 {$New_FoxitPDFEditor_Language = "2"}
-                            3 {$New_FoxitPDFEditor_Language = "3"}
-                            4 {$New_FoxitPDFEditor_Language = "4"}
-                            5 {$New_FoxitPDFEditor_Language = "5"}
-                            6 {$New_FoxitPDFEditor_Language = "6"}
-                            7 {$New_FoxitPDFEditor_Language = "7"}
-                            8 {$New_FoxitPDFEditor_Language = "8"}
-                            9 {$New_FoxitPDFEditor_Language = "8"}
-                            10 {$New_FoxitPDFEditor_Language = "9"}
-                            11 {$New_FoxitPDFEditor_Language = "10"}
-                            12 {$New_FoxitPDFEditor_Language = "11"}
-                            13 {$New_FoxitPDFEditor_Language = "12"}
-                            14 {$New_FoxitPDFEditor_Language = "13"}
-                        }
-                        $LastSetting[100] = $New_FoxitPDFEditor_Language
-                        $Change_KeePass_Language = $LastSetting[106] -as [int]
-                        Switch ($Change_KeePass_Language) {
-                            0 {$New_KeePass_Language = "0"}
-                            1 {$New_KeePass_Language = "5"}
-                            2 {$New_KeePass_Language = "6"}
-                            3 {$New_KeePass_Language = "7"}
-                            4 {$New_KeePass_Language = "8"}
-                            5 {$New_KeePass_Language = "9"}
-                            6 {$New_KeePass_Language = "10"}
-                            7 {$New_KeePass_Language = "13"}
-                            8 {$New_KeePass_Language = "14"}
-                            9 {$New_KeePass_Language = "15"}
-                            10 {$New_KeePass_Language = "16"}
-                            11 {$New_KeePass_Language = "17"}
-                            12 {$New_KeePass_Language = "18"}
-                            13 {$New_KeePass_Language = "20"}
-                            14 {$New_KeePass_Language = "23"}
-                            15 {$New_KeePass_Language = "24"}
-                        }
-                        $LastSetting[106] = $New_KeePass_Language
-                        $Change_MS365Apps_Language = $LastSetting[109] -as [int]
-                        Switch ($Change_MS365Apps_Language) {
-                            0 {$New_MS365Apps_Language = "0"}
-                            1 {$New_MS365Apps_Language = "5"}
-                            2 {$New_MS365Apps_Language = "6"}
-                            3 {$New_MS365Apps_Language = "7"}
-                            4 {$New_MS365Apps_Language = "8"}
-                            5 {$New_MS365Apps_Language = "9"}
-                            6 {$New_MS365Apps_Language = "10"}
-                            7 {$New_MS365Apps_Language = "13"}
-                            8 {$New_MS365Apps_Language = "14"}
-                            9 {$New_MS365Apps_Language = "15"}
-                            10 {$New_MS365Apps_Language = "16"}
-                            11 {$New_MS365Apps_Language = "18"}
-                            12 {$New_MS365Apps_Language = "20"}
-                            13 {$New_MS365Apps_Language = "23"}
-                            14 {$New_MS365Apps_Language = "24"}
-                        }
-                        $LastSetting[109] = $New_MS365Apps_Language
-                        $Change_MS365Apps_Visio_Language = $LastSetting[111] -as [int]
-                        Switch ($Change_MS365Apps_Visio_Language) {
-                            0 {$New_MS365Apps_Visio_Language = "0"}
-                            1 {$New_MS365Apps_Visio_Language = "5"}
-                            2 {$New_MS365Apps_Visio_Language = "6"}
-                            3 {$New_MS365Apps_Visio_Language = "7"}
-                            4 {$New_MS365Apps_Visio_Language = "8"}
-                            5 {$New_MS365Apps_Visio_Language = "9"}
-                            6 {$New_MS365Apps_Visio_Language = "10"}
-                            7 {$New_MS365Apps_Visio_Language = "13"}
-                            8 {$New_MS365Apps_Visio_Language = "14"}
-                            9 {$New_MS365Apps_Visio_Language = "15"}
-                            10 {$New_MS365Apps_Visio_Language = "16"}
-                            11 {$New_MS365Apps_Visio_Language = "18"}
-                            12 {$New_MS365Apps_Visio_Language = "20"}
-                            13 {$New_MS365Apps_Visio_Language = "23"}
-                            14 {$New_MS365Apps_Visio_Language = "24"}
-                        }
-                        $LastSetting[111] = $New_MS365Apps_Visio_Language
-                        $Change_MS365Apps_Project_Language = $LastSetting[113] -as [int]
-                        Switch ($Change_MS365Apps_Project_Language) {
-                            0 {$New_MS365Apps_Project_Language = "0"}
-                            1 {$New_MS365Apps_Project_Language = "5"}
-                            2 {$New_MS365Apps_Project_Language = "6"}
-                            3 {$New_MS365Apps_Project_Language = "7"}
-                            4 {$New_MS365Apps_Project_Language = "8"}
-                            5 {$New_MS365Apps_Project_Language = "9"}
-                            6 {$New_MS365Apps_Project_Language = "10"}
-                            7 {$New_MS365Apps_Project_Language = "13"}
-                            8 {$New_MS365Apps_Project_Language = "14"}
-                            9 {$New_MS365Apps_Project_Language = "15"}
-                            10 {$New_MS365Apps_Project_Language = "16"}
-                            11 {$New_MS365Apps_Project_Language = "18"}
-                            12 {$New_MS365Apps_Project_Language = "20"}
-                            13 {$New_MS365Apps_Project_Language = "23"}
-                            14 {$New_MS365Apps_Project_Language = "24"}
-                        }
-                        $LastSetting[113] = $New_MS365Apps_Project_Language
-                        $Change_MSSQLServerManagementStudio_Language = $LastSetting[121] -as [int]
-                        Switch ($Change_MSSQLServerManagementStudio_Language) {
-                            0 {$New_MSSQLServerManagementStudio_Language = "0"}
-                            1 {$New_MSSQLServerManagementStudio_Language = "2"}
-                            2 {$New_MSSQLServerManagementStudio_Language = "3"}
-                            3 {$New_MSSQLServerManagementStudio_Language = "4"}
-                            4 {$New_MSSQLServerManagementStudio_Language = "5"}
-                            5 {$New_MSSQLServerManagementStudio_Language = "6"}
-                            6 {$New_MSSQLServerManagementStudio_Language = "7"}
-                            7 {$New_MSSQLServerManagementStudio_Language = "8"}
-                            8 {$New_MSSQLServerManagementStudio_Language = "9"}
-                            9 {$New_MSSQLServerManagementStudio_Language = "10"}
-                        }
-                        $LastSetting[121] = $New_MSSQLServerManagementStudio_Language
-                        $Change_Firefox_Language = $LastSetting[125] -as [int]
-                        Switch ($Change_Firefox_Language) {
-                            0 {$New_Firefox_Language = "0"}
-                            1 {$New_Firefox_Language = "6"}
-                            2 {$New_Firefox_Language = "7"}
-                            3 {$New_Firefox_Language = "9"}
-                            4 {$New_Firefox_Language = "10"}
-                            5 {$New_Firefox_Language = "13"}
-                            6 {$New_Firefox_Language = "14"}
-                            7 {$New_Firefox_Language = "18"}
-                            8 {$New_Firefox_Language = "20"}
-                            9 {$New_Firefox_Language = "23"}
-                            10 {$New_Firefox_Language = "24"}
-                        }
-                        $LastSetting[125] = $New_Firefox_Language
-                        $Change_IrfanView_Language = $LastSetting[138] -as [int]
-                        Switch ($Change_IrfanView_Language) {
-                            0 {$New_IrfanView_Language = "0"}
-                            1 {$New_IrfanView_Language = "4"}
-                            2 {$New_IrfanView_Language = "5"}
-                            3 {$New_IrfanView_Language = "6"}
-                            4 {$New_IrfanView_Language = "7"}
-                            5 {$New_IrfanView_Language = "8"}
-                            6 {$New_IrfanView_Language = "9"}
-                            7 {$New_IrfanView_Language = "12"}
-                            8 {$New_IrfanView_Language = "13"}
-                            9 {$New_IrfanView_Language = "14"}
-                            10 {$New_IrfanView_Language = "15"}
-                            11 {$New_IrfanView_Language = "16"}
-                            12 {$New_IrfanView_Language = "18"}
-                            13 {$New_IrfanView_Language = "21"}
-                            14 {$New_IrfanView_Language = "22"}
-                        }
-                        $LastSetting[138] = $New_IrfanView_Language
-                        $Change_MSOffice_Language = $LastSetting[139] -as [int]
-                        Switch ($Change_MSOffice_Language) {
-                            0 {$New_MSOffice_Language = "0"}
-                            1 {$New_MSOffice_Language = "5"}
-                            2 {$New_MSOffice_Language = "6"}
-                            3 {$New_MSOffice_Language = "7"}
-                            4 {$New_MSOffice_Language = "8"}
-                            5 {$New_MSOffice_Language = "9"}
-                            6 {$New_MSOffice_Language = "10"}
-                            7 {$New_MSOffice_Language = "13"}
-                            8 {$New_MSOffice_Language = "14"}
-                            9 {$New_MSOffice_Language = "15"}
-                            10 {$New_MSOffice_Language = "16"}
-                            11 {$New_MSOffice_Language = "18"}
-                            12 {$New_MSOffice_Language = "20"}
-                            13 {$New_MSOffice_Language = "23"}
-                            14 {$New_MSOffice_Language = "24"}
-                        }
-                        $LastSetting[139] = $New_MSOffice_Language
-                        $Change_MSOffice_Visio_Language = $LastSetting[167] -as [int]
-                        Switch ($Change_MSOffice_Visio_Language) {
-                            0 {$New_MSOffice_Visio_Language = "0"}
-                            1 {$New_MSOffice_Visio_Language = "5"}
-                            2 {$New_MSOffice_Visio_Language = "6"}
-                            3 {$New_MSOffice_Visio_Language = "7"}
-                            4 {$New_MSOffice_Visio_Language = "8"}
-                            5 {$New_MSOffice_Visio_Language = "9"}
-                            6 {$New_MSOffice_Visio_Language = "10"}
-                            7 {$New_MSOffice_Visio_Language = "13"}
-                            8 {$New_MSOffice_Visio_Language = "14"}
-                            9 {$New_MSOffice_Visio_Language = "15"}
-                            10 {$New_MSOffice_Visio_Language = "16"}
-                            11 {$New_MSOffice_Visio_Language = "18"}
-                            12 {$New_MSOffice_Visio_Language = "20"}
-                            13 {$New_MSOffice_Visio_Language = "23"}
-                            14 {$New_MSOffice_Visio_Language = "24"}
-                        }
-                        $LastSetting[167] = $New_MSOffice_Visio_Language
-                        $Change_MSOffice_Project_Language = $LastSetting[169] -as [int]
-                        Switch ($Change_MSOffice_Project_Language) {
-                            0 {$New_MSOffice_Project_Language = "0"}
-                            1 {$New_MSOffice_Project_Language = "5"}
-                            2 {$New_MSOffice_Project_Language = "6"}
-                            3 {$New_MSOffice_Project_Language = "7"}
-                            4 {$New_MSOffice_Project_Language = "8"}
-                            5 {$New_MSOffice_Project_Language = "9"}
-                            6 {$New_MSOffice_Project_Language = "10"}
-                            7 {$New_MSOffice_Project_Language = "13"}
-                            8 {$New_MSOffice_Project_Language = "14"}
-                            9 {$New_MSOffice_Project_Language = "15"}
-                            10 {$New_MSOffice_Project_Language = "16"}
-                            11 {$New_MSOffice_Project_Language = "18"}
-                            12 {$New_MSOffice_Project_Language = "20"}
-                            13 {$New_MSOffice_Project_Language = "23"}
-                            14 {$New_MSOffice_Project_Language = "24"}
-                        }
-                        $LastSetting[169] = $New_MSOffice_Project_Language
-                        $Change_WinRAR_Language = $LastSetting[180] -as [int]
-                        Switch ($Change_WinRAR_Language) {
-                            0 {$New_WinRAR_Language = "0"}
-                            1 {$New_WinRAR_Language = "5"}
-                            2 {$New_WinRAR_Language = "6"}
-                            3 {$New_WinRAR_Language = "7"}
-                            4 {$New_WinRAR_Language = "8"}
-                            5 {$New_WinRAR_Language = "9"}
-                            6 {$New_WinRAR_Language = "10"}
-                            7 {$New_WinRAR_Language = "13"}
-                            8 {$New_WinRAR_Language = "14"}
-                            9 {$New_WinRAR_Language = "15"}
-                            10 {$New_WinRAR_Language = "16"}
-                            11 {$New_WinRAR_Language = "18"}
-                            12 {$New_WinRAR_Language = "20"}
-                            13 {$New_WinRAR_Language = "23"}
-                            14 {$New_WinRAR_Language = "24"}
-                        }
-                        $LastSetting[180] = $New_WinRAR_Language
-                        $Change_MozillaThunderbird_Language = $LastSetting[183] -as [int]
-                        Switch ($Change_MozillaThunderbird_Language) {
-                            0 {$New_MozillaThunderbird_Language = "0"}
-                            1 {$New_MozillaThunderbird_Language = "3"}
-                            2 {$New_MozillaThunderbird_Language = "4"}
-                            3 {$New_MozillaThunderbird_Language = "5"}
-                            4 {$New_MozillaThunderbird_Language = "6"}
-                            5 {$New_MozillaThunderbird_Language = "7"}
-                            6 {$New_MozillaThunderbird_Language = "8"}
-                            7 {$New_MozillaThunderbird_Language = "9"}
-                            8 {$New_MozillaThunderbird_Language = "10"}
-                            9 {$New_MozillaThunderbird_Language = "11"}
-                            10 {$New_MozillaThunderbird_Language = "12"}
-                        }
-                        $LastSetting[183] = $New_MozillaThunderbird_Language
-                    }
-                    Set-Content "$PSScriptRoot\$GUIfile" -Value $LastSetting
-                    New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
-                    Write-Host -Foregroundcolor Green "Changes in the $GUIfile done!"
-                    Write-Output ""
-                }
                 $update = @'
                     Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
                     Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
