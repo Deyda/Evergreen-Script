@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.2
+  Version:          2.07.3
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -138,6 +138,7 @@ the script checks the version number and will update the package.
   2021-12-10        Implement method to rewrite the language keys in the LastSetting.txt
   2021-12-13        Add RegKey for new script user (no update of the language keys at update)
   2021-12-16        Change language key update function
+  2021-12-20        Correction deviceTRUST Install
 
 .PARAMETER file
 
@@ -3479,7 +3480,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.2"
+$eVersion = "2.07.3"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -4052,10 +4053,10 @@ $inputXML = @"
                     <CheckBox x:Name="Checkbox_deviceTRUST" Content="deviceTRUST" HorizontalAlignment="Left" Margin="12,270,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_deviceTRUST" HorizontalAlignment="Left" Margin="205,267,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
                         <ListBoxItem Content="Client"/>
-                        <ListBoxItem Content="Host"/>
+                        <ListBoxItem Content="Agent"/>
                         <ListBoxItem Content="Console"/>
-                        <ListBoxItem Content="Client + Host"/>
-                        <ListBoxItem Content="Host + Console"/>
+                        <ListBoxItem Content="Client + Agent"/>
+                        <ListBoxItem Content="Agent + Console"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="12,290,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="12,310,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
@@ -10592,15 +10593,15 @@ If ($Download -eq "1") {
                 Switch ($deviceTRUSTArchitectureClear) {
                     x64 {
                         Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x86"* | Remove-Item
-                        Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.exe" -NewName "dtclient-release.exe"
+                        Rename-Item -Path "$PSScriptRoot\$Product\dtclient-extension-release-$Version.exe" -NewName "dtclient-extension-release.exe"
                         Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x64-release-$Version.msi" -NewName "dtconsole-x64-release.msi"
-                        Rename-Item -Path "$PSScriptRoot\$Product\dthost-x64-release-$Version.msi" -NewName "dthost-x64-release.msi"
+                        Rename-Item -Path "$PSScriptRoot\$Product\dtagent-x64-release-$Version.msi" -NewName "dtagent-x64-release.msi"
                     }
                     x86 {
                         Get-ChildItem -Path "$PSScriptRoot\$Product" | Where-Object Name -like *"x64"* | Remove-Item
-                        Rename-Item -Path "$PSScriptRoot\$Product\dtclient-release-$Version.exe" -NewName "dtclient-release.exe"
+                        Rename-Item -Path "$PSScriptRoot\$Product\dtclient-extension-release-$Version.exe" -NewName "dtclient-extension-release.exe"
                         Rename-Item -Path "$PSScriptRoot\$Product\dtconsole-x86-release-$Version.msi" -NewName "dtconsole-x86-release.msi"
-                        Rename-Item -Path "$PSScriptRoot\$Product\dthost-x86-release-$Version.msi" -NewName "dthost-x86-release.msi"
+                        Rename-Item -Path "$PSScriptRoot\$Product\dtagent-x86-release-$Version.msi" -NewName "dtagent-x86-release.msi"
                     }
                 }
                 Write-Verbose "Stop logging"
@@ -16079,37 +16080,33 @@ If ($Install -eq "1") {
         If (!$deviceTRUSTClientV) {
             $deviceTRUSTClientV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Client*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        If ($deviceTRUSTClientV.length -ne "8") {$deviceTRUSTClientV = $deviceTRUSTClientV -replace ".{2}$"}
+        #If ($deviceTRUSTClientV.length -ne "8") {$deviceTRUSTClientV = $deviceTRUSTClientV -replace ".{2}$"}
         $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTHostV) {
             $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Host*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        If ($deviceTRUSTHostV.length -ne "8") {$deviceTRUSTHostV = $deviceTRUSTHostV -replace ".{2}$"}
+        $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Agent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$deviceTRUSTHostV) {
+            $deviceTRUSTHostV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Agent*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        #If ($deviceTRUSTHostV.length -ne "8") {$deviceTRUSTHostV = $deviceTRUSTHostV -replace ".{2}$"}
         $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$deviceTRUSTConsoleV) {
             $deviceTRUSTConsoleV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*deviceTRUST Console*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
-        If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
+        #If ($deviceTRUSTConsoleV.length -ne "8") {$deviceTRUSTConsoleV = $deviceTRUSTConsoleV -replace ".{2}$"}
         $deviceTRUSTLog = "$LogTemp\deviceTRUST.log"
         $deviceTRUSTClientLog = "$LogTemp\deviceTRUST.txt"
-        $deviceTRUSTClientInstaller = "dtclient-release" + ".exe"
-        $deviceTRUSTHostInstaller = "dthost-" + "$deviceTRUSTArchitectureClear" + "-release" + ".msi"
-        $deviceTRUSTConsoleInstaller = "dtconsole-" + "$deviceTRUSTArchitectureClear" + "-release" + ".msi"
-        $Arguments = @(
-                "/i"
-                "`"$InstallMSI`""
-                "/passive"
-                "/quiet"
-                "/norestart"
-                "/L*V $deviceTRUSTLog"
-                )
+        $deviceTRUSTClientInstaller = "dtclient-extension-release.exe"
+        $deviceTRUSTHostInstaller = "dtagent-" + "$deviceTRUSTArchitectureClear" + "-release.msi"
+        $deviceTRUSTConsoleInstaller = "dtconsole-" + "$deviceTRUSTArchitectureClear" + "-release.msi"
         If ($deviceTRUSTClient -eq $True) {
-            Write-Host -ForegroundColor Magenta "Install $Product Client"
+            Write-Host -ForegroundColor Magenta "Install $Product Client Extension"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $deviceTRUSTClientV"
             If ($deviceTRUSTClientV -lt $Version) {
                 # deviceTRUST Client
-                DS_WriteLog "I" "Install $Product Client" $LogFile
+                DS_WriteLog "I" "Install $Product Client Extension" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 Try {
                     $Options = @(
@@ -16118,47 +16115,59 @@ If ($Install -eq "1") {
                         "/NORESTART"
                         "/LOG $deviceTRUSTClientLog"
                     )
-                    Write-Host "Starting install of $Product Client version $Version"
+                    Write-Host "Starting install of $Product Client Extension version $Version"
                     If ($WhatIf -eq '0') {
                         Start-Process -FilePath "$PSScriptRoot\$Product\$deviceTRUSTClientInstaller" -ArgumentList $Options -PassThru -Wait -ErrorAction Stop | Out-Null
                         If ($CleanUpStartMenu) {
-                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\DWG TrueView*" -Recurse -Force}
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\deviceTRUST*") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\deviceTRUST*" -Recurse -Force}
                         }
                     }
                     Get-Content $deviceTRUSTClientLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $deviceTRUSTClientLog -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 } Catch {
-                    Write-Host -ForegroundColor Red "Error installing $Product Client (Error: $($Error[0]))"
-                    DS_WriteLog "E" "Error installing $Product Client (Error: $($Error[0]))" $LogFile
+                    Write-Host -ForegroundColor Red "Error installing $Product Client Extension (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product Client Extension (Error: $($Error[0]))" $LogFile
                 }
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
             }
             # Stop, if no new version is available
             Else {
-                Write-Host -ForegroundColor Cyan "No update available for $Product Client"
+                Write-Host -ForegroundColor Cyan "No update available for $Product Client Extension"
                 Write-Output ""
             }
         }
         If ($deviceTRUSTHost -eq $True) {
-            Write-Host -ForegroundColor Magenta "Install $Product Host $deviceTRUSTArchitectureClear"
+            Write-Host -ForegroundColor Magenta "Install $Product Agent $deviceTRUSTArchitectureClear"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $deviceTRUSTHostV"
             If ($deviceTRUSTHostV -lt $Version) {
-                # deviceTRUST Host
-                DS_WriteLog "I" "Install $Product Host $deviceTRUSTArchitectureClear" $LogFile
+                # deviceTRUST Agent
+                $Arguments = @(
+                "/i"
+                "`"$PSScriptRoot\$Product\$deviceTRUSTHostInstaller`""
+                "/passive"
+                "/quiet"
+                "/norestart"
+                "/L*V $deviceTRUSTLog"
+                )
+                DS_WriteLog "I" "Install $Product Agent $deviceTRUSTArchitectureClear" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
-                $InstallMSI = "$PSScriptRoot\$Product\$deviceTRUSTHostInstaller"
                 Try {
-                    Write-Host "Starting install of $Product Host $deviceTRUSTArchitectureClear version $Version"
+                    Write-Host "Starting install of $Product Agent $deviceTRUSTArchitectureClear version $Version"
                     If ($WhatIf -eq '0') {
-                        Install-MSI $InstallMSI $Arguments
+                        $inst = Start-Process -FilePath msiexec.exe -ArgumentList $Arguments -PassThru -Wait -ErrorAction Stop | Out-Null
+                        If ($inst) {
+                            Wait-Process -InputObject $inst
+                        }
                     }
                     Get-Content $deviceTRUSTLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $deviceTRUSTLog -ErrorAction SilentlyContinue
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 } Catch {
-                    DS_WriteLog "E" "Error installing $Product Host $deviceTRUSTArchitectureClear (Error: $($Error[0]))" $LogFile
+                    Write-Host -ForegroundColor Red "Error installing $Product Agent $deviceTRUSTArchitectureClear (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product Agent $deviceTRUSTArchitectureClear (Error: $($Error[0]))" $LogFile
                 }
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
@@ -16175,17 +16184,30 @@ If ($Install -eq "1") {
             Write-Host "Current Version:  $deviceTRUSTConsoleV"
             If ($deviceTRUSTConsoleV -lt $Version) {
                 # deviceTRUST Console
+                $Arguments = @(
+                "/i"
+                "`"$PSScriptRoot\$Product\$deviceTRUSTConsoleInstaller`""
+                "/passive"
+                "/quiet"
+                "/norestart"
+                "/L*V $deviceTRUSTLog"
+                )
                 DS_WriteLog "I" "Install $Product Console $deviceTRUSTArchitectureClear" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $InstallMSI = "$PSScriptRoot\$Product\$deviceTRUSTConsoleInstaller"
                 Try {
                     Write-Host "Starting install of $Product Console $deviceTRUSTArchitectureClear version $Version"
                     If ($WhatIf -eq '0') {
-                        Install-MSI $InstallMSI $Arguments
+                        $inst = Start-Process -FilePath msiexec.exe -ArgumentList $Arguments -PassThru -Wait -ErrorAction Stop | Out-Null
+                        If ($inst) {
+                            Wait-Process -InputObject $inst
+                        }
                     }
                     Get-Content $deviceTRUSTLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
                     Remove-Item $deviceTRUSTLog -ErrorAction SilentlyContinue
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product Console $deviceTRUSTArchitectureClear (Error: $($Error[0]))"
                     DS_WriteLog "E" "Error installing $Product Console $deviceTRUSTArchitectureClear (Error: $($Error[0]))" $LogFile
                 }
                 DS_WriteLog "-" "" $LogFile
