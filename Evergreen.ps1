@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.3
+  Version:          2.07.4
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -139,6 +139,7 @@ the script checks the version number and will update the package.
   2021-12-13        Add RegKey for new script user (no update of the language keys at update)
   2021-12-16        Change language key update function
   2021-12-20        Correction deviceTRUST Install
+  2021-12-27        New 7-Zip download function
 
 .PARAMETER file
 
@@ -309,6 +310,47 @@ Filter Get-FileSize {
 	ElseIf ($_ -lt 1pb) { ($_/1tb), 'TB' }
 	Else { ($_/1pb), 'PB' }
 	)
+}
+
+# Function 7-Zip Download
+#========================================================================================================================================
+Function Get-7-Zip {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+        $url = "https://www.7-zip.org/"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Throw "Failed to connect to URL: $url with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = 'Download 7-Zip .* for Windows'
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplit = $webVersion.Split(" ")
+        $Version = $webSplit[2]
+        $VersionSplit = $webSplit[2]
+        $appVersion = $VersionSplit.Replace('.','')
+        $x32 = "https://www.7-zip.org/a/7z" + "$appVersion" + "-x64.exe"
+        $x64 = "https://www.7-zip.org/a/7z" + "$appVersion" + ".exe"
+
+
+        $PSObjectx32 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x86"
+        URI          = $x32
+        }
+
+        $PSObjectx64 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x64"
+        URI          = $x64
+        }
+        Write-Output -InputObject $PSObjectx32
+        Write-Output -InputObject $PSObjectx64
+    }
 }
 
 # Function IrfanView Download
@@ -3480,7 +3522,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.3"
+$eVersion = "2.07.4"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -9738,7 +9780,8 @@ If ($Download -eq "1") {
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
         $PackageName = "7-Zip_" + "$7ZipArchitectureClear"
-        $7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear" -and $_.Type -eq "exe" }
+        #$7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear" -and $_.Type -eq "exe" }
+        $7ZipD = Get-7-Zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear"}
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
