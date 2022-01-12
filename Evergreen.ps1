@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.4
+  Version:          2.07.5
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -140,6 +140,8 @@ the script checks the version number and will update the package.
   2021-12-16        Change language key update function
   2021-12-20        Correction deviceTRUST Install
   2021-12-27        New 7-Zip download function
+  2022-01-10        Correction Teams User Based Download
+  2022-01-12        Correction Microsoft PowerBI Desktop and Report Builder Version
 
 .PARAMETER file
 
@@ -474,9 +476,9 @@ Function Get-MicrosoftTeamsUser() {
     $appURLVersion = "https://github.com/ItzLevvie/MicrosoftTeams-msinternal/blob/master/defconfig"
     Try {
         $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
-        $TeamsUserVersionGeneral = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "General"}
+        $TeamsUserVersionGeneral = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "General" -and $_.Type -eq "msi"}
         $VersionGeneral = $TeamsUserVersionGeneral.Version
-        $TeamsUserVersionPreview = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "Preview"}
+        $TeamsUserVersionPreview = Get-EvergreenApp -Name MicrosoftTeams | Where-Object { $_.Architecture -eq "x64" -and $_.Ring -eq "Preview" -and $_.Type -eq "msi"}
         $VersionPreview = $TeamsUserVersionPreview.Version
     }
     Catch {
@@ -3522,7 +3524,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.4"
+$eVersion = "2.07.5"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -12451,34 +12453,84 @@ If ($Download -eq "1") {
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSPowerBIDesktopArchitectureClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $CurrentPowerSplit = $CurrentVersion.split(".")
+        $CurrentPowerStrings = ([regex]::Matches($CurrentVersion, "\." )).count
+        $CurrentPowerStringSecond = ([regex]::Matches($CurrentPowerSplit[1], "." )).count
+        $CurrentPowerStringThird = ([regex]::Matches($CurrentPowerSplit[2], "." )).count
+        Switch ($CurrentPowerStringSecond) {
+            2 {
+                $CurrentPowerSplit[1] = "0" + $CurrentPowerSplit[1]
+            }
+        }
+        Switch ($CurrentPowerStringThird) {
+            3 {
+                $CurrentPowerSplit[2] = "0" + $CurrentPowerSplit[2]
+            }
+        }
+        Switch ($CurrentPowerStrings) {
+            1 {
+                $NewCurrentVersion = $CurrentPowerSplit[0] + "." + $CurrentPowerSplit[1]
+            }
+            2 {
+                $NewCurrentVersion = $CurrentPowerSplit[0] + "." + $CurrentPowerSplit[1] + "." + $CurrentPowerSplit[2]
+            }
+            3 {
+                $NewCurrentVersion = $CurrentPowerSplit[0] + "." + $CurrentPowerSplit[1] + "." + $CurrentPowerSplit[2] + "." + $CurrentPowerSplit[3]
+            }
+        }
+        $PowerSplit = $Version.split(".")
+        $PowerStrings = ([regex]::Matches($Version, "\." )).count
+        $PowerStringSecond = ([regex]::Matches($PowerSplit[1], "." )).count
+        $PowerStringThird = ([regex]::Matches($PowerSplit[2], "." )).count
+        Switch ($PowerStringSecond) {
+            2 {
+                $PowerSplit[1] = "0" + $PowerSplit[1]
+            }
+        }
+        Switch ($PowerStringThird) {
+            3 {
+                $PowerSplit[2] = "0" + $PowerSplit[2]
+            }
+        }
+        Switch ($PowerStrings) {
+            1 {
+                $NewVersion = $PowerSplit[0] + "." + $PowerSplit[1]
+            }
+            2 {
+                $NewVersion = $PowerSplit[0] + "." + $PowerSplit[1] + "." + $PowerSplit[2]
+            }
+            3 {
+                $NewVersion = $PowerSplit[0] + "." + $PowerSplit[1] + "." + $PowerSplit[2] + "." + $PowerSplit[3]
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product $MSPowerBIDesktopArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        Write-Host "Download Version: $NewVersion"
+        Write-Host "Current Version:  $NewCurrentVersion"
+        If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $NewVersion.log"
                 If ($Repository -eq '1') {
-                    If ($CurrentVersion) {
-                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                    If ($NewCurrentVersion) {
+                        Write-Host "Copy $Product installer version $NewCurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
-                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
-                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
-                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $NewCurrentVersion finished!"
                     }
                 }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$VersionPath" -Value "$Version"
+                Set-Content -Path "$VersionPath" -Value "$NewVersion"
             }
-            Write-Host "Starting download of $Product $MSPowerBIDesktopArchitectureClear version $Version"
+            Write-Host "Starting download of $Product $MSPowerBIDesktopArchitectureClear version $NewVersion"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Host -ForegroundColor Green "Download of the new version $NewVersion finished!"
             Write-Output ""
         }
         Else {
@@ -12499,34 +12551,72 @@ If ($Download -eq "1") {
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version.txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $CurrentPowerBISplit = $CurrentVersion.split(".")
+        $CurrentPowerBIStrings = ([regex]::Matches($CurrentVersion, "\." )).count
+        $CurrentPowerBIStringSecond = ([regex]::Matches($CurrentPowerBISplit[2], "." )).count
+        Switch ($CurrentPowerBIStringSecond) {
+            4 {
+                $CurrentPowerBISplit[2] = "0" + $CurrentPowerBISplit[2]
+            }
+        }
+        Switch ($CurrentPowerBIStrings) {
+            1 {
+                $NewCurrentVersion = $CurrentPowerBISplit[0] + "." + $CurrentPowerBISplit[1]
+            }
+            2 {
+                $NewCurrentVersion = $CurrentPowerBISplit[0] + "." + $CurrentPowerBISplit[1] + "." + $CurrentPowerBISplit[2]
+            }
+            3 {
+                $NewCurrentVersion = $CurrentPowerBISplit[0] + "." + $CurrentPowerBISplit[1] + "." + $CurrentPowerBISplit[2] + "." + $CurrentPowerBISplit[3]
+            }
+        }
+        $PowerBISplit = $Version.split(".")
+        $PowerBIStrings = ([regex]::Matches($Version, "\." )).count
+        $PowerBIStringSecond = ([regex]::Matches($PowerBISplit[2], "." )).count
+        Switch ($PowerBIStringSecond) {
+            4 {
+                $PowerBISplit[2] = "0" + $PowerBISplit[2]
+            }
+        }
+        Switch ($PowerBIStrings) {
+            1 {
+                $NewVersion = $PowerBISplit[0] + "." + $PowerBISplit[1]
+            }
+            2 {
+                $NewVersion = $PowerBISplit[0] + "." + $PowerBISplit[1] + "." + $PowerBISplit[2]
+            }
+            3 {
+                $NewVersion = $PowerBISplit[0] + "." + $PowerBISplit[1] + "." + $PowerBISplit[2] + "." + $PowerBISplit[3]
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        Write-Host "Download Version: $NewVersion"
+        Write-Host "Current Version:  $NewCurrentVersion"
+        If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $NewVersion.log"
                 If ($Repository -eq '1') {
-                    If ($CurrentVersion) {
-                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                    If ($NewCurrentVersion) {
+                        Write-Host "Copy $Product installer version $NewCurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
-                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
-                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
-                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $NewCurrentVersion finished!"
                     }
                 }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$VersionPath" -Value "$Version"
+                Set-Content -Path "$VersionPath" -Value "$NewVersion"
             }
-            Write-Host "Starting download of $Product version $Version"
+            Write-Host "Starting download of $Product version $NewVersion"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Host -ForegroundColor Green "Download of the new version $NewVersion finished!"
             Write-Output ""
         }
         Else {
