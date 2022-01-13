@@ -142,6 +142,7 @@ the script checks the version number and will update the package.
   2021-12-27        New 7-Zip download function
   2022-01-10        Correction Teams User Based Download
   2022-01-12        Correction Microsoft PowerBI Desktop and Report Builder Version
+  2022-01-13        Add disable GoToMeeting Update Schedulded Task / Correction 7-Zip Installer Function
 
 .PARAMETER file
 
@@ -335,8 +336,8 @@ Function Get-7-Zip {
         $Version = $webSplit[2]
         $VersionSplit = $webSplit[2]
         $appVersion = $VersionSplit.Replace('.','')
-        $x32 = "https://www.7-zip.org/a/7z" + "$appVersion" + "-x64.exe"
-        $x64 = "https://www.7-zip.org/a/7z" + "$appVersion" + ".exe"
+        $x64 = "https://www.7-zip.org/a/7z" + "$appVersion" + "-x64.exe"
+        $x32 = "https://www.7-zip.org/a/7z" + "$appVersion" + ".exe"
 
 
         $PSObjectx32 = [PSCustomObject] @{
@@ -17150,6 +17151,16 @@ If ($Install -eq "1") {
                     Remove-Item $LogMeInGoToMeetingLog -ErrorAction SilentlyContinue
                 } Catch {
                     DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+                }
+                Try {
+                    Write-Host "Customize Scheduled Task"
+                    If ($WhatIf -eq '0') {
+                        Get-ScheduledTask -TaskName G2M* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                    }
+                    Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error customizing (Error: $($Error[0]))" $LogFile
                 }
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
