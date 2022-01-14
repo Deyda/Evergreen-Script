@@ -18221,7 +18221,7 @@ If ($Install -eq "1") {
             $MSPowerBIDesktopV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft PowerBI Desktop*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $MSPowerBIDesktopInstaller = "PBIDesktopSetup_" + "$MSPowerBIDesktopArchitectureClear"
-        Write-Host -ForegroundColor Magenta "Install $ProductkNjIGFDce!"
+        Write-Host -ForegroundColor Magenta "Install $Product!"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $MSPowerBIDesktopV"
         If ($MSPowerBIDesktopV -ne $Version) {
