@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.7
+  Version:          2.07.8
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -144,6 +144,7 @@ the script checks the version number and will update the package.
   2022-01-12        Correction Microsoft PowerBI Desktop and Report Builder Version
   2022-01-13        Add disable GoToMeeting Update Schedulded Task / Correction 7-Zip Installer Function
   2022-02-03        Add new download function for Citrix WorkspaceApp Current Release (Web-Crawling) / Change download method to the new function
+  2022-02-04        Correction Zoom HDX Media Plugin install
 
 .PARAMETER file
 
@@ -3557,7 +3558,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.7"
+$eVersion = "2.07.8"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -5350,7 +5351,10 @@ $inputXML = @"
             1 { $WPFCheckbox_ShareX.IsChecked = "True"}
         }
         Switch ($LastSetting[48]) {
-            1 { $WPFCheckbox_Zoom.IsChecked = "True"}
+            1 { 
+                $WPFCheckbox_Zoom.IsChecked = "True"
+                $WPFCheckbox_Zoom_Detail.IsChecked = "True"
+            }
         }
         Switch ($LastSetting[52]) {
             1 { $WPFCheckbox_GIMP.IsChecked = "True"}
@@ -21315,7 +21319,7 @@ If ($Install -eq "1") {
     }
     If ($Zoom -eq 1) {
         If ($ZoomCitrixClient -eq 1) {
-            $Product = "Citrix HDX Media Plugin"
+            $Product = "Zoom Citrix HDX Media Plugin"
             # Check, if a new version is available
             $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
             $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
@@ -21323,14 +21327,14 @@ If ($Install -eq "1") {
                 $Version = $ZoomD.Version
             }
             $ZoomV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Zoom Plugin*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-            If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
+            #If ($ZoomV.length -ne "5") {$ZoomV = $ZoomV -replace ".{4}$"}
             $ZoomInstaller = "ZoomCitrixHDXMediaPlugin" + ".msi"
             $ZoomLog = "$LogTemp\Zoom.log"
             $InstallMSI = "$PSScriptRoot\$Product\$ZoomInstaller"
             Write-Host -ForegroundColor Magenta "Install $Product"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $ZoomV"
-            If ($ZoomV -ne $Version) {
+            If ($ZoomV -lt $Version) {
                 DS_WriteLog "I" "Install $Product" $LogFile
                 Write-Host -ForegroundColor Green "Update available"
                 $Arguments = @(
