@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.6
+  Version:          2.07.7
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -134,7 +134,7 @@ the script checks the version number and will update the package.
   2021-12-02        Mozille Firefox Channel selection correction
   2021-12-06        Change Microsoft Teams downlaoder to filter msi / Add Microsoft FSLogix Channel Stable (Preferred by Deyda)
   2021-12-07        Change IrfanView download site / Additional filter parameter for Microsoft .Net Framework
-  2021-12-08        Add Global Language Arabic, Chinese, Croatian, Czech, Hebrew, Hungarian, Romanian, Slovak, Slovenian, Turkish and Ukrainian / Add new language to KeePass and WinRAR download function / Add new language to Adobe Reader DC, IrfanView, Microsoft 365 Apps, Microsoft Office, Firefox, Thnderbird, Microsoft SQL Server Management Studio, Foxit PDF Editor and KeePass
+  2021-12-08        Add Global Language Arabic, Chinese, Croatian, Czech, Hebrew, Hungarian, Romanian, Slovak, Slovenian, Turkish and Ukrainian / Add new language to KeePass and WinRAR download function / Add new language to Adobe Reader DC, IrfanView, Microsoft 365 Apps, Microsoft Office, Firefox, Thunderbird, Microsoft SQL Server Management Studio, Foxit PDF Editor and KeePass
   2021-12-10        Implement method to rewrite the language keys in the LastSetting.txt
   2021-12-13        Add RegKey for new script user (no update of the language keys at update)
   2021-12-16        Change language key update function
@@ -143,6 +143,7 @@ the script checks the version number and will update the package.
   2022-01-10        Correction Teams User Based Download
   2022-01-12        Correction Microsoft PowerBI Desktop and Report Builder Version
   2022-01-13        Add disable GoToMeeting Update Schedulded Task / Correction 7-Zip Installer Function
+  2022-02-03        Add new download function for Citrix WorkspaceApp Current Release (Web-Crawling) / Change download method to the new function
 
 .PARAMETER file
 
@@ -607,6 +608,37 @@ Function Get-PDFsam() {
         }
 
         Write-Output -InputObject $PSObjectx64
+        
+    }
+}
+
+# Function Citrix WorkspaceAppCurrent
+#========================================================================================================================================
+Function Get-WorkspaceAppCurrent() {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+    $appURLVersion = "https://www.citrix.com/downloads/workspace-app/windows/workspace-app-for-windows-latest.html"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($appURLVersion) -SessionVariable websession
+    }
+    Catch {
+        Throw "Failed to connect to URL: $appURLVersion with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = "Version:.*\(.*\)"
+        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $appDLVersion = $webVersion.Split()[1]
+        $appURL = "https://downloadplugins.citrix.com/ReceiverUpdates/Prod/Receiver/Win/CitrixWorkspaceApp$appDLVersion.exe"
+
+        $PSObject = [PSCustomObject] @{
+            Version      = $appDLVersion
+            Stream      = "Current"
+            URI          = $appURL
+        }
+
+        Write-Output -InputObject $PSObject
         
     }
 }
@@ -3525,7 +3557,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.6"
+$eVersion = "2.07.7"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -10283,7 +10315,11 @@ If ($Download -eq "1") {
             2 {$PackageName = "CitrixWorkspaceAppWeb"}
             3 {$PackageName = "CitrixWorkspaceAppWeb"}
         }
-        $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and $_.Stream -like "*$CitrixWorkspaceAppReleaseClear*" }
+        If ($CitrixWorkspaceAppReleaseClear -eq "Current") {
+            $WSACD = Get-WorkspaceAppCurrent
+        } else {
+            $WSACD = Get-EvergreenApp -Name CitrixWorkspaceApp -WarningAction:SilentlyContinue | Where-Object { $_.Title -like "*Workspace*" -and $_.Stream -like "*$CitrixWorkspaceAppReleaseClear*" }
+        }
         $Version = $WSACD.Version
         $URL = $WSACD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
