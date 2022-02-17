@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.9
+  Version:          2.07.10
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -145,7 +145,7 @@ the script checks the version number and will update the package.
   2022-01-13        Add disable GoToMeeting Update Schedulded Task / Correction 7-Zip Installer Function
   2022-02-03        Add new download function for Citrix WorkspaceApp Current Release (Web-Crawling) / Change download method to the new function
   2022-02-04        Correction Zoom HDX Media Plugin install
-  2022-02-17        Rename Parameter -file to -ESfile
+  2022-02-17        Rename Parameter -file to -ESfile / Change ImageGlass download
 
 .PARAMETER ESfile
 
@@ -3559,7 +3559,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.9"
+$eVersion = "2.07.10"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -11193,7 +11193,7 @@ If ($Download -eq "1") {
     If ($ImageGlass -eq 1) {
         $Product = "ImageGlass"
         $PackageName = "ImageGlass_" + "$ImageGlassArchitectureClear"
-        $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ImageGlassArchitectureClear" }
+        $ImageGlassD = Get-EvergreenApp -Name ImageGlass | Where-Object { $_.Architecture -eq "$ImageGlassArchitectureClear" -and $_.URI -notlike "*deleted*"  }
         $Version = $ImageGlassD.Version
         $URL = $ImageGlassD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
