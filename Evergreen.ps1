@@ -3,12 +3,12 @@
 .SYNOPSIS
 Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. and the Nevergreen module from Dan Gough.
 .DESCRIPTION
-To update or download a software package just select a LastSetting.txt file (With parameter -file) or select your Software out of the GUI.
+To update or download a software package just select a LastSetting.txt file (With parameter -ESfile) or select your Software out of the GUI.
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.07.8
+  Version:          2.07.9
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -145,8 +145,9 @@ the script checks the version number and will update the package.
   2022-01-13        Add disable GoToMeeting Update Schedulded Task / Correction 7-Zip Installer Function
   2022-02-03        Add new download function for Citrix WorkspaceApp Current Release (Web-Crawling) / Change download method to the new function
   2022-02-04        Correction Zoom HDX Media Plugin install
+  2022-02-17        Rename Parameter -file to -ESfile
 
-.PARAMETER file
+.PARAMETER ESfile
 
 Path to file (LastSetting.txt) for software selection in unattended mode.
 
@@ -156,7 +157,7 @@ Path to GUI file (LastSetting.txt) for software selection in GUI mode.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -file LastSetting.txt
+.\Evergreen.ps1 -ESfile LastSetting.txt
 
 Download and / or Install the selected Software out of the file.
 
@@ -193,7 +194,7 @@ Param (
             HelpMessage='File with Software Selection',
             ValuefromPipelineByPropertyName = $true
         )]
-        [string]$file,
+        [string]$ESfile,
     
         [Parameter(
             HelpMessage='File with Software Selection for GUI',
@@ -3558,7 +3559,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.07.8"
+$eVersion = "2.07.9"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -3956,11 +3957,11 @@ If (!($NoUpdate)) {
         # There is a new Evergreen Script Version
         Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
         Write-Output ""
-        If ($file) {
+        If ($ESfile) {
             $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
                 Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -download -file $file
+                & "$PSScriptRoot\evergreen.ps1" -download -ESfile $ESfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
@@ -4007,7 +4008,7 @@ Else {
     Break
 }
 
-If ($file -eq $False) {
+If ($ESfile -eq $False) {
     Write-Host -Foregroundcolor DarkGray "Are there still pending reboots?"
     If ($PendingReboot -eq $false) {
         # OK, no pending reboot
@@ -7627,11 +7628,11 @@ Write-Host -Foregroundcolor DarkGray "Software selection"
 #// MARK: Define and reset variables
 $Date = $Date = Get-Date -UFormat "%m.%d.%Y"
 
-# Define the variables for the unattended install or download (Parameter -file) (AddScript)
-If ($file) {
-    # Read File Parameter to get the settings. (AddScript)
-    If (Test-Path "$File" -PathType leaf) {
-        $FileSetting = Get-Content "$file"
+# Define the variables for the unattended install or download (Parameter -ESfile) (AddScript)
+If ($ESfile) {
+    # Read ESfile Parameter to get the settings. (AddScript)
+    If (Test-Path "$ESfile" -PathType leaf) {
+        $FileSetting = Get-Content "$ESfile"
         $Language = $FileSetting[0] -as [int]
         $Architecture = $FileSetting[1] -as [int]
         $CitrixWorkspaceAppRelease = $FileSetting[2] -as [int]
