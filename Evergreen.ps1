@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.01
+  Version:          2.08.02
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -3559,7 +3559,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.01"
+$eVersion = "2.08.02"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -3623,7 +3623,7 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 Write-Output ""
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way    "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "      Manuel Winkel - Deyda Consulting (www.deyda.net)      "
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                        "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                       "
 $host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
@@ -11204,7 +11204,7 @@ If ($Download -eq "1") {
         Write-Host -ForegroundColor Magenta "Download $Product $ImageGlassArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        If ($CurrentVersion -ne $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
