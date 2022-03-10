@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.02
+  Version:          2.08.03
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -146,6 +146,7 @@ the script checks the version number and will update the package.
   2022-02-03        Add new download function for Citrix WorkspaceApp Current Release (Web-Crawling) / Change download method to the new function
   2022-02-04        Correction Zoom HDX Media Plugin install
   2022-02-17        Rename Parameter -file to -ESfile / Change ImageGlass download
+  2022-03-10        Correct the OneDrive update option
 
 .PARAMETER ESfile
 
@@ -3559,7 +3560,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.02"
+$eVersion = "2.08.03"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -18119,7 +18120,7 @@ If ($Install -eq "1") {
                     }
                 }
                 # OneDrive starts automatically after setup. kill!
-                #Stop-Process -Name "OneDrive" -Force
+                Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
                 Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                 DS_WriteLog "I" "Installation $Product $MSOneDriveRingClear ring $MSOneDriveArchitectureClear finished!" $LogFile
             } Catch {
@@ -18129,12 +18130,29 @@ If ($Install -eq "1") {
             Write-Host "Customize $Product"
             Try {
                 # Disable Microsoft OneDrive auto update
-                Write-Host "Customize Scheduled Task"
                 If ($WhatIf -eq '0') {
+                    Write-Host "Customize Scheduled Task"
                     Start-Sleep -s 5
-                    Get-ScheduledTask -TaskName OneDrive* -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                    Get-ScheduledTask -TaskName "OneDrive Per*" -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+                    Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
+                    $Service = Get-Service -Name "OneDrive*" -ErrorAction SilentlyContinue
+                    If ($Service.Length -gt 0) {
+                        Write-Host "Customize Service"
+                        Stop-Service $Service.Name
+                        Set-Service -Name $Service.Name -StartupType Manual
+                    }
+                    Write-Host -ForegroundColor Green "Stop and Disable Service $Product finished!"
+                    Write-Host "Customize update registry"
+                    If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\OneDrive)) {
+                        New-Item -Path HKLM:SOFTWARE\Policies\Microsoft\OneDrive -ErrorAction SilentlyContinue | Out-Null
+                        New-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\OneDrive -Name GPOSetUpdateRing -Value 0 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
+                    }
+                    Else {
+                        $OneDriveUpdateState = Get-ItemProperty -path "HKLM:SOFTWARE\Policies\Microsoft\OneDrive" | Select-Object -Expandproperty "GPOSetUpdateRing"
+                        If ($OneDriveUpdateState -ne "0") {Set-ItemProperty -Path HKLM:SOFTWARE\Policies\Microsoft\OneDrive -Name GPOSetUpdateRing -Value 0 | Out-Null}
+                    }
                 }
-                Write-Host -ForegroundColor Green "Disable Scheduled Task $Product finished!"
+                Write-Host -ForegroundColor Green "Customize $Product update registry finished!"
                 Write-Host -ForegroundColor Green "Customize $Product finished!"
             } Catch {
                 Write-Host -ForegroundColor Red "Error customizing (Error: $($Error[0]))"
