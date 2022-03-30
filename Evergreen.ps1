@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.03
+  Version:          2.08.04
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -147,6 +147,7 @@ the script checks the version number and will update the package.
   2022-02-04        Correction Zoom HDX Media Plugin install
   2022-02-17        Rename Parameter -file to -ESfile / Change ImageGlass download
   2022-03-10        Correct the OneDrive update option
+  2022-03-30        Correct the Google Chrome Version
 
 .PARAMETER ESfile
 
@@ -3560,7 +3561,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.03"
+$eVersion = "2.08.04"
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
@@ -10992,8 +10993,12 @@ If ($Download -eq "1") {
             $CurrentChromeSplit = $CurrentVersion.split(".")
             $CurrentChromeStrings = ([regex]::Matches($CurrentVersion, "\." )).count
             $CurrentChromeStringLast = ([regex]::Matches($CurrentChromeSplit[$CurrentChromeStrings], "." )).count
+            $CurrentChromeStringFirst = ([regex]::Matches($CurrentChromeSplit[0], "." )).count
             If ($CurrentChromeStringLast -lt "3") {
                 $CurrentChromeSplit[$CurrentChromeStrings] = "0" + $CurrentChromeSplit[$CurrentChromeStrings]
+            }
+            If ($CurrentChromeStringFirst -lt "3") {
+                $CurrentChromeSplit[0] = "0" + $CurrentChromeSplit[0]
             }
             Switch ($CurrentChromeStrings) {
                 1 {
@@ -16776,8 +16781,12 @@ If ($Install -eq "1") {
             $CurrentChromeSplit1 = $Chrome.split(".")
             $CurrentChromeStrings1 = ([regex]::Matches($Chrome, "\." )).count
             $CurrentChromeStringLast1 = ([regex]::Matches($CurrentChromeSplit1[$CurrentChromeStrings1], "." )).count
+            $CurrentChromeStringFirst1 = ([regex]::Matches($CurrentChromeSplit1[0], "." )).count
             If ($CurrentChromeStringLast1 -lt "3") {
                 $CurrentChromeSplit1[$CurrentChromeStrings1] = "0" + $CurrentChromeSplit1[$CurrentChromeStrings1]
+            }
+            If ($CurrentChromeStringFirst1 -lt "3") {
+                $CurrentChromeSplit1[0] = "0" + $CurrentChromeSplit1[0]
             }
             Switch ($CurrentChromeStrings1) {
                 1 {
@@ -18622,7 +18631,7 @@ If ($Install -eq "1") {
             Write-Host -ForegroundColor Magenta "Install $Product $MSTeamsRingClear ring $MSTeamsArchitectureClear"
             Write-Host "Download Version: $Version"
             Write-Host "Current Version:  $Teams"
-            If ($Teams -lt $Version) {
+            If ($Teams -ne $Version) {
                 Write-Host -ForegroundColor Green "Update available"
                 #Uninstalling MS Teams
                 If ($Teams) {
