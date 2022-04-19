@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.05
+  Version:          2.08.07
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -149,6 +149,8 @@ the script checks the version number and will update the package.
   2022-03-10        Correct the OneDrive update option
   2022-03-30        Correct the Google Chrome Version
   2022-03-31        Kill language correction
+  2022-04-07        Correction Remode Desktop Manager Version
+  2022-04-18        Correct the Microsoft Edge / Edge WebView2 Version
 
 .PARAMETER ESfile
 
@@ -337,8 +339,8 @@ Function Get-7-Zip {
     }
     Finally {
         $regexAppVersion = 'Download 7-Zip .* for Windows'
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $webSplit = $webVersion.Split(" ")
+        $webVersion7Z = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplit = $webVersion7Z.Split(" ")
         $Version = $webSplit[2]
         $VersionSplit = $webSplit[2]
         $appVersion = $VersionSplit.Replace('.','')
@@ -601,8 +603,8 @@ Function Get-PDFsam() {
     }
     Finally {
         $regexAppVersion = "Download PDFsam Basic v.{5}"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split()[3].Trim("v")
+        $webVersionPDFsam = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersionPDFsam.Split()[3].Trim("v")
         $appx64URL = "https://github.com/torakiki/pdfsam/releases/download/v$appVersion/pdfsam-$appVersion.msi"
 
         $PSObjectx64 = [PSCustomObject] @{
@@ -633,8 +635,8 @@ Function Get-WorkspaceAppCurrent() {
     }
     Finally {
         $regexAppVersion = "Version:.*\(.*\)"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
-        $appDLVersion = $webVersion.Split()[1]
+        $webVersionCWA = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -Last 1
+        $appDLVersion = $webVersionCWA.Split()[1]
         $appURL = "https://downloadplugins.citrix.com/ReceiverUpdates/Prod/Receiver/Win/CitrixWorkspaceApp$appDLVersion.exe"
 
         $PSObject = [PSCustomObject] @{
@@ -723,8 +725,8 @@ Function Get-CiscoWebexVDI() {
         $regexAppVersion = "Thin-client Plugin.*\(.*\)"
         $regexAppURL64 = "WebexTeamsDesktop-Windows-VDI-gold-Production\/.*\/WebexVDIPlugin\.msi"
         $regexAppURL32 = "WebexTeamsDesktop-Windows-VDI-gold-Production\/.*\/WebexVDIPlugin_x86\.msi"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split("(")[1].Trim(")")
+        $webVersionCW = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersionCW.Split("(")[1].Trim(")")
         $webURL64 = $webRequest.RawContent | Select-String -Pattern $regexAppURL64 -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
         $appxURL64 = "https://binaries.webex.com/" + $webURL64
         $webURL32 = $webRequest.RawContent | Select-String -Pattern $regexAppURL32 -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
@@ -762,8 +764,8 @@ Function Get-DWGTrueView() {
     }
     Finally {
         $regexAppVersion = "DWGTrueView_.{4}"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split("_")[1]
+        $webVersionDWG = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersionDWG.Split("_")[1]
         
         $regexAppURL = "https://efulfillment.*DWGTrueView_" + "$appVersion" + ".*_English_64bit_dlm.sfx.exe"
         $webURL = $webRequest.RawContent | Select-String -Pattern $regexAppURL -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
@@ -797,8 +799,8 @@ Function Get-TotalCommander() {
     }
     Finally {
         $regexAppVersion = "Total Commander Version .{5}"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split(" ")[3]
+        $webVersionTC = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersion = $webVersionTC.Split(" ")[3]
         $URLappVersionSplit = $appVersion.Split(".")
         $URLappVersion = $URLappVersionSplit[0] + $URLappVersionSplit[1]
         
@@ -895,10 +897,10 @@ Function Get-PDF24Creator() {
     }
     Finally {
         $regexAppVersion = "pdf24-creator-.*"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $appVersion = $webVersion.Split("-")[2]
-        $appVersion = $appVersion.Split("exe")[0]
-        $appVersion = $appVersion.Split("\.")
+        $webVersionPDF24 = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $appVersionPDF24 = $webVersionPDF24.Split("-")[2]
+        $appVersionPDF24 = $appVersionPDF24.Split("exe")[0]
+        $appVersion = $appVersionPDF24.Split("\.")
         $appVersion = $appVersion[0] + "." + $appVersion[1] + "." + $appVersion[2]
         $appx64URL = "https://creator.pdf24.org/download/pdf24-creator-" + "$appVersion" + ".msi"
 
@@ -2949,9 +2951,9 @@ Function Get-MindView7() {
     }
     Finally {
         $regexAppVersion = "MindView 7.*"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $webVersion = $webVersion.Split("(")[1]
-        $appVersion = $webVersion.Split(")")[0]
+        $webVersionMV = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webVersionMV = $webVersionMV.Split("(")[1]
+        $appVersion = $webVersionMV.Split(")")[0]
         
         $appx64URLDE = "https://link.matchware.com/mindview7_ge"
         $appx64URLEN = "https://link.matchware.com/mindview7_en"
@@ -3008,8 +3010,8 @@ Function Get-PuTTY() {
     }
     Finally {
         $regexAppVersion = "\(.*\)\<\/TITLE\>"
-        $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-        $CacheVersion = $webVersion.Split()[0].Trim("</TITLE>")
+        $webVersionPutty = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $CacheVersion = $webVersionPutty.Split()[0].Trim("</TITLE>")
         $CacheVersion = $CacheVersion.Split()[0].Trim("(")
         $CacheVersion = $CacheVersion.Split()[0].Trim(")")
         $appVersion = $CacheVersion
@@ -3562,11 +3564,12 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.05"
+$eVersion = "2.08.07"
+$WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
-If (!$WebVersion) {
+If ($WebResponseVersion) {
     $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 }
 If ($WebVersion -gt $eVersion) {
@@ -11629,40 +11632,85 @@ If ($Download -eq "1") {
         $PackageName = "MicrosoftEdgeEnterprise_" + "$MSEdgeArchitectureClear" + "_$MSEdgeChannelClear"
         $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Release -eq "Enterprise" -and $_.Channel -eq "$MSEdgeChannelClear" -and $_.Architecture -eq "$MSEdgeArchitectureClear" }
         $Version = $EdgeD.Version
+        $EdgeSplit = $Version.split(".")
+        $EdgeStrings = ([regex]::Matches($Version, "\." )).count
+        $EdgeStringLast = ([regex]::Matches($EdgeSplit[$EdgeStrings], "." )).count
+        $EdgeStringFirst = ([regex]::Matches($EdgeSplit[0], "." )).count
+        If ($EdgeStringLast -lt "3") {
+            $EdgeSplit[$EdgeStrings] = "0" + $EdgeSplit[$EdgeStrings]
+        }
+        If ($EdgeStringFirst -lt "3") {
+            $EdgeSplit[0] = "0" + $EdgeSplit[0]
+        }
+        Switch ($EdgeStrings) {
+            1 {
+                $NewVersion = $EdgeSplit[0] + "." + $EdgeSplit[1]
+            }
+            2 {
+                $NewVersion = $EdgeSplit[0] + "." + $EdgeSplit[1] + "." + $EdgeSplit[2]
+            }
+            3 {
+                $NewVersion = $EdgeSplit[0] + "." + $EdgeSplit[1] + "." + $EdgeSplit[2] + "." + $EdgeSplit[3]
+            }
+        }
         $URL = $EdgeD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeArchitectureClear" + "_$MSEdgeChannelClear" + ".txt"
-        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue 
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $NewCurrentVersion = ""
+        If ($CurrentVersion) {
+            $CurrentEdgeSplit = $CurrentVersion.split(".")
+            $CurrentEdgeStrings = ([regex]::Matches($CurrentVersion, "\." )).count
+            $CurrentEdgeStringLast = ([regex]::Matches($CurrentEdgeSplit[$CurrentEdgeStrings], "." )).count
+            $CurrentEdgeStringFirst = ([regex]::Matches($CurrentEdgeSplit[0], "." )).count
+            If ($CurrentEdgeStringLast -lt "3") {
+                $CurrentEdgeSplit[$CurrentEdgeStrings] = "0" + $CurrentEdgeSplit[$CurrentEdgeStrings]
+            }
+            If ($CurrentEdgeStringFirst -lt "3") {
+                $CurrentEdgeSplit[0] = "0" + $CurrentEdgeSplit[0]
+            }
+            Switch ($CurrentEdgeStrings) {
+                1 {
+                    $NewCurrentVersion = $CurrentEdgeSplit[0] + "." + $CurrentEdgeSplit[1]
+                }
+                2 {
+                    $NewCurrentVersion = $CurrentEdgeSplit[0] + "." + $CurrentEdgeSplit[1] + "." + $CurrentEdgeSplit[2]
+                }
+                3 {
+                    $NewCurrentVersion = $CurrentEdgeSplit[0] + "." + $CurrentEdgeSplit[1] + "." + $CurrentEdgeSplit[2] + "." + $CurrentEdgeSplit[3]
+                }
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        Write-Host "Download Version: $NewVersion"
+        Write-Host "Current Version:  $NewCurrentVersion"
+        If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $NewVersion.log"
                 If ($Repository -eq '1') {
-                    If ($CurrentVersion) {
-                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                    If ($NewCurrentVersion) {
+                        Write-Host "Copy $Product installer version $NewCurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
-                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
-                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
-                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $NewCurrentVersion finished!"
                     }
                 }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$VersionPath" -Value "$Version"
+                Set-Content -Path "$VersionPath" -Value "$NewVersion"
             }
-            Write-Host "Starting download of $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear version $Version"
+            Write-Host "Starting download of $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear version $NewVersion"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Host -ForegroundColor Green "Download of the new version $NewVersion finished!"
             Write-Output ""
             $PackageNameP = "MicrosoftEdgePolicy"
             $EdgeDP = Get-EvergreenApp -name microsoftedge | Where-Object { $_.Channel -eq "Policy" }
@@ -11670,7 +11718,7 @@ If ($Download -eq "1") {
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerTypeP = "cab"
             $SourceP = "$PackageNameP" + "." + "$InstallerTypeP"
-            Write-Host "Starting download of $Product $MSEdgeChannelClear channel ADMX files version $Version"
+            Write-Host "Starting download of $Product $MSEdgeChannelClear channel ADMX files version $NewVersion"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $SourceP -includeStats
                 expand ."$PSScriptRoot\$Product\$SourceP" ."$PSScriptRoot\$Product\MicrosoftEdgePolicyTemplates.zip" | Out-Null
@@ -11841,7 +11889,7 @@ If ($Download -eq "1") {
                 Move-Item -Path "$PSScriptRoot\$Product\windows\admx\zh-CN\msedgewebview2.adml" -Destination "$PSScriptRoot\_ADMX\$Product\zh-CN" -ErrorAction SilentlyContinue
                 Remove-Item -Path "$PSScriptRoot\$Product\windows" -Force -Recurse -ErrorAction SilentlyContinue
             }
-            Write-Host -ForegroundColor Green "Download of the new ADMX files version $Version finished!"
+            Write-Host -ForegroundColor Green "Download of the new ADMX files version $NewVersion finished!"
             Write-Output ""
         }
         Else {
@@ -11856,40 +11904,81 @@ If ($Download -eq "1") {
         $PackageName = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear"
         $EdgeWebView2D = Get-EvergreenApp -Name MicrosoftEdgeWebView2Runtime | Where-Object { $_.Architecture -eq "$MSEdgeWebView2ArchitectureClear" }
         $Version = $EdgeWebView2D.Version
+        $EdgeWebView2Split = $Version.split(".")
+        $EdgeWebView2Strings = ([regex]::Matches($Version, "\." )).count
+        $EdgeWebView2StringLast = ([regex]::Matches($EdgeWebView2Split[$EdgeWebView2Strings], "." )).count
+        If ($EdgeWebView2StringLast -lt "3") {
+            $EdgeWebView2Split[$EdgeWebView2Strings] = "0" + $EdgeWebView2Split[$EdgeWebView2Strings]
+        }
+        Switch ($EdgeWebView2Strings) {
+            1 {
+                $NewVersion = $EdgeWebView2Split[0] + "." + $EdgeWebView2Split[1]
+            }
+            2 {
+                $NewVersion = $EdgeWebView2Split[0] + "." + $EdgeWebView2Split[1] + "." + $EdgeWebView2Split[2]
+            }
+            3 {
+                $NewVersion = $EdgeWebView2Split[0] + "." + $EdgeWebView2Split[1] + "." + $EdgeWebView2Split[2] + "." + $EdgeWebView2Split[3]
+            }
+        }
         $URL = $EdgeWebView2D.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSEdgeWebView2ArchitectureClear" + ".txt"
-        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue 
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $NewCurrentVersion = ""
+        If ($CurrentVersion) {
+            $CurrentEdgeWebView2Split = $CurrentVersion.split(".")
+            $CurrentEdgeWebView2Strings = ([regex]::Matches($CurrentVersion, "\." )).count
+            $CurrentEdgeWebView2StringLast = ([regex]::Matches($CurrentEdgeWebView2Split[$CurrentEdgeWebView2Strings], "." )).count
+            $CurrentEdgeWebView2StringFirst = ([regex]::Matches($CurrentEdgeWebView2Split[0], "." )).count
+            If ($CurrentEdgeWebView2StringLast -lt "3") {
+                $CurrentEdgeWebView2Split[$CurrentEdgeWebView2Strings] = "0" + $CurrentEdgeWebView2Split[$CurrentEdgeWebView2Strings]
+            }
+            If ($CurrentEdgeWebView2StringFirst -lt "3") {
+                $CurrentEdgeWebView2Split[0] = "0" + $CurrentEdgeWebView2Split[0]
+            }
+            Switch ($CurrentEdgeWebView2Strings) {
+                1 {
+                    $NewCurrentVersion = $CurrentEdgeWebView2Split[0] + "." + $CurrentEdgeWebView2Split[1]
+                }
+                2 {
+                    $NewCurrentVersion = $CurrentEdgeWebView2Split[0] + "." + $CurrentEdgeWebView2Split[1] + "." + $CurrentEdgeWebView2Split[2]
+                }
+                3 {
+                    $NewCurrentVersion = $CurrentEdgeWebView2Split[0] + "." + $CurrentEdgeWebView2Split[1] + "." + $CurrentEdgeWebView2Split[2] + "." + $CurrentEdgeWebView2Split[3]
+                }
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product $MSEdgeWebView2ArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        Write-Host "Download Version: $NewVersion"
+        Write-Host "Current Version:  $NewCurrentVersion"
+        If ($NewCurrentVersion -lt $NewVersion) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $NewVersion.log"
                 If ($Repository -eq '1') {
-                    If ($CurrentVersion) {
-                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                    If ($NewCurrentVersion) {
+                        Write-Host "Copy $Product installer version $NewCurrentVersion to repository folder"
                         If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
-                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
-                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
-                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$NewCurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $NewCurrentVersion finished!"
                     }
                 }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$VersionPath" -Value "$Version"
+                Set-Content -Path "$VersionPath" -Value "$NewVersion"
             }
-            Write-Host "Starting download of $Product $MSEdgeWebView2ArchitectureClear version $Version"
+            Write-Host "Starting download of $Product $MSEdgeWebView2ArchitectureClear version $NewVersion"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
                 Stop-Transcript | Out-Null
             }
-            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Host -ForegroundColor Green "Download of the new version $NewVersion finished!"
             Write-Output ""
         }
         Else {
@@ -13853,7 +13942,7 @@ If ($Download -eq "1") {
     If ($RemoteDesktopManager -eq 1) {
         Switch ($RemoteDesktopManagerType) {
             0 {
-                $Product = "RemoteDesktopManager Free"
+                $Product = "Remote Desktop Manager Free"
                 $PackageName = "Setup.RemoteDesktopManagerFree"
                 $URLVersion = "https://remotedesktopmanager.com/de/release-notes/free"
                 $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
@@ -13869,7 +13958,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version:  $CurrentVersion"
-                If ($CurrentVersion -lt $Version) {
+                If ($CurrentVersion -ne $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
@@ -13902,13 +13991,13 @@ If ($Download -eq "1") {
                 }
             }
             1 {
-                $Product = "RemoteDesktopManager Enterprise"
+                $Product = "Remote Desktop Manager Enterprise"
                 $PackageName = "Setup.RemoteDesktopManagerEnterprise"
                 $URLVersion = "https://remotedesktopmanager.com/de/release-notes"
                 $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
-                $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
-                $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-                $Version = $webVersion.Trim("</td>").Trim("</td>")
+                $regexAppVersion = "\d\d\d\d\.\d.\d\d.\d+"
+                $webVersionRDM = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+                $Version = $webVersionRDM.Trim("</td>").Trim("</td>")
                 $RemoteDesktopManagerEnterpriseD = $Version
                 $URL = "https://cdn.devolutions.net/download/Setup.RemoteDesktopManager.$Version.msi"
                 Add-Content -Path "$FWFile" -Value "$URL"
@@ -13918,7 +14007,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Magenta "Download $Product"
                 Write-Host "Download Version: $Version"
                 Write-Host "Current Version:  $CurrentVersion"
-                If ($CurrentVersion -lt $Version) {
+                If ($CurrentVersion -ne $Version) {
                     Write-Host -ForegroundColor Green "Update available"
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
@@ -16458,8 +16547,12 @@ If ($Install -eq "1") {
         $ChromeSplit1 = $Version.split(".")
         $ChromeStrings1 = ([regex]::Matches($Version, "\." )).count
         $ChromeStringLast1 = ([regex]::Matches($ChromeSplit1[$ChromeStrings1], "." )).count
+        $ChromeStringFirst1 = ([regex]::Matches($ChromeSplit1[0], "." )).count
         If ($ChromeStringLast1 -lt "3") {
             $ChromeSplit1[$ChromeStrings1] = "0" + $ChromeSplit1[$ChromeStrings1]
+        }
+        If ($ChromeStringFirst1 -lt "3") {
+            $ChromeSplit1[0] = "0" + $ChromeSplit1[0]
         }
         Switch ($ChromeStrings1) {
             1 {
@@ -17343,6 +17436,28 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $EdgeD.Version
         }
+        $EdgeSplit1 = $Version.split(".")
+        $EdgeStrings1 = ([regex]::Matches($Version, "\." )).count
+        $EdgeStringLast1 = ([regex]::Matches($EdgeSplit1[$EdgeStrings1], "." )).count
+        $EdgeStringFirst1 = ([regex]::Matches($EdgeSplit1[0], "." )).count
+        If ($EdgeStringLast1 -lt "3") {
+            $EdgeSplit1[$EdgeStrings1] = "0" + $EdgeSplit1[$EdgeStrings1]
+        }
+        If ($EdgeStringFirst1 -lt "3") {
+            $EdgeSplit1[0] = "0" + $EdgeSplit1[0]
+        }
+        Switch ($EdgeStrings1) {
+            1 {
+                $NewVersion1 = $EdgeSplit1[0] + "." + $EdgeSplit1[1]
+            }
+            2 {
+                $NewVersion1 = $EdgeSplit1[0] + "." + $EdgeSplit1[1] + "." + $EdgeSplit1[2]
+            }
+            3 {
+                $NewVersion1 = $EdgeSplit1[0] + "." + $EdgeSplit1[1] + "." + $EdgeSplit1[2] + "." + $EdgeSplit1[3]
+            }
+        }
+        $Version = $NewVersion1
         If ($MSEdgeChannelClear -eq "Stable") {
             $Edge = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             If (!$Edge) {
@@ -17361,13 +17476,36 @@ If ($Install -eq "1") {
                 $Edge = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -eq "Microsoft Edge Beta"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
             }
         }
+        If ($Edge) {
+            $CurrentEdgeSplit1 = $Edge.split(".")
+            $CurrentEdgeStrings1 = ([regex]::Matches($Edge, "\." )).count
+            $CurrentEdgeStringLast1 = ([regex]::Matches($CurrentEdgeSplit1[$CurrentEdgeStrings1], "." )).count
+            $CurrentEdgeStringFirst1 = ([regex]::Matches($CurrentEdgeSplit1[0], "." )).count
+            If ($CurrentEdgeStringLast1 -lt "3") {
+                $CurrentEdgeSplit1[$CurrentEdgeStrings1] = "0" + $CurrentEdgeSplit1[$CurrentEdgeStrings1]
+            }
+            If ($CurrentEdgeStringFirst1 -lt "3") {
+                $CurrentEdgeSplit1[0] = "0" + $CurrentEdgeSplit1[0]
+            }
+            Switch ($CurrentEdgeStrings1) {
+                1 {
+                    $NewCurrentVersion1 = $CurrentEdgeSplit1[0] + "." + $CurrentEdgeSplit1[1]
+                }
+                2 {
+                    $NewCurrentVersion1 = $CurrentEdgeSplit1[0] + "." + $CurrentEdgeSplit1[1] + "." + $CurrentEdgeSplit1[2]
+                }
+                3 {
+                    $NewCurrentVersion1 = $CurrentEdgeSplit1[0] + "." + $CurrentEdgeSplit1[1] + "." + $CurrentEdgeSplit1[2] + "." + $CurrentEdgeSplit1[3]
+                }
+            }
+        }
         $EdgeLog = "$LogTemp\MSEdge.log"
         $EdgeInstaller = "MicrosoftEdgeEnterprise_" + "$MSEdgeArchitectureClear" + "_$MSEdgeChannelClear" + ".msi"
         $InstallMSI = "$PSScriptRoot\$Product\$EdgeInstaller"
         Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $Edge"
-        If ($Edge -ne $Version) {
+        Write-Host "Download Version: $NewVersion1"
+        Write-Host "Current Version:  $NewCurrentVersion1"
+        If ($NewCurrentVersion1 -ne $NewVersion1) {
             DS_WriteLog "I" "Install $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear" $LogFile
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path HKLM:SOFTWARE\Policies\Microsoft\EdgeUpdate)) {
@@ -17394,7 +17532,7 @@ If ($Install -eq "1") {
                 "/L*V $EdgeLog"
             )
             try {
-                Write-Host "Starting install of $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear version $Version"
+                Write-Host "Starting install of $Product $MSEdgeChannelClear channel $MSEdgeArchitectureClear version $NewVersion1"
                 If ($WhatIf -eq '0') {
                     Install-MSI $InstallMSI $Arguments
                     If ($CleanUpStartMenu) {
@@ -17484,16 +17622,61 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $EdgeWebView2D.Version
         }
+        $EdgeWebView2Split1 = $Version.split(".")
+        $EdgeWebView2Strings1 = ([regex]::Matches($Version, "\." )).count
+        $EdgeWebView2StringLast1 = ([regex]::Matches($EdgeWebView2Split1[$EdgeWebView2Strings1], "." )).count
+        $EdgeWebView2StringFirst1 = ([regex]::Matches($EdgeWebView2Split1[0], "." )).count
+        If ($EdgeWebView2StringLast1 -lt "3") {
+            $EdgeWebView2Split1[$EdgeWebView2Strings1] = "0" + $EdgeWebView2Split1[$EdgeWebView2Strings1]
+        }
+        If ($EdgeWebView2StringFirst1 -lt "3") {
+            $EdgeWebView2Split1[0] = "0" + $EdgeWebView2Split1[0]
+        }
+        Switch ($EdgeWebView2Strings1) {
+            1 {
+                $NewVersion1 = $EdgeWebView2Split1[0] + "." + $EdgeWebView2Split1[1]
+            }
+            2 {
+                $NewVersion1 = $EdgeWebView2Split1[0] + "." + $EdgeWebView2Split1[1] + "." + $EdgeWebView2Split1[2]
+            }
+            3 {
+                $NewVersion1 = $EdgeWebView2Split1[0] + "." + $EdgeWebView2Split1[1] + "." + $EdgeWebView2Split1[2] + "." + $EdgeWebView2Split1[3]
+            }
+        }
+        $Version = $NewVersion1
         $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$EdgeWebView2) {
             $EdgeWebView2 = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Edge WebView2*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
+        If ($EdgeWebView2) {
+            $CurrentEdgeWebView2Split1 = $EdgeWebView2.split(".")
+            $CurrentEdgeWebView2Strings1 = ([regex]::Matches($EdgeWebView2, "\." )).count
+            $CurrentEdgeWebView2StringLast1 = ([regex]::Matches($CurrentEdgeWebView2Split1[$CurrentEdgeWebView2Strings1], "." )).count
+            $CurrentEdgeWebView2StringFirst1 = ([regex]::Matches($CurrentEdgeWebView2Split1[0], "." )).count
+            If ($CurrentEdgeWebView2StringLast1 -lt "3") {
+                $CurrentEdgeWebView2Split1[$CurrentEdgeWebView2Strings1] = "0" + $CurrentEdgeWebView2Split1[$CurrentEdgeWebView2Strings1]
+            }
+            If ($CurrentEdgeWebView2StringFirst1 -lt "3") {
+                $CurrentEdgeWebView2Split1[0] = "0" + $CurrentEdgeWebView2Split1[0]
+            }
+            Switch ($CurrentEdgeWebView2Strings1) {
+                1 {
+                    $NewCurrentVersion1 = $CurrentEdgeWebView2Split1[0] + "." + $CurrentEdgeWebView2Split1[1]
+                }
+                2 {
+                    $NewCurrentVersion1 = $CurrentEdgeWebView2Split1[0] + "." + $CurrentEdgeWebView2Split1[1] + "." + $CurrentEdgeWebView2Split1[2]
+                }
+                3 {
+                    $NewCurrentVersion1 = $CurrentEdgeWebView2Split1[0] + "." + $CurrentEdgeWebView2Split1[1] + "." + $CurrentEdgeWebView2Split1[2] + "." + $CurrentEdgeWebView2Split1[3]
+                }
+            }
+        }
         $EdgeWebView2Installer = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear" + ".exe"
         $EdgeWebView2Process = "MicrosoftEdgeWebView2_" + "$MSEdgeWebView2ArchitectureClear"
         Write-Host -ForegroundColor Magenta "Install $Product $MSEdgeWebView2ArchitectureClear"
-        Write-Host "Download Version: $Version"
-        Write-Host "Current Version:  $EdgeWebView2"
-        If ($EdgeWebView2 -ne $Version) {
+        Write-Host "Download Version: $NewVersion1"
+        Write-Host "Current Version:  $NewCurrentVersion1"
+        If ($NewCurrentVersion1 -ne $NewVersion1) {
             DS_WriteLog "I" "Install $Product $MSEdgeWebView2ArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             $Options = @(
@@ -17501,12 +17684,12 @@ If ($Install -eq "1") {
                 "/INSTALL"
             )
             Try {
-                Write-Host "Starting install of $Product $MSEdgeWebView2ArchitectureClear version $Version"
+                Write-Host "Starting install of $Product $MSEdgeWebView2ArchitectureClear version $NewVersion1"
                 If ($WhatIf -eq '0') {
                     $null = Start-Process "$PSScriptRoot\$Product\$EdgeWebView2Installer" -ArgumentList $Options -NoNewWindow -PassThru
                     while (Get-Process -Name $EdgeWebView2Process -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
                 }
-                Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                Write-Host -ForegroundColor Green "Install of the new version $NewVersion1 finished!"
                 DS_WriteLog "I" "Installation $Product $MSEdgeWebView2ArchitectureClear finished!" $LogFile
             } catch {
                 DS_WriteLog "E" "Error installing $Product $MSEdgeWebView2ArchitectureClear (Error: $($Error[0]))" $LogFile
@@ -19852,7 +20035,7 @@ If ($Install -eq "1") {
     If ($RemoteDesktopManager -eq 1) {
         Switch ($RemoteDesktopManagerType) {
             0 {
-                $Product = "RemoteDesktopManager Free"
+                $Product = "Remote Desktop Manager Free"
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
                 If (!($Version)) {
@@ -19904,7 +20087,7 @@ If ($Install -eq "1") {
                 }
             }
             1 {
-                $Product = "RemoteDesktopManager Enterprise"
+                $Product = "Remote Desktop Manager Enterprise"
                 # Check, if a new version is available
                 $Version = Get-Content -Path "$PSScriptRoot\$Product\Version.txt" -ErrorAction SilentlyContinue
                 If (!($Version)) {
