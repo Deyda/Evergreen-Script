@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.07
+  Version:          2.08.08
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -151,6 +151,7 @@ the script checks the version number and will update the package.
   2022-03-31        Kill language correction
   2022-04-07        Correction Remode Desktop Manager Version
   2022-04-18        Correct the Microsoft Edge / Edge WebView2 Version
+  2022-04-19        Change release from Microsoft Edge to Consumer (former Enterprise)
 
 .PARAMETER ESfile
 
@@ -3564,7 +3565,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.07"
+$eVersion = "2.08.08"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -11630,7 +11631,7 @@ If ($Download -eq "1") {
     If ($MSEdge -eq 1) {
         $Product = "Microsoft Edge"
         $PackageName = "MicrosoftEdgeEnterprise_" + "$MSEdgeArchitectureClear" + "_$MSEdgeChannelClear"
-        $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Release -eq "Enterprise" -and $_.Channel -eq "$MSEdgeChannelClear" -and $_.Architecture -eq "$MSEdgeArchitectureClear" }
+        $EdgeD = Get-EvergreenApp -Name MicrosoftEdge | Where-Object { $_.Platform -eq "Windows" -and $_.Release -eq "Consumer" -and $_.Channel -eq "$MSEdgeChannelClear" -and $_.Architecture -eq "$MSEdgeArchitectureClear" }
         $Version = $EdgeD.Version
         $EdgeSplit = $Version.split(".")
         $EdgeStrings = ([regex]::Matches($Version, "\." )).count
