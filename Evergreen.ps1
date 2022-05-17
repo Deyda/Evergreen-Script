@@ -152,7 +152,7 @@ the script checks the version number and will update the package.
   2022-04-07        Correction Remode Desktop Manager Version
   2022-04-18        Correct the Microsoft Edge / Edge WebView2 Version
   2022-04-19        Change release from Microsoft Edge to Consumer (former Enterprise)
-  2022-05-17        Add new x64 download links for Adobe Reader DC
+  2022-05-17        Add new x64 download links for Adobe Reader DC / Add download option for
 
 .PARAMETER ESfile
 
