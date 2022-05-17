@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.08
+  Version:          2.08.09
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -152,6 +152,7 @@ the script checks the version number and will update the package.
   2022-04-07        Correction Remode Desktop Manager Version
   2022-04-18        Correct the Microsoft Edge / Edge WebView2 Version
   2022-04-19        Change release from Microsoft Edge to Consumer (former Enterprise)
+  2022-05-17        Add new x64 download links for Adobe Reader DC
 
 .PARAMETER ESfile
 
@@ -3565,7 +3566,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.08"
+$eVersion = "2.08.09"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -9675,9 +9676,13 @@ If ($Download -eq "1") {
     If ($AdobeReaderDC -eq 1) {
         $Product = "Adobe Reader DC"
         $PackageName = "Adobe_Reader_DC_"
-        $AdobeReaderD = Get-EvergreenApp -Name AdobeAcrobatReaderDC | Where-Object {$_.Architecture -eq "$AdobeArchitectureClear" -and $_.Language -eq "$AdobeLanguageClear"}
+        $AdobeReaderD = Get-EvergreenApp -Name AdobeAcrobatReaderDC | Where-Object {$_.Language -eq "$AdobeLanguageClear"}
         $Version = $AdobeReaderD.Version
         $URL = $AdobeReaderD.uri
+        If ($AdobeArchitectureClear -eq "x64") {
+            $Adobex64URL = $URL.Replace("reader", "acrobat")
+            $URL = $Adobex64URL.Replace("AcroRdrDC", "AcroRdrDCx64")
+        }
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "exe"
         $Source = "$PackageName" + "$AdobeArchitectureClear" + "$AdobeLanguageClear" + "." + "$InstallerType"
