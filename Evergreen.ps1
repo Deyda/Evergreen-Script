@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.10
+  Version:          2.08.11
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -153,6 +153,7 @@ the script checks the version number and will update the package.
   2022-04-18        Correct the Microsoft Edge / Edge WebView2 Version
   2022-04-19        Change release from Microsoft Edge to Consumer (former Enterprise)
   2022-05-17        Add new x64 download links for Adobe Reader DC / Add download and install option for x64 Teamviewer
+  2022-05-20        Change Regex for Remote Desktop Manager download / Add new option to download and install x64 and x86 Visual C++ Runtime at the same time
 
 .PARAMETER ESfile
 
@@ -3566,7 +3567,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.10"
+$eVersion = "2.08.11"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -4536,6 +4537,7 @@ $inputXML = @"
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
+                        <ListBoxItem Content="x86 and x64"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_MSVisualStudioCode_Detail" Content="Microsoft Visual Studio Code" HorizontalAlignment="Left" Margin="12,130,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_MSVisualStudioCode_Architecture" HorizontalAlignment="Left" Margin="221,127,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
@@ -4622,12 +4624,14 @@ $inputXML = @"
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
+                        <ListBoxItem Content="x86 and x64"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="12,280,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="221,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
+                        <ListBoxItem Content="x86 and x64"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_PaintDotNet_Detail" Content="Paint.Net" HorizontalAlignment="Left" Margin="12,305,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_PaintDotNet_Architecture" HorizontalAlignment="Left" Margin="221,302,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
@@ -8767,6 +8771,7 @@ If ($MSVisualCPlusPlusRuntime_Architecture -ne "") {
     Switch ($MSVisualCPlusPlusRuntime_Architecture) {
         1 { $MSVisualCPlusPlusRuntimeArchitectureClear = 'x86'}
         2 { $MSVisualCPlusPlusRuntimeArchitectureClear = 'x64'}
+        3 { $MSVisualCPlusPlusRuntimeArchitectureClear = 'both'}
     }
 }
 Else {
@@ -9118,6 +9123,7 @@ If ($OpenJDK_Architecture -ne "") {
     Switch ($OpenJDK_Architecture) {
         1 { $OpenJDKArchitectureClear = 'x86'}
         2 { $OpenJDKArchitectureClear = 'x64'}
+        3 { $OpenJDKArchitectureClear = 'both'}
     }
 }
 Else {
@@ -9135,6 +9141,7 @@ If ($OracleJava8_Architecture -ne "") {
     Switch ($OracleJava8_Architecture) {
         1 { $OracleJava8ArchitectureClear = 'x86'}
         2 { $OracleJava8ArchitectureClear = 'x64'}
+        3 { $OracleJava8ArchitectureClear = 'both'}
     }
 }
 Else {
@@ -12835,6 +12842,10 @@ If ($Download -eq "1") {
     #// Mark: Download Microsoft Visual C++ Runtime
     If ($MSVisualCPlusPlusRuntime -eq 1) {
         $Product = "Microsoft Visual C++ Runtime"
+        If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+            $MSVisualCPlusPlusRuntimeArchitectureClear = "x64"
+            $MSVisualCPlusPlusRuntimeArchitecture2Clear = "x86"
+        }
         If ($MSVisualCPlusPlusRuntimeRelease -ne 3) {
             $PackageName = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear"
             $MSVisualCPlusPlusRuntimeD = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitectureClear" -and $_.Release -eq "$MSVisualCPlusPlusRuntimeReleaseClear"}
@@ -12852,7 +12863,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Green "Update available"
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $MSVisualCPlusPlusRuntimeArchitectureClear $Version.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion) {
                             Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
@@ -12862,8 +12873,8 @@ If ($Download -eq "1") {
                             Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*$CurrentVersion.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear_$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeArchitectureClear $CurrentVersion.log" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$VersionPath" -Value "$Version"
                 }
@@ -12879,6 +12890,52 @@ If ($Download -eq "1") {
             Else {
                 Write-Host -ForegroundColor Cyan "No new version available"
                 Write-Output ""
+            }
+            If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+                $PackageName = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $MSVisualCPlusPlusRuntimeD = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitecture2Clear" -and $_.Release -eq "$MSVisualCPlusPlusRuntimeReleaseClear"}
+                $Version = $MSVisualCPlusPlusRuntimeD.Version
+                $URL = $MSVisualCPlusPlusRuntimeD.download
+                Add-Content -Path "$FWFile" -Value "$URL"
+                $InstallerType = "exe"
+                $Source = "$PackageName" + "." + "$InstallerType"
+                $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+                Write-Host -ForegroundColor Magenta "Download $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version:  $CurrentVersion"
+                If ($CurrentVersion -lt $Version) {
+                    Write-Host -ForegroundColor Green "Update available"
+                    If ($WhatIf -eq '0') {
+                        If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                        $LogPS = "$PSScriptRoot\$Product\" + "$Product $MSVisualCPlusPlusRuntimeArchitecture2Clear $Version.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion) {
+                                Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                            }
+                        }
+                        Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear_$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeArchitecture2Clear $CurrentVersion.log" -Recurse
+                        Start-Transcript $LogPS | Out-Null
+                        Set-Content -Path "$VersionPath" -Value "$Version"
+                    }
+                    Write-Host "Starting download of $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version"
+                    If ($WhatIf -eq '0') {
+                        Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                        Write-Verbose "Stop logging"
+                        Stop-Transcript | Out-Null
+                    }
+                    Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                    Write-Output ""
+                }
+                Else {
+                    Write-Host -ForegroundColor Cyan "No new version available"
+                    Write-Output ""
+                }
             }
         } Else {
             $PackageName2022 = "VS-Setup2022_" + "$MSVisualCPlusPlusRuntimeArchitectureClear"
@@ -12913,7 +12970,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Green "Update available"
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                    $LogPS2012 = "$PSScriptRoot\$Product\" + "$Product 2012 $Version2012.log"
+                    $LogPS2012 = "$PSScriptRoot\$Product\" + "$Product 2012 $MSVisualCPlusPlusRuntimeArchitectureClear $Version2012.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion2012) {
                             Write-Host "Copy $Product installer version $CurrentVersion2012 to repository folder"
@@ -12923,9 +12980,9 @@ If ($Download -eq "1") {
                             Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2012 finished!"
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\*2012*.txt" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2012*.log" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2012*.exe" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitectureClear*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012 $MSVisualCPlusPlusRuntimeArchitectureClear*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitectureClear.exe" -Recurse
                     Start-Transcript $LogPS2012 | Out-Null
                     Set-Content -Path "$VersionPath2012" -Value "$Version2012"
                 }
@@ -12949,7 +13006,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Green "Update available"
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                    $LogPS2013 = "$PSScriptRoot\$Product\" + "$Product 2013 $Version2013.log"
+                    $LogPS2013 = "$PSScriptRoot\$Product\" + "$Product 2013 $MSVisualCPlusPlusRuntimeArchitectureClear $Version2013.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion2013) {
                             Write-Host "Copy $Product installer version $CurrentVersion2013 to repository folder"
@@ -12959,9 +13016,9 @@ If ($Download -eq "1") {
                             Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2013 finished!"
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\*2013*.txt" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2013*.log" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2013*.exe" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitectureClear*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013 $MSVisualCPlusPlusRuntimeArchitectureClear*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitectureClear.exe" -Recurse
                     Start-Transcript $LogPS2013 | Out-Null
                     Set-Content -Path "$VersionPath2013" -Value "$Version2013"
                 }
@@ -12985,7 +13042,7 @@ If ($Download -eq "1") {
                 Write-Host -ForegroundColor Green "Update available"
                 If ($WhatIf -eq '0') {
                     If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                    $LogPS2022 = "$PSScriptRoot\$Product\" + "$Product 2022 $Version2022.log"
+                    $LogPS2022 = "$PSScriptRoot\$Product\" + "$Product 2022 $MSVisualCPlusPlusRuntimeArchitectureClear $Version2022.log"
                     If ($Repository -eq '1') {
                         If ($CurrentVersion2022) {
                             Write-Host "Copy $Product installer version $CurrentVersion2022 to repository folder"
@@ -12995,13 +13052,13 @@ If ($Download -eq "1") {
                             Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2022 finished!"
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\*2022*.txt" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2022*.log" -Recurse
-                    Remove-Item "$PSScriptRoot\$Product\*2022*.exe" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitectureClear*.txt" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2022 $MSVisualCPlusPlusRuntimeArchitectureClear*.log" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitectureClear.exe" -Recurse
                     Start-Transcript $LogPS2022 | Out-Null
                     Set-Content -Path "$VersionPath2022" -Value "$Version2022"
                 }
-                Write-Host "Starting download of $Product release 2022 version $Version2022 $MSVisualCPlusPlusRuntimeArchitectureClear"
+                Write-Host "Starting download of $Product release 2022 $MSVisualCPlusPlusRuntimeArchitectureClear version $Version2022"
                 If ($WhatIf -eq '0') {
                     Get-Download $URL2022 "$PSScriptRoot\$Product\" $Source2022 -includeStats
                     Write-Verbose "Stop logging"
@@ -13013,6 +13070,141 @@ If ($Download -eq "1") {
             Else {
                 Write-Host -ForegroundColor Cyan "No new version available"
                 Write-Output ""
+            }
+            If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+                $PackageName2022 = "VS-Setup2022_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $PackageName2012 = "VS-Setup2012_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $PackageName2013 = "VS-Setup2013_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $MSVisualCPlusPlusRuntime2022D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitecture2Clear" -and $_.Release -eq "2022"}
+                $MSVisualCPlusPlusRuntime2012D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitecture2Clear" -and $_.Release -eq "2012"}
+                $MSVisualCPlusPlusRuntime2013D = Get-VcList | Where-Object { $_.Architecture -eq "$MSVisualCPlusPlusRuntimeArchitecture2Clear" -and $_.Release -eq "2013"}
+                $Version2022 = $MSVisualCPlusPlusRuntime2022D.Version
+                $Version2012 = $MSVisualCPlusPlusRuntime2012D.Version
+                $Version2013 = $MSVisualCPlusPlusRuntime2013D.Version
+                $URL2022 = $MSVisualCPlusPlusRuntime2022D.download
+                $URL2012 = $MSVisualCPlusPlusRuntime2012D.download
+                $URL2013 = $MSVisualCPlusPlusRuntime2013D.download
+                Add-Content -Path "$FWFile" -Value "$URL2022"
+                Add-Content -Path "$FWFile" -Value "$URL2012"
+                Add-Content -Path "$FWFile" -Value "$URL2013"
+                $InstallerType = "exe"
+                $Source2022 = "$PackageName2022" + "." + "$InstallerType"
+                $Source2012 = "$PackageName2012" + "." + "$InstallerType"
+                $Source2013 = "$PackageName2013" + "." + "$InstallerType"
+                $VersionPath2022 = "$PSScriptRoot\$Product\Version_2022_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $CurrentVersion2022 = Get-Content -Path "$VersionPath2022" -EA SilentlyContinue
+                $VersionPath2012 = "$PSScriptRoot\$Product\Version_2012_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $CurrentVersion2012 = Get-Content -Path "$VersionPath2012" -EA SilentlyContinue
+                $VersionPath2013 = "$PSScriptRoot\$Product\Version_2013_" + "$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $CurrentVersion2013 = Get-Content -Path "$VersionPath2013" -EA SilentlyContinue
+                Write-Host -ForegroundColor Magenta "Download $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2012"
+                Write-Host "Current Version:  $CurrentVersion2012"
+                If ($CurrentVersion2012 -lt $Version2012) {
+                    Write-Host -ForegroundColor Green "Update available"
+                    If ($WhatIf -eq '0') {
+                        If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                        $LogPS2012 = "$PSScriptRoot\$Product\" + "$Product 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear $Version2012.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion2012) {
+                                Write-Host "Copy $Product installer version $CurrentVersion2012 to repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2012" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2012 finished!"
+                            }
+                        }
+                        Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitecture2Clear*.txt" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear*.log" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitecture2Clear.exe" -Recurse
+                        Start-Transcript $LogPS2012 | Out-Null
+                        Set-Content -Path "$VersionPath2012" -Value "$Version2012"
+                    }
+                    Write-Host "Starting download of $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version2012"
+                    If ($WhatIf -eq '0') {
+                        Get-Download $URL2012 "$PSScriptRoot\$Product\" $Source2012 -includeStats
+                        Write-Verbose "Stop logging"
+                        Stop-Transcript | Out-Null
+                    }
+                    Write-Host -ForegroundColor Green "Download of the new version $Version2012 finished!"
+                    Write-Output ""
+                }
+                Else {
+                    Write-Host -ForegroundColor Cyan "No new version available"
+                    Write-Output ""
+                }
+                Write-Host -ForegroundColor Magenta "Download $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2013"
+                Write-Host "Current Version:  $CurrentVersion2013"
+                If ($CurrentVersion2013 -lt $Version2013) {
+                    Write-Host -ForegroundColor Green "Update available"
+                    If ($WhatIf -eq '0') {
+                        If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                        $LogPS2013 = "$PSScriptRoot\$Product\" + "$Product 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear $Version2013.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion2013) {
+                                Write-Host "Copy $Product installer version $CurrentVersion2013 to repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2013" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2013 finished!"
+                            }
+                        }
+                        Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitecture2Clear*.txt" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear*.log" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitecture2Clear.exe" -Recurse
+                        Start-Transcript $LogPS2013 | Out-Null
+                        Set-Content -Path "$VersionPath2013" -Value "$Version2013"
+                    }
+                    Write-Host "Starting download of $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version2013"
+                    If ($WhatIf -eq '0') {
+                        Get-Download $URL2013 "$PSScriptRoot\$Product\" $Source2013 -includeStats
+                        Write-Verbose "Stop logging"
+                        Stop-Transcript | Out-Null
+                    }
+                    Write-Host -ForegroundColor Green "Download of the new version $Version2013 finished!"
+                    Write-Output ""
+                }
+                Else {
+                    Write-Host -ForegroundColor Cyan "No new version available"
+                    Write-Output ""
+                }
+                Write-Host -ForegroundColor Magenta "Download $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2022"
+                Write-Host "Current Version:  $CurrentVersion2022"
+                If ($CurrentVersion2022 -lt $Version2022) {
+                    Write-Host -ForegroundColor Green "Update available"
+                    If ($WhatIf -eq '0') {
+                        If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                        $LogPS2022 = "$PSScriptRoot\$Product\" + "$Product 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear $Version2022.log"
+                        If ($Repository -eq '1') {
+                            If ($CurrentVersion2022) {
+                                Write-Host "Copy $Product installer version $CurrentVersion2022 to repository folder"
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                                If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2022")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion2022" -ItemType Directory | Out-Null }
+                                Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion2022" -ErrorAction SilentlyContinue
+                                Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion2022 finished!"
+                            }
+                        }
+                        Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitecture2Clear*.txt" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear*.log" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitecture2Clear.exe" -Recurse
+                        Start-Transcript $LogPS2022 | Out-Null
+                        Set-Content -Path "$VersionPath2022" -Value "$Version2022"
+                    }
+                    Write-Host "Starting download of $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version2022"
+                    If ($WhatIf -eq '0') {
+                        Get-Download $URL2022 "$PSScriptRoot\$Product\" $Source2022 -includeStats
+                        Write-Verbose "Stop logging"
+                        Stop-Transcript | Out-Null
+                    }
+                    Write-Host -ForegroundColor Green "Download of the new version $Version2022 finished!"
+                    Write-Output ""
+                }
+                Else {
+                    Write-Host -ForegroundColor Cyan "No new version available"
+                    Write-Output ""
+                }
             }
         }
     }
@@ -13985,9 +14177,9 @@ If ($Download -eq "1") {
             0 {
                 $Product = "Remote Desktop Manager Free"
                 $PackageName = "Setup.RemoteDesktopManagerFree"
-                $URLVersion = "https://remotedesktopmanager.com/de/release-notes/free"
+                $URLVersion = "https://devolutions.net/remote-desktop-manager/de/release-notes/free"
                 $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
-                $regexAppVersion = "\d\d\d\d.\d.\d\d.\d+"
+                $regexAppVersion = "\d\d\d\d\.\d\.\d\d\.\d+"
                 $webVersion = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersion.Trim("</td>").Trim("</td>")
                 $RemoteDesktopManagerFreeD = $Version
@@ -14034,9 +14226,9 @@ If ($Download -eq "1") {
             1 {
                 $Product = "Remote Desktop Manager Enterprise"
                 $PackageName = "Setup.RemoteDesktopManagerEnterprise"
-                $URLVersion = "https://remotedesktopmanager.com/de/release-notes"
+                $URLVersion = "https://devolutions.net/remote-desktop-manager/de/release-notes"
                 $webRequest = Invoke-WebRequest -UseBasicParsing -Uri ($URLVersion) -SessionVariable websession
-                $regexAppVersion = "\d\d\d\d\.\d.\d\d.\d+"
+                $regexAppVersion = "\d\d\d\d\.\d\.\d\d\.\d+"
                 $webVersionRDM = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
                 $Version = $webVersionRDM.Trim("</td>").Trim("</td>")
                 $RemoteDesktopManagerEnterpriseD = $Version
@@ -18772,6 +18964,10 @@ If ($Install -eq "1") {
     #// Mark: Install Microsoft Visual C++ Runtime
     If ($MSVisualCPlusPlusRuntime -eq 1) {
         $Product = "Microsoft Visual C++ Runtime"
+        If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+            $MSVisualCPlusPlusRuntimeArchitectureClear = "x64"
+            $MSVisualCPlusPlusRuntimeArchitecture2Clear = "x86"
+        }
         # Check, if a new version is available
         If ($MSVisualCPlusPlusRuntimeRelease -ne 3) {
             $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
@@ -18830,6 +19026,65 @@ If ($Install -eq "1") {
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
+            }
+            If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+                $VersionPath = "$PSScriptRoot\$Product\Version_" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+                If (!($Version)) {
+                    $Version = $MSVisualCPlusPlusRuntimeD.Version
+                }
+                $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                If (!$MSVisualCPlusPlusRuntimeV) {
+                    $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                }
+                If (!$MSVisualCPlusPlusRuntimeV) {
+                    $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+                }
+                If (!$MSVisualCPlusPlusRuntimeV) {
+                    $MSVisualCPlusPlusRuntimeV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).DisplayVersion | Sort-Object -Property DisplayVersion -Descending | Select-Object -First 1
+                }
+                $MSVisualCPlusPlusRuntimeInstall = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + "." + "exe"
+                $MSVisualCPlusPlusRuntimeProcess = "VS-Setup" + "$MSVisualCPlusPlusRuntimeReleaseClear" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host -ForegroundColor Magenta "Install $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version"
+                Write-Host "Current Version:  $MSVisualCPlusPlusRuntimeV"
+                If ($MSVisualCPlusPlusRuntimeV -ne $Version) {
+                    $Options = @(
+                        "/install"
+                        "/quiet"
+                        "/norestart"
+                    )
+                    DS_WriteLog "I" "Install $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear" $LogFile
+                    Write-Host -ForegroundColor Green "Update available"
+                    Try {
+                        Write-Host "Starting install of $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version"
+                        If ($WhatIf -eq '0') {
+                            $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall" -ArgumentList $Options -PassThru -NoNewWindow
+                            while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                        }
+                        Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                        DS_WriteLog "I" "Installation $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear finished!" $LogFile
+                    } Catch {
+                        Write-Host -ForegroundColor Red "Error installing $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))"
+                        DS_WriteLog "E" "Error installing $Product release $MSVisualCPlusPlusRuntimeReleaseClear $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))" $LogFile
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    If ($WhatIf -eq '0') {
+                        Start-Sleep -Seconds 20
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
+                    Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
             }
         } Else {
             $VersionPath2012 = "$PSScriptRoot\$Product\Version_2012" + "_$MSVisualCPlusPlusRuntimeArchitectureClear" + ".txt"
@@ -18984,6 +19239,161 @@ If ($Install -eq "1") {
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
                 Write-Output ""
+            }
+            If ($MSVisualCPlusPlusRuntime_Architecture -eq 3) {
+                $VersionPath2012 = "$PSScriptRoot\$Product\Version_2012" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $Version2012 = Get-Content -Path "$VersionPath2012" -ErrorAction SilentlyContinue
+                If (!($Version2012)) {
+                    $Version2012 = $MSVisualCPlusPlusRuntime2012D.Version
+                }
+                $VersionPath2013 = "$PSScriptRoot\$Product\Version_2013" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $Version2013 = Get-Content -Path "$VersionPath2013" -ErrorAction SilentlyContinue
+                If (!($Version2013)) {
+                    $Version2013 = $MSVisualCPlusPlusRuntime2013D.Version
+                }
+                $VersionPath2022 = "$PSScriptRoot\$Product\Version_2022" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + ".txt"
+                $Version2022 = Get-Content -Path "$VersionPath2022" -ErrorAction SilentlyContinue
+                If (!($Version2022)) {
+                    $Version2022 = $MSVisualCPlusPlusRuntime2022D.Version
+                }
+                $MSVisualCPlusPlusRuntime2012V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2012*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                If (!$MSVisualCPlusPlusRuntime2012V) {
+                    $MSVisualCPlusPlusRuntime2012V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2012*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                }
+                $MSVisualCPlusPlusRuntime2013V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2013*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                If (!$MSVisualCPlusPlusRuntime2013V) {
+                    $MSVisualCPlusPlusRuntime2013V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2013*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                }
+                $MSVisualCPlusPlusRuntime2022V = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2015*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                If (!$MSVisualCPlusPlusRuntime2022V) {
+                    $MSVisualCPlusPlusRuntime2022V = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "Microsoft Visual C++ *2015*$MSVisualCPlusPlusRuntimeArchitecture2Clear*"}).BundleVersion | Sort-Object -Property BundleVersion -Descending | Select-Object -First 1
+                }
+                $MSVisualCPlusPlusRuntimeInstall2012 = "VS-Setup2012" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + "." + "exe"
+                $MSVisualCPlusPlusRuntimeProcess2012 = "VS-Setup2012" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $MSVisualCPlusPlusRuntimeInstall2013 = "VS-Setup2013" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + "." + "exe"
+                $MSVisualCPlusPlusRuntimeProcess2013 = "VS-Setup2013" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                $MSVisualCPlusPlusRuntimeInstall2022 = "VS-Setup2022" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear" + "." + "exe"
+                $MSVisualCPlusPlusRuntimeProcess2022 = "VS-Setup2022" + "_$MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host -ForegroundColor Magenta "Install $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2012"
+                Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2012V"
+                If ($MSVisualCPlusPlusRuntime2012V -ne $Version2012) {
+                    $Options = @(
+                        "/install"
+                        "/quiet"
+                        "/norestart"
+                    )
+                    DS_WriteLog "I" "Install $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear" $LogFile
+                    Write-Host -ForegroundColor Green "Update available"
+                    Try {
+                        Write-Host "Starting install of $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version"
+                        If ($WhatIf -eq '0') {
+                            $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2012" -ArgumentList $Options -PassThru -NoNewWindow
+                            while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2012 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                        }
+                        Write-Host -ForegroundColor Green "Install of the new version $Version2012 finished!"
+                        DS_WriteLog "I" "Installation $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear finished!" $LogFile
+                    } Catch {
+                        Write-Host -ForegroundColor Red "Error installing $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))"
+                        DS_WriteLog "E" "Error installing $Product release 2012 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))" $LogFile
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    If ($WhatIf -eq '0') {
+                        Start-Sleep -Seconds 20
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
+                    Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                Write-Host -ForegroundColor Magenta "Install $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2013"
+                Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2013V"
+                If ($MSVisualCPlusPlusRuntime2013V -ne $Version2013) {
+                    $Options = @(
+                        "/install"
+                        "/quiet"
+                        "/norestart"
+                    )
+                    DS_WriteLog "I" "Install $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear" $LogFile
+                    Write-Host -ForegroundColor Green "Update available"
+                    Try {
+                        Write-Host "Starting install of $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version"
+                        If ($WhatIf -eq '0') {
+                            $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2013" -ArgumentList $Options -PassThru -NoNewWindow
+                            while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2013 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                        }
+                        Write-Host -ForegroundColor Green "Install of the new version $Version2013 finished!"
+                        DS_WriteLog "I" "Installation $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear finished!" $LogFile
+                    } Catch {
+                        Write-Host -ForegroundColor Red "Error installing $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))"
+                        DS_WriteLog "E" "Error installing $Product release 2013 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))" $LogFile
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    If ($WhatIf -eq '0') {
+                        Start-Sleep -Seconds 20
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
+                    Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                Write-Host -ForegroundColor Magenta "Install $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear"
+                Write-Host "Download Version: $Version2022"
+                Write-Host "Current Version:  $MSVisualCPlusPlusRuntime2022V"
+                If ($MSVisualCPlusPlusRuntime2022V -ne $Version2022) {
+                    $Options = @(
+                        "/install"
+                        "/quiet"
+                        "/norestart"
+                    )
+                    DS_WriteLog "I" "Install $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear" $LogFile
+                    Write-Host -ForegroundColor Green "Update available"
+                    Try {
+                        Write-Host "Starting install of $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear version $Version"
+                        If ($WhatIf -eq '0') {
+                            $null = Start-Process -FilePath "$PSScriptRoot\$Product\$MSVisualCPlusPlusRuntimeInstall2022" -ArgumentList $Options -PassThru -NoNewWindow
+                            while (Get-Process -Name $MSVisualCPlusPlusRuntimeProcess2022 -ErrorAction SilentlyContinue) { Start-Sleep -Seconds 10 }
+                        }
+                        Write-Host -ForegroundColor Green "Install of the new version $Version2022 finished!"
+                        DS_WriteLog "I" "Installation $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear finished!" $LogFile
+                    } Catch {
+                        Write-Host -ForegroundColor Red "Error installing $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))"
+                        DS_WriteLog "E" "Error installing $Product release 2022 $MSVisualCPlusPlusRuntimeArchitecture2Clear (Error: $($Error[0]))" $LogFile
+                    }
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
+                # Stop, if no new version is available
+                Else {
+                    Write-Host -ForegroundColor Cyan "No update available for $Product"
+                    Write-Output ""
+                }
+                If ($CleanUp -eq '1') {
+                    If ($WhatIf -eq '0') {
+                        Start-Sleep -Seconds 20
+                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    }
+                    Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
+                    DS_WriteLog "-" "" $LogFile
+                    Write-Output ""
+                }
             }
         }
     }
