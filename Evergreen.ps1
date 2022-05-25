@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.11
+  Version:          2.08.12
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -154,6 +154,7 @@ the script checks the version number and will update the package.
   2022-04-19        Change release from Microsoft Edge to Consumer (former Enterprise)
   2022-05-17        Add new x64 download links for Adobe Reader DC / Add download and install option for x64 Teamviewer
   2022-05-20        Change Regex for Remote Desktop Manager download / Add new option to download and install x64 and x86 Visual C++ Runtime at the same time
+  2022-05-25        Add new option to download and install x64 and x86 openJDK at the same time
 
 .PARAMETER ESfile
 
@@ -3567,7 +3568,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.11"
+$eVersion = "2.08.12"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -12873,7 +12874,7 @@ If ($Download -eq "1") {
                             Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
                         }
                     }
-                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear_$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
                     Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeArchitectureClear $CurrentVersion.log" -Recurse
                     Start-Transcript $LogPS | Out-Null
                     Set-Content -Path "$VersionPath" -Value "$Version"
@@ -12918,7 +12919,7 @@ If ($Download -eq "1") {
                                 Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
                             }
                         }
-                        Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear_$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
                         Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeArchitecture2Clear $CurrentVersion.log" -Recurse
                         Start-Transcript $LogPS | Out-Null
                         Set-Content -Path "$VersionPath" -Value "$Version"
@@ -13735,6 +13736,10 @@ If ($Download -eq "1") {
     #// Mark: Download OpenJDK
     If ($OpenJDK -eq 1) {
         $Product = "OpenJDK"
+        If ($openJDK_Architecture -eq 3) {
+            $openJDKArchitectureClear = "x64"
+            $openJDKArchitecture2Clear = "x86"
+        }
         $PackageName = "OpenJDK_" + "$openJDKArchitectureClear" + "_$OpenJDKPackageClear"
         If ($OpenJDKPackageClear -eq "8") {
             $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitectureClear" -and $_.Type -eq "msi" -and $_.Version -like "1.8*" -and $_.URI -notlike "*-jre-*"} | Sort-Object -Property Version -Descending | Select-Object -First 1
@@ -13755,7 +13760,7 @@ If ($Download -eq "1") {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
-                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $openJDKArchitectureClear $Version.log"
                 If ($Repository -eq '1') {
                     If ($CurrentVersion) {
                         Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
@@ -13765,7 +13770,7 @@ If ($Download -eq "1") {
                         Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
                     }
                 }
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Remove-Item "$PSScriptRoot\$Product\*$openJDKArchitectureClear*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
             }
@@ -13781,6 +13786,55 @@ If ($Download -eq "1") {
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
             Write-Output ""
+        }
+        If ($openJDK_Architecture -eq 3) {
+            $PackageName = "OpenJDK_" + "$openJDKArchitecture2Clear" + "_$OpenJDKPackageClear"
+            If ($OpenJDKPackageClear -eq "8") {
+                $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitecture2Clear" -and $_.Type -eq "msi" -and $_.Version -like "1.8*" -and $_.URI -notlike "*-jre-*"} | Sort-Object -Property Version -Descending | Select-Object -First 1
+            } Else {
+                $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitecture2Clear" -and $_.Type -eq "msi" -and $_.Version -like "$OpenJDKPackageClear*" -and $_.URI -notlike "*-jre-*" -and $_.URI -notlike "*.jre.*"} | Sort-Object -Property Size -Descending | Select-Object -First 4 | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
+            $Version = $OpenJDKD.Version
+            $URL = $OpenJDKD.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerType = "msi"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitecture2Clear" + "_$OpenJDKPackageClear" + ".txt"
+            $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $CurrentVersion"
+            If ($CurrentVersion -lt $Version) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $openJDKArchitecture2Clear $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*$openJDKArchitectureClear*" -Recurse
+                    Start-Transcript $LogPS | Out-Null
+                    Set-Content -Path "$VersionPath" -Value "$Version"
+                }
+                Write-Host "Starting download of $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear version $Version"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
         }
     }
 
@@ -19021,7 +19075,7 @@ If ($Install -eq "1") {
             If ($CleanUp -eq '1') {
                 If ($WhatIf -eq '0') {
                     Start-Sleep -Seconds 20
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
                 }
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
@@ -19079,7 +19133,7 @@ If ($Install -eq "1") {
                 If ($CleanUp -eq '1') {
                     If ($WhatIf -eq '0') {
                         Start-Sleep -Seconds 20
-                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*$MSVisualCPlusPlusRuntimeReleaseClear*$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
                     }
                     Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                     DS_WriteLog "-" "" $LogFile
@@ -19154,7 +19208,7 @@ If ($Install -eq "1") {
             If ($CleanUp -eq '1') {
                 If ($WhatIf -eq '0') {
                     Start-Sleep -Seconds 20
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
                 }
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
@@ -19194,7 +19248,7 @@ If ($Install -eq "1") {
             If ($CleanUp -eq '1') {
                 If ($WhatIf -eq '0') {
                     Start-Sleep -Seconds 20
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
                 }
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
@@ -19234,7 +19288,7 @@ If ($Install -eq "1") {
             If ($CleanUp -eq '1') {
                 If ($WhatIf -eq '0') {
                     Start-Sleep -Seconds 20
-                    Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                    Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitectureClear*" -Recurse
                 }
                 Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                 DS_WriteLog "-" "" $LogFile
@@ -19308,7 +19362,7 @@ If ($Install -eq "1") {
                 If ($CleanUp -eq '1') {
                     If ($WhatIf -eq '0') {
                         Start-Sleep -Seconds 20
-                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2012_$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
                     }
                     Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                     DS_WriteLog "-" "" $LogFile
@@ -19348,7 +19402,7 @@ If ($Install -eq "1") {
                 If ($CleanUp -eq '1') {
                     If ($WhatIf -eq '0') {
                         Start-Sleep -Seconds 20
-                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2013_$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
                     }
                     Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                     DS_WriteLog "-" "" $LogFile
@@ -19388,7 +19442,7 @@ If ($Install -eq "1") {
                 If ($CleanUp -eq '1') {
                     If ($WhatIf -eq '0') {
                         Start-Sleep -Seconds 20
-                        Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                        Remove-Item "$PSScriptRoot\$Product\*2022_$MSVisualCPlusPlusRuntimeArchitecture2Clear*" -Recurse
                     }
                     Write-Host -ForegroundColor Green "CleanUp for $Product files successfully."
                     DS_WriteLog "-" "" $LogFile
@@ -19899,6 +19953,10 @@ If ($Install -eq "1") {
     #// Mark: Install OpenJDK
     If ($OpenJDK -eq 1) {
         $Product = "OpenJDK"
+        If ($openJDK_Architecture -eq 3) {
+            $openJDKArchitectureClear = "x64"
+            $openJDKArchitecture2Clear = "x86"
+        }
         # Check, if a new version is available
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitectureClear" + "_$OpenJDKPackageClear" + ".txt"
         $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
@@ -19974,11 +20032,93 @@ If ($Install -eq "1") {
         }
         If ($CleanUp -eq '1') {
             If ($WhatIf -eq '0') {
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Remove-Item "$PSScriptRoot\$Product\*$openJDKArchitectureClear*$OpenJDKPackageClear*" -Recurse
             }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
+        }
+        If ($openJDK_Architecture -eq 3) {
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$openJDKArchitecture2Clear" + "_$OpenJDKPackageClear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $OpenJDKD.Version
+            }
+            If ($OpenJDKPackageClear -eq "8") {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
+                If ($Version) {$Version = $Version -replace "-"}
+                If ($Version) {$Version = $Version -replace "\.0"}
+                If ($Version -like "*b0*") {$Version = $Version -replace "b0"}
+            }
+            If ($OpenJDKPackageClear -eq "11") {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 11*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 11*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
+                If ($Version) {$Version = $Version -replace ".-"}
+            }
+            If ($OpenJDKPackageClear -eq "15") {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 15*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 15*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
+                If ($Version) {$Version = $Version -replace ".-"}
+            }
+            If ($OpenJDKPackageClear -eq "17") {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 17*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 17*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
+                If ($Version) {$Version = $Version -replace('-','.')}
+                If ($Version) {$Version = $Version -replace('.0.1.','.001')}
+            }
+            $openJDKLog = "$LogTemp\OpenJDK.log"
+            $OpenJDKInstaller = "OpenJDK_" + "$openJDKArchitecture2Clear" + "_$OpenJDKPackageClear" + ".msi"
+            $InstallMSI = "$PSScriptRoot\$Product\$OpenJDKInstaller"
+            Write-Host -ForegroundColor Magenta "Install $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $OpenJDKV"
+            If ($OpenJDKV -lt $Version) {
+                DS_WriteLog "I" "Install $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                $Arguments = @(
+                    "/i"
+                    "`"$InstallMSI`""
+                    "/qn"
+                    "INSTALLLEVEL=3"
+                    "UPDATE_NOTIFIER=0"
+                    "/L*V $openJDKLog"
+                )
+                Try {
+                    Write-Host "Starting install of $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear version $Version"
+                    If ($WhatIf -eq '0') {
+                        Install-MSI $InstallMSI $Arguments
+                        Start-Sleep 25
+                    }
+                    Get-Content $openJDKLog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $openJDKLog -ErrorAction SilentlyContinue
+                } Catch {
+                    DS_WriteLog "E" "Error installing $Product release $OpenJDKPackageClear $openJDKArchitecture2Clear (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Remove-Item "$PSScriptRoot\$Product\*$openJDKArchitecture2Clear*$OpenJDKPackageClear*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
         }
     }
 
