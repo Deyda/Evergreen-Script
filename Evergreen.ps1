@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.12
+  Version:          2.08.13
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -155,6 +155,7 @@ the script checks the version number and will update the package.
   2022-05-17        Add new x64 download links for Adobe Reader DC / Add download and install option for x64 Teamviewer
   2022-05-20        Change Regex for Remote Desktop Manager download / Add new option to download and install x64 and x86 Visual C++ Runtime at the same time
   2022-05-25        Add new option to download and install x64 and x86 openJDK at the same time
+  2022-05-26        Correction auto restart after update with GUIFile Parameter
 
 .PARAMETER ESfile
 
@@ -3568,7 +3569,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.12"
+$eVersion = "2.08.13"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -3684,7 +3685,7 @@ If (!($NoUpdate)) {
             $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
                 Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -download -ESfile $ESfile
+                & "$PSScriptRoot\evergreen.ps1" -ESfile $ESfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
@@ -3694,7 +3695,7 @@ If (!($NoUpdate)) {
             $update = @'
                 Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
                 Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -download -GUIfile $GUIfile
+                & "$PSScriptRoot\evergreen.ps1" -GUIfile $GUIfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
