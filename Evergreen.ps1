@@ -13889,6 +13889,10 @@ If ($Download -eq "1") {
     #// Mark: Download Oracle Java 8
     If ($OracleJava8 -eq 1) {
         $Product = "Oracle Java 8"
+        If ($OracleJava8_Architecture -eq 3) {
+            $OracleJava8ArchitectureClear = "x64"
+            $OracleJava8Architecture2Clear = "x86"
+        }
         $PackageName = "OracleJava8_" + "$OracleJava8ArchitectureClear"
         $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$OracleJava8ArchitectureClear" }
         $Version = $OracleJava8D.Version
@@ -13915,7 +13919,7 @@ If ($Download -eq "1") {
                         Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
                     }
                 }
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Remove-Item "$PSScriptRoot\$Product\*$OracleJava8ArchitectureClear*" -Recurse
                 Start-Transcript $LogPS | Out-Null
                 Set-Content -Path "$VersionPath" -Value "$Version"
             }
@@ -13931,6 +13935,51 @@ If ($Download -eq "1") {
         Else {
             Write-Host -ForegroundColor Cyan "No new version available"
             Write-Output ""
+        }
+        If ($OracleJava8_Architecture -eq 3) {
+            $PackageName = "OracleJava8_" + "$OracleJava8Architecture2Clear"
+            $OracleJava8D = Get-EvergreenApp -Name OracleJava8 | Where-Object { $_.Architecture -eq "$OracleJava8Architecture2Clear" }
+            $Version = $OracleJava8D.Version
+            $URL = $OracleJava8D.uri
+            Add-Content -Path "$FWFile" -Value "$URL"
+            $InstallerType = "exe"
+            $Source = "$PackageName" + "." + "$InstallerType"
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OracleJava8Architecture2Clear" + ".txt"
+            $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+            Write-Host -ForegroundColor Magenta "Download $Product $OracleJava8Architecture2Clear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $CurrentVersion"
+            If ($CurrentVersion -lt $Version) {
+                Write-Host -ForegroundColor Green "Update available"
+                If ($WhatIf -eq '0') {
+                    If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                    $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                    If ($Repository -eq '1') {
+                        If ($CurrentVersion) {
+                            Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                            If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                            Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                            Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                        }
+                    }
+                    Remove-Item "$PSScriptRoot\$Product\*$OracleJava8Architecture2Clear*" -Recurse
+                    Start-Transcript $LogPS | Out-Null
+                    Set-Content -Path "$VersionPath" -Value "$Version"
+                }
+                Write-Host "Starting download of $Product $OracleJava8Architecture2Clear version $Version"
+                If ($WhatIf -eq '0') {
+                    Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                    Write-Verbose "Stop logging"
+                    Stop-Transcript | Out-Null
+                }
+                Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+                Write-Output ""
+            }
+            Else {
+                Write-Host -ForegroundColor Cyan "No new version available"
+                Write-Output ""
+            }
         }
     }
 
