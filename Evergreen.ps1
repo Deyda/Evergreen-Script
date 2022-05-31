@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.13
+  Version:          2.08.14
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -156,6 +156,7 @@ the script checks the version number and will update the package.
   2022-05-20        Change Regex for Remote Desktop Manager download / Add new option to download and install x64 and x86 Visual C++ Runtime at the same time
   2022-05-25        Add new option to download and install x64 and x86 openJDK at the same time
   2022-05-26        Correction auto restart after update with GUIFile Parameter
+  2022-05-31        Add new option to download and install x64 and x86 Oracle Java 8 at the same time
 
 .PARAMETER ESfile
 
@@ -3569,7 +3570,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.13"
+$eVersion = "2.08.14"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -9141,9 +9142,19 @@ Switch ($OpenJDKPackage) {
 
 If ($OracleJava8_Architecture -ne "") {
     Switch ($OracleJava8_Architecture) {
-        1 { $OracleJava8ArchitectureClear = 'x86'}
-        2 { $OracleJava8ArchitectureClear = 'x64'}
-        3 { $OracleJava8ArchitectureClear = 'both'}
+        1 { 
+            $OracleJava8ArchitectureClear = 'x86'
+            $OracleJava8ArchitectureVersionClear = ''
+        }
+        2 { 
+            $OracleJava8ArchitectureClear = 'x64'
+            $OracleJava8ArchitectureVersionClear = '64-Bit'
+        }
+        3 { 
+            $OracleJava8ArchitectureClear = 'both'
+            $OracleJava8Architecture2VersionClear = ''
+            $OracleJava8ArchitectureVersionClear = '64-Bit'
+        }
     }
 }
 Else {
@@ -13748,6 +13759,10 @@ If ($Download -eq "1") {
             $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitectureClear" -and $_.Type -eq "msi" -and $_.Version -like "$OpenJDKPackageClear*" -and $_.URI -notlike "*-jre-*" -and $_.URI -notlike "*.jre.*"} | Sort-Object -Property Size -Descending | Select-Object -First 4 | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         $Version = $OpenJDKD.Version
+        If ($openJDKArchitectureClear -eq "x86") {
+            $x86Version = $Version.split("-x")
+            $Version = $x86Version[0] + $x86Version[1]
+        }
         $URL = $OpenJDKD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
         $InstallerType = "msi"
@@ -13796,6 +13811,8 @@ If ($Download -eq "1") {
                 $OpenJDKD = Get-EvergreenApp -Name OpenJDK | Where-Object { $_.Architecture -eq "$openJDKArchitecture2Clear" -and $_.Type -eq "msi" -and $_.Version -like "$OpenJDKPackageClear*" -and $_.URI -notlike "*-jre-*" -and $_.URI -notlike "*.jre.*"} | Sort-Object -Property Size -Descending | Select-Object -First 4 | Sort-Object -Property Version -Descending | Select-Object -First 1
             }
             $Version = $OpenJDKD.Version
+            $x86Version = $Version.split("-x")
+            $Version = $x86Version[0] + $x86Version[1]
             $URL = $OpenJDKD.uri
             Add-Content -Path "$FWFile" -Value "$URL"
             $InstallerType = "msi"
@@ -20014,9 +20031,16 @@ If ($Install -eq "1") {
             $Version = $OpenJDKD.Version
         }
         If ($OpenJDKPackageClear -eq "8") {
-            $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
-            If (!$OpenJDKV) {
-                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If ($openJDKArchitectureClear -eq "x86") {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*x86*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*x86*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
+            } else {
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                If (!$OpenJDKV) {
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                }
             }
             If ($Version) {$Version = $Version -replace "-"}
             If ($Version) {$Version = $Version -replace "\.0"}
@@ -20095,9 +20119,9 @@ If ($Install -eq "1") {
                 $Version = $OpenJDKD.Version
             }
             If ($OpenJDKPackageClear -eq "8") {
-                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                $OpenJDKV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*x86*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 If (!$OpenJDKV) {
-                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+                    $OpenJDKV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*OpenJDK 1.8*x86*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
                 }
                 If ($Version) {$Version = $Version -replace "-"}
                 If ($Version) {$Version = $Version -replace "\.0"}
@@ -20242,9 +20266,9 @@ If ($Install -eq "1") {
         If (!($Version)) {
             $Version = $OracleJava8D.Version
         }
-        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*$OracleJava8ArchitectureVersionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         If (!$OracleJava) {
-            $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*$OracleJava8ArchitectureVersionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
         }
         If ($OracleJava) {
             $OracleJavaSplit = $OracleJava.split(".")
@@ -20291,11 +20315,73 @@ If ($Install -eq "1") {
         }
         If ($CleanUp -eq '1') {
             If ($WhatIf -eq '0') {
-                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Remove-Item "$PSScriptRoot\$Product\*$OracleJava8ArchitectureClear*" -Recurse
             }
             Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
+        }
+        If ($OracleJava8_Architecture -eq 3) {
+            $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OracleJava8Architecture2Clear" + ".txt"
+            $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+            If (!($Version)) {
+                $Version = $OracleJava8D.Version
+            }
+            $OracleJava = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*$OracleJava8Architecture2VersionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            If (!$OracleJava) {
+                $OracleJava = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Java 8*$OracleJava8Architecture2VersionClear*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+            }
+            If ($OracleJava) {
+                $OracleJavaSplit = $OracleJava.split(".")
+                $OracleJavaSplit2 = (Select-String '.{3}' -Input $OracleJavaSplit[2]).Matches.Value
+                $OracleJava = "1." + $OracleJavaSplit[0] + "." + $OracleJavaSplit[1] + "_" + $OracleJavaSplit2 + "-b" + $OracleJavaSplit[3]
+            }
+            $OracleJavaInstaller = "OracleJava8_" + "$OracleJava8Architecture2Clear" +".exe"
+            Write-Host -ForegroundColor Magenta "Install $Product $OracleJava8Architecture2Clear"
+            Write-Host "Download Version: $Version"
+            Write-Host "Current Version:  $OracleJava"
+            If ($OracleJava -lt $Version) {
+                DS_WriteLog "I" "Install $Product $OracleJava8Architecture2Clear" $LogFile
+                Write-Host -ForegroundColor Green "Update available"
+                $Options = @(
+                    "/s INSTALL_SILENT=Enable AUTO_UPDATE=Disable REBOOT=Disable SPONSORS=Disable REMOVEOUTOFDATEJRES=1 WEB_ANALYTICS=Disable NOSTARTMENU=1 WEB_JAVA=1 WEB_JAVA_SECURITY_LEVEL=H WEB_ANALYTICS=0"
+                )
+                Try {
+                    Write-Host "Starting install of $Product $OracleJava8Architecture2Clear version $Version"
+                    If ($WhatIf -eq '0') {
+                        Start-Process "$PSScriptRoot\$Product\$OracleJavaInstaller" -ArgumentList $Options -NoNewWindow
+                    }
+                    $p = Get-Process OracleJava8_$OracleJava8Architecture2Clear -ErrorAction SilentlyContinue
+                    If ($p) {
+                        $p.WaitForExit()
+                        Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                        DS_WriteLog "I" "Installation $Product finished!" $LogFile
+                    }
+                    If ($WhatIf -eq '0') {
+                        If ($CleanUpStartMenu) {
+                            If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Java") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Java" -Recurse -Force}
+                        }
+                    }
+                } Catch {
+                    Write-Host -ForegroundColor Red "Error installing $Product $OracleJava8Architecture2Clear (Error: $($Error[0]))"
+                    DS_WriteLog "E" "Error installing $Product $OracleJava8Architecture2Clear (Error: $($Error[0]))" $LogFile
+                }
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
+            # Stop, if no new version is available
+            Else {
+                Write-Host -ForegroundColor Cyan "No update available for $Product"
+                Write-Output ""
+            }
+            If ($CleanUp -eq '1') {
+                If ($WhatIf -eq '0') {
+                    Remove-Item "$PSScriptRoot\$Product\*$OracleJava8Architecture2Clear*" -Recurse
+                }
+                Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+                DS_WriteLog "-" "" $LogFile
+                Write-Output ""
+            }
         }
     }
 
