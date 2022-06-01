@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.14
+  Version:          2.08.15
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -157,6 +157,7 @@ the script checks the version number and will update the package.
   2022-05-25        Add new option to download and install x64 and x86 openJDK at the same time
   2022-05-26        Correction auto restart after update with GUIFile Parameter
   2022-05-31        Add new option to download and install x64 and x86 Oracle Java 8 at the same time
+  2022-06-01        Add Default Browser kill at Greenshot install
 
 .PARAMETER ESfile
 
@@ -3570,7 +3571,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.14"
+$eVersion = "2.08.15"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -9439,6 +9440,15 @@ If ($Download -eq "1") {
         New-Item $WhatIfFile -ItemType "file" -force | Out-Null
         DS_WriteLog "I" "START SCRIPT - " $WhatIfFile
         DS_WriteLog "-" "" $WhatIfFile
+    }
+
+    # Default Browser
+    $DefaultBrowserReg = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice" | Select-Object -ExpandProperty "ProgId"
+    Switch ($DefaultBrowserReg) {
+        MSEdgeHTM {$DefaultBrowser = "msedge"}
+        FirefoxURL {$DefaultBrowser = "firefox"}
+        ChromeHTML {$DefaultBrowser = "chrome"}
+        IE.HTTP {$DefaultBrowser = "iexplorer"}
     }
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -17074,11 +17084,13 @@ If ($Install -eq "1") {
                     $inst = Start-Process -FilePath "$PSScriptRoot\$Product\Greenshot-INSTALLER-x86.exe" -ArgumentList $Options -PassThru -ErrorAction Stop
                 }
                 else {
+                    Stop-Process -Name "$DefaultBrowser" -Force -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($inst) {
                     Wait-Process -InputObject $inst
+                    Stop-Process -Name "$DefaultBrowser" -Force -ErrorAction SilentlyContinue
                     Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
                     DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
