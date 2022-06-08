@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.15
+  Version:          2.08.16
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -158,6 +158,7 @@ the script checks the version number and will update the package.
   2022-05-26        Correction auto restart after update with GUIFile Parameter
   2022-05-31        Add new option to download and install x64 and x86 Oracle Java 8 at the same time
   2022-06-01        Add Default Browser kill at Greenshot install
+  2022-06-08        Correction PowerToys Download
 
 .PARAMETER ESfile
 
@@ -234,7 +235,7 @@ Param (
     
 )
 
-#Add Functions here
+# Add Functions here
 
 # Function OpenFile Dialog
 #========================================================================================================================================
@@ -3571,7 +3572,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.15"
+$eVersion = "2.08.16"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -12602,7 +12603,7 @@ If ($Download -eq "1") {
     If ($MSPowerToys -eq 1) {
         $Product = "Microsoft PowerToys"
         $PackageName = "PowerToysSetup-x64"
-        $MSPowerToysD = Get-EvergreenApp -Name MicrosoftPowerToys
+        $MSPowerToysD = Get-EvergreenApp -Name MicrosoftPowerToys| Where-Object {$_.Architecture -eq "x64"}
         $Version = $MSPowerToysD.Version
         $URL = $MSPowerToysD.uri
         Add-Content -Path "$FWFile" -Value "$URL"
@@ -13900,6 +13901,54 @@ If ($Download -eq "1") {
                 Set-Content -Path "$VersionPath" -Value "$Version"
             }
             Write-Host "Starting download of $Product version $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Opera Browser
+    If ($OperaBrowser -eq 1) {
+        $Product = "Opera Browser"
+        $PackageName = "OperaBrowser_" + "$OperaBrowserArchitectureClear"
+        $OperaBrowserD = Get-EvergreenApp -Name OperaBrowser | Where-Object { $_.Architecture -eq "$OperaBrowserArchitectureClear" }
+        $Version = $OperaBrowserD.Version
+        $URL = $OperaBrowserD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OperaBrowserArchitectureClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $OperaBrowserArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $OperaBrowserArchitectureClear version $Version"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
@@ -20250,6 +20299,64 @@ If ($Install -eq "1") {
             } Catch {
                 Write-Host -ForegroundColor Red "Error installing $Product (Error: $($Error[0]))"
                 DS_WriteLog "E" "Error installing $Product (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Opera Browser
+    If ($OperaBrowser -eq 1) {
+        $Product = "Opera Browser"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$OperaBrowserArchitectureClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $NotepadD.Version
+        }
+        $OperaBrowserV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Opera*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$OperaBrowserV) {
+            $OperaBrowserV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Opera*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $OperaBrowserInstaller = "OperaBrowser_" + "$OperaBrowserArchitectureClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $OperaBrowserArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $OperaBrowserV"
+        If ($OperaBrowserV -lt $Version) {
+            DS_WriteLog "I" "Install $Product $OperaBrowserArchitectureClear" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $OperaBrowserArchitectureClear version $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$OperaBrowserInstaller" -ArgumentList /silent /allusers=1 /launchopera=0 /setdefaultbrowser=0
+                }
+                $p = Get-Process OperaBrowser_$OperaBrowserArchitectureClear -ErrorAction SilentlyContinue
+		        If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product finished!" $LogFile
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Opera*.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Opera*.lnk" -Force}
+                    }
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $OperaBrowserArchitectureClear (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product $OperaBrowserArchitectureClear (Error: $($Error[0]))" $LogFile
             }
             DS_WriteLog "-" "" $LogFile
             Write-Output ""
