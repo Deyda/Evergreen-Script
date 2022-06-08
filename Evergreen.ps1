@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.16
+  Version:          2.08.17
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -158,7 +158,7 @@ the script checks the version number and will update the package.
   2022-05-26        Correction auto restart after update with GUIFile Parameter
   2022-05-31        Add new option to download and install x64 and x86 Oracle Java 8 at the same time
   2022-06-01        Add Default Browser kill at Greenshot install
-  2022-06-08        Correction PowerToys Download
+  2022-06-08        Correction PowerToys Download / Create Zoom VDI download function and correct the assignment
 
 .PARAMETER ESfile
 
@@ -3000,6 +3000,46 @@ Function Get-MindView7() {
     }
 }
 
+# Function Zoom VDI Download
+#========================================================================================================================================
+Function Get-ZoomVDI {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+        $url = "https://support.zoom.us/hc/en-us/articles/4415057249549"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Throw "Failed to connect to URL: $url with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersionD = 'class="panel-title"><a class="fill-div" href="#collapseGeneric.." data-toggle="collapse">........'
+        $webVersionZoomVDID = $webRequest.RawContent | Select-String -Pattern $regexAppVersionD -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplitD = $webVersionZoomVDID.Split(">")
+        $webSplitD = $webSplitD[2].Split("<")
+        $VersionD = $webSplitD[0]
+        $regexAppVersion = 'ZoomCitrixHDXMediaPlugin.msi" target="_self" rel="undefined">..............'
+        $webVersionZoomVDI = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplit = $webVersionZoomVDI.Split(">")
+        $webSplit = $webSplit[1].Split("<")
+        $Version = $webSplit[0]
+        $VersionSplit = $Version.Split(".")
+        $VersionApps = $VersionSplit[0] + "." + $VersionSplit[1] + "." + $VersionSplit[3]
+        $x64 = "https://zoom.us/download/vdi/" + $VersionD + "/ZoomInstallerVDI.msi"
+        
+        $PSObjectx64 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x64"
+        URI          = $x64
+        VersionApps = $VersionApps
+        }
+
+        Write-Output -InputObject $PSObjectx64
+    }
+}
+
 # Function PuTTY Download Stable and Pre-Release Version
 #========================================================================================================================================
 Function Get-PuTTY() {
@@ -3572,7 +3612,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.16"
+$eVersion = "2.08.17"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -4768,7 +4808,7 @@ $inputXML = @"
                     <Button x:Name="Button_Start_Detail" Content="Start" HorizontalAlignment="Right" Margin="0,0,265,40" VerticalAlignment="Bottom" Width="75" Grid.Column="1" Grid.Row="1"/>
                     <Button x:Name="Button_Cancel_Detail" Content="Cancel" HorizontalAlignment="Right" Margin="0,0,170,40" VerticalAlignment="Bottom" Width="75" Grid.Column="1" Grid.Row="1"/>
                     <Button x:Name="Button_Save_Detail" Content="Save" HorizontalAlignment="Right" Margin="0,0,50,40" VerticalAlignment="Bottom" Width="75" Grid.Column="1" ToolTip="Save Selected Software in LastSetting.txt or -GUIFile Parameter file" Grid.Row="1"/>
-                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Right" Margin="0,0,25,0" VerticalAlignment="Bottom" FontSize="10" Grid.Column="1" Grid.Row="1"/>
+                    <Label x:Name="Label_author_Detail" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2022 / Version $eVersion" HorizontalAlignment="Right" Margin="0,0,25,0" VerticalAlignment="Bottom" FontSize="10" Grid.Column="1" Grid.Row="1"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -15379,10 +15419,9 @@ If ($Download -eq "1") {
             If ($ZoomInstallerClear -eq 'Machine Based') {
                 $Product = "Zoom VDI"
                 $PackageName = "ZoomInstallerVDI"
-                $ZoomD = Get-NevergreenApp -Name Zoom | Where-Object {$_.Name -like "*VDI Client"}
-                $Version = (Get-NevergreenApp -Name Zoom | Where-Object {$_.Name -like "Zoom Citrix HDX*"}).Version
-                $VersionSplit = $Version.split(".")
-                $Version = $VersionSplit[0] + "." + $VersionSplit[1] + "." + $VersionSplit[3]
+                $ZoomD = Get-ZoomVDI
+                $Version = $ZoomD.Version
+                $VersionApps = $ZoomD.VersionApps
                 $URL = $ZoomD.uri
                 Add-Content -Path "$FWFile" -Value "$URL"
                 $InstallerType = "msi"
@@ -15390,9 +15429,9 @@ If ($Download -eq "1") {
                 $VersionPath = "$PSScriptRoot\$Product\Version" + ".txt"
                 $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
                 Write-Host -ForegroundColor Magenta "Download $Product"
-                Write-Host "Download Version: $Version"
+                Write-Host "Download Version: $VersionApps"
                 Write-Host "Current Version:  $CurrentVersion"
-                If ($CurrentVersion -lt $Version) {
+                If ($CurrentVersion -lt $VersionApps) {
                     Write-Host -ForegroundColor Green "Update available"
                     If ($WhatIf -eq '0') {
                         If (!(Test-Path -Path "$PSScriptRoot\$Product")) {New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null}
@@ -15408,7 +15447,7 @@ If ($Download -eq "1") {
                         }
                         Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                         Start-Transcript $LogPS | Out-Null
-                        Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                        Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$VersionApps"
                     }
                     Write-Host "Starting download of $Product version $Version"
                     If ($WhatIf -eq '0') {
