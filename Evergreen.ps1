@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.08.17
+  Version:          2.08.18
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -158,7 +158,11 @@ the script checks the version number and will update the package.
   2022-05-26        Correction auto restart after update with GUIFile Parameter
   2022-05-31        Add new option to download and install x64 and x86 Oracle Java 8 at the same time
   2022-06-01        Add Default Browser kill at Greenshot install
-  2022-06-08        Correction PowerToys Download / Create Zoom VDI download function and correct the assignment
+  2022-06-08        Correction PowerToys Download / Create Zoom VDI download function and correct the assignment / Add Ditto download function
+  2022-06-10        Add Ditto install / Add Opera Browser download and install
+  2022-06-17        Correction Mozilla Firefox CurrentVersion detection
+  2022-06-20        Add XCA download and install
+  2022-06-21        Correction Teamviewer download version
 
 .PARAMETER ESfile
 
@@ -3040,6 +3044,109 @@ Function Get-ZoomVDI {
     }
 }
 
+# Function Ditto Download
+#========================================================================================================================================
+Function Get-Ditto {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+        $url = "https://ditto-cp.sourceforge.io/"
+        $urlbeta = "https://ditto-cp.sourceforge.io/beta/"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+        $webRequestbeta = Invoke-WebRequest -UseBasicParsing -Uri $urlbeta -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Throw "Failed to connect to URL: $url with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = 'versionDots=".*'
+        $regexAppVersionD = 'versionUnder=".*'
+        $regexAppVersionBeta = 'version .*'
+        $webVersionDitto = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webVersionDittoD = $webRequest.RawContent | Select-String -Pattern $regexAppVersionD -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webVersionDittoBeta = $webRequestbeta.RawContent | Select-String -Pattern $regexAppVersionBeta -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplit = $webVersionDitto.Split('"')
+        $webSplitD = $webVersionDittoD.Split('"')
+        $webSplitBeta = $webVersionDittoBeta.Split(' ')
+        $VersionBeta = $webSplitBeta[1].Split("<")
+        $Version = $webSplit[1]
+        $VersionD = $webSplitD[1]
+        $VersionBeta = $VersionBeta[0]
+        $VersionBetaD = $VersionBeta.Replace(".", "_")
+        $x32 = "https://github.com/sabrogden/Ditto/releases/download/" + $Version + "/DittoSetup_" + $VersionD + ".exe"
+        $x64 = "https://github.com/sabrogden/Ditto/releases/download/" + $Version + "/DittoSetup_64bit_" + $VersionD + ".exe"
+        $x32beta = "https://ditto-cp.sourceforge.io/beta/files/DittoSetup_" + $VersionBetaD + ".exe"
+        $x64beta = "https://ditto-cp.sourceforge.io/beta/files/DittoSetup_64bit_" + $VersionBetaD + ".exe"
+        
+        $PSObjectx32 = [PSCustomObject] @{
+            Version      = $Version
+            Architecture = "x86"
+            Channel      = "Stable"
+            URI          = $x32
+            }
+
+        $PSObjectx64 = [PSCustomObject] @{
+        Version      = $Version
+        Architecture = "x64"
+        Channel      = "Stable"
+        URI          = $x64
+        }
+
+        $PSObjectx32Beta = [PSCustomObject] @{
+            Version      = $VersionBeta
+            Architecture = "x86"
+            Channel      = "Beta"
+            URI          = $x32beta
+            }
+
+        $PSObjectx64Beta = [PSCustomObject] @{
+        Version      = $VersionBeta
+        Architecture = "x64"
+        Channel      = "Beta"
+        URI          = $x64beta
+        }
+
+        Write-Output -InputObject $PSObjectx32
+        Write-Output -InputObject $PSObjectx64
+        Write-Output -InputObject $PSObjectx32Beta
+        Write-Output -InputObject $PSObjectx64Beta
+    }
+}
+
+# Function XCA Download
+#========================================================================================================================================
+Function Get-XCA {
+    [OutputType([System.Management.Automation.PSObject])]
+    [CmdletBinding()]
+    Param ()
+        $url = "https://github.com/chris2511/xca/releases/"
+    Try {
+        $webRequest = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Throw "Failed to connect to URL: $url with error $_."
+        Break
+    }
+    Finally {
+        $regexAppVersion = 'xca-.*msi'
+        $webVersionXCA = $webRequest.RawContent | Select-String -Pattern $regexAppVersion -AllMatches | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+        $webSplit = $webVersionXCA.Split('-')
+        $webSplit = $webSplit[1].Split('(.msi)')
+        $Version = $webSplit[0] + "." + $webSplit[1] + "." + $webSplit[2]
+        $x32 = "https://github.com/chris2511/xca/releases/download/RELEASE." + $Version + "/" + $webVersionXCA
+        
+        $PSObjectx32 = [PSCustomObject] @{
+            Version      = $Version
+            Channel      = "Stable"
+            URI          = $x32
+            }
+
+        Write-Output -InputObject $PSObjectx32
+    }
+}
+
 # Function PuTTY Download Stable and Pre-Release Version
 #========================================================================================================================================
 Function Get-PuTTY() {
@@ -3612,7 +3719,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.08.17"
+$eVersion = "2.08.18"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -3904,6 +4011,11 @@ $inputXML = @"
                         <ListBoxItem Content="Client + Agent"/>
                         <ListBoxItem Content="Agent + Console"/>
                     </ComboBox>
+                    <CheckBox x:Name="Checkbox_Ditto" Content="Ditto" HorizontalAlignment="Left" Margin="12,850,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
+                    <ComboBox x:Name="Box_Ditto" HorizontalAlignment="Left" Margin="205,847,0,0" VerticalAlignment="Top" SelectedIndex="1" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1">
+                        <ListBoxItem Content="Beta"/>
+                        <ListBoxItem Content="Stable"/>
+                    </ComboBox>
                     <CheckBox x:Name="Checkbox_Filezilla" Content="Filezilla" HorizontalAlignment="Left" Margin="12,290,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_FoxitPDFEditor" Content="Foxit PDF Editor" HorizontalAlignment="Left" Margin="12,310,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_FoxitReader" Content="Foxit Reader" HorizontalAlignment="Left" Margin="12,330,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
@@ -4023,6 +4135,7 @@ $inputXML = @"
                         <ListBoxItem Content="17"/>
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_OpenShellMenu" Content="Open-Shell Menu" HorizontalAlignment="Left" Margin="12,230,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
+                    <CheckBox x:Name="Checkbox_OperaBrowser" Content="Opera Browser" HorizontalAlignment="Left" Margin="12,750,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_OracleJava8" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="12,250,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_PaintDotNet" Content="Paint.Net" HorizontalAlignment="Left" Margin="12,270,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_PDF24Creator" Content="PDF24 Creator" HorizontalAlignment="Left" Margin="12,290,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
@@ -4068,6 +4181,7 @@ $inputXML = @"
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_WinSCP" Content="WinSCP" HorizontalAlignment="Left" Margin="12,690,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_Wireshark" Content="Wireshark" HorizontalAlignment="Left" Margin="12,710,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
+                    <CheckBox x:Name="Checkbox_XCA" Content="XCA" HorizontalAlignment="Left" Margin="12,770,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <CheckBox x:Name="Checkbox_Zoom" Content="Zoom" HorizontalAlignment="Left" Margin="12,730,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_Zoom" HorizontalAlignment="Left" Margin="205,727,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1" ToolTip="Citrix HDX Media Plugin is for the client system!">
                         <ListBoxItem Content="Client"/>
@@ -4077,7 +4191,7 @@ $inputXML = @"
                     <Button x:Name="Button_Start" Content="Start" Margin="0,0,265,40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Grid.Column="2" Grid.Row="1"/>
                     <Button x:Name="Button_Cancel" Content="Cancel" Margin="0,0,170,40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Grid.Column="2" Grid.Row="1"/>
                     <Button x:Name="Button_Save" Content="Save" Margin="0,0,50,40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Grid.Column="2" ToolTip="Save Selected Software in LastSetting.txt or -GUIFile Parameter file" Grid.Row="1"/>
-                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2021 / Version $eVersion" HorizontalAlignment="Right" Margin="0,0,25,0" VerticalAlignment="Bottom" FontSize="10" Grid.ColumnSpan="2" Grid.Column="1" Grid.Row="1"/>
+                    <Label x:Name="Label_author" Content="Manuel Winkel / @deyda84 / Deyda Consulting / www.deyda.net / 2022 / Version $eVersion" HorizontalAlignment="Right" Margin="0,0,25,0" VerticalAlignment="Bottom" FontSize="10" Grid.ColumnSpan="2" Grid.Column="1" Grid.Row="1"/>
                 </Grid>
             </ScrollViewer>
         </TabItem>
@@ -4165,6 +4279,12 @@ $inputXML = @"
                     </ComboBox>
                     <CheckBox x:Name="Checkbox_deviceTRUST_Detail" Content="deviceTRUST" HorizontalAlignment="Left" Margin="12,180,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
                     <ComboBox x:Name="Box_deviceTRUST_Architecture" HorizontalAlignment="Left" Margin="221,177,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
+                    <CheckBox x:Name="Checkbox_Ditto_Detail" Content="Ditto" HorizontalAlignment="Left" Margin="12,180,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="1"/>
+                    <ComboBox x:Name="Box_Ditto_Architecture" HorizontalAlignment="Left" Margin="221,177,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="0" Grid.Row="1">
                         <ListBoxItem Content="-"/>
                         <ListBoxItem Content="x86"/>
                         <ListBoxItem Content="x64"/>
@@ -4671,6 +4791,12 @@ $inputXML = @"
                         <ListBoxItem Content="x64"/>
                         <ListBoxItem Content="x86 and x64"/>
                     </ComboBox>
+                    <CheckBox x:Name="Checkbox_OperaBrowser_Detail" Content="Opera Browser" HorizontalAlignment="Left" Margin="12,255,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
+                    <ComboBox x:Name="Box_OperaBrowser_Architecture" HorizontalAlignment="Left" Margin="221,252,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
+                        <ListBoxItem Content="-"/>
+                        <ListBoxItem Content="x86"/>
+                        <ListBoxItem Content="x64"/>
+                    </ComboBox>
                     <CheckBox x:Name="Checkbox_OracleJava8_Detail" Content="Oracle Java 8" HorizontalAlignment="Left" Margin="12,280,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"/>
                     <ComboBox x:Name="Box_OracleJava8_Architecture" HorizontalAlignment="Left" Margin="221,277,0,0" VerticalAlignment="Top" SelectedIndex="0" Grid.Column="1" Grid.Row="1">
                         <ListBoxItem Content="-"/>
@@ -4939,6 +5065,9 @@ $inputXML = @"
         $WPFBox_MozillaThunderbird_Language.SelectedIndex = $LastSetting[183] -as [int]
         $WPFBox_MSAzureDataStudio_Architecture.SelectedIndex = $LastSetting[184] -as [int]
         $WPFBox_TeamViewer_Architecture.SelectedIndex = $LastSetting[185] -as [int]
+        $WPFBox_OperaBrowser_Architecture.SelectedIndex = $LastSetting[187] -as [int]
+        $WPFBox_Ditto_Architecture.SelectedIndex = $LastSetting[189] -as [int]
+        $WPFBox_Ditto.SelectedIndex = $LastSetting[190] -as [int]
 
         Switch ($LastSetting[8]) {
             1 {
@@ -5362,6 +5491,23 @@ $inputXML = @"
                 $WPFCheckbox_WinRAR_Detail.IsChecked = "True"
             }
         }
+        Switch ($LastSetting[186]) {
+            1 {
+                $WPFCheckbox_OperaBrowser.IsChecked = "True"
+                $WPFCheckbox_OperaBrowser_Detail.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[188]) {
+            1 {
+                $WPFCheckbox_Ditto.IsChecked = "True"
+                $WPFCheckbox_Ditto_Detail.IsChecked = "True"
+            }
+        }
+        Switch ($LastSetting[191]) {
+            1 {
+                $WPFCheckbox_XCA.IsChecked = "True"
+            }
+        }
     }
     
     #// MARK: Event Handler
@@ -5437,6 +5583,18 @@ $inputXML = @"
     })
     $WPFCheckbox_deviceTRUST_Detail.Add_Unchecked({
         $WPFCheckbox_deviceTRUST.IsChecked = $WPFCheckbox_deviceTRUST_Detail.IsChecked
+    })
+    $WPFCheckbox_Ditto.Add_Checked({
+        $WPFCheckbox_Ditto_Detail.IsChecked = $WPFCheckbox_Ditto.IsChecked
+    })
+    $WPFCheckbox_Ditto.Add_Unchecked({
+        $WPFCheckbox_Ditto_Detail.IsChecked = $WPFCheckbox_Ditto.IsChecked
+    })
+    $WPFCheckbox_Ditto_Detail.Add_Checked({
+        $WPFCheckbox_Ditto.IsChecked = $WPFCheckbox_Ditto_Detail.IsChecked
+    })
+    $WPFCheckbox_Ditto_Detail.Add_Unchecked({
+        $WPFCheckbox_Ditto.IsChecked = $WPFCheckbox_Ditto_Detail.IsChecked
     })
     $WPFCheckbox_ControlUpAgent.Add_Checked({
         $WPFCheckbox_ControlUpAgent_Detail.IsChecked = $WPFCheckbox_ControlUpAgent.IsChecked
@@ -5810,6 +5968,18 @@ $inputXML = @"
     $WPFCheckbox_OpenJDK_Detail.Add_Unchecked({
         $WPFCheckbox_OpenJDK.IsChecked = $WPFCheckbox_OpenJDK_Detail.IsChecked
     })
+    $WPFCheckbox_OperaBrowser.Add_Checked({
+        $WPFCheckbox_OperaBrowser_Detail.IsChecked = $WPFCheckbox_OperaBrowser.IsChecked
+    })
+    $WPFCheckbox_OperaBrowser.Add_Unchecked({
+        $WPFCheckbox_OperaBrowser_Detail.IsChecked = $WPFCheckbox_OperaBrowser.IsChecked
+    })
+    $WPFCheckbox_OperaBrowser_Detail.Add_Checked({
+        $WPFCheckbox_OperaBrowser.IsChecked = $WPFCheckbox_OperaBrowser_Detail.IsChecked
+    })
+    $WPFCheckbox_OperaBrowser_Detail.Add_Unchecked({
+        $WPFCheckbox_OperaBrowser.IsChecked = $WPFCheckbox_OperaBrowser_Detail.IsChecked
+    })
     $WPFCheckbox_OracleJava8.Add_Checked({
         $WPFCheckbox_OracleJava8_Detail.IsChecked = $WPFCheckbox_OracleJava8.IsChecked
     })
@@ -6046,6 +6216,9 @@ $inputXML = @"
         $WPFCheckbox_MozillaThunderbird.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDF24Creator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinRAR.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Ditto.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OperaBrowser.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_XCA.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Checkbox SelectAll to Uncheck (AddScript)
@@ -6127,6 +6300,9 @@ $inputXML = @"
         $WPFCheckbox_MozillaThunderbird.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_PDF24Creator.IsChecked = $WPFCheckbox_SelectAll.IsChecked
         $WPFCheckbox_WinRAR.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_Ditto.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_OperaBrowser.IsChecked = $WPFCheckbox_SelectAll.IsChecked
+        $WPFCheckbox_XCA.IsChecked = $WPFCheckbox_SelectAll.IsChecked
     })
 
     # Button Browse
@@ -6312,6 +6488,12 @@ $inputXML = @"
         Else {$Script:PDF24Creator = 0}
         If ($WPFCheckbox_WinRAR.ischecked -eq $true) {$Script:WinRAR = 1}
         Else {$Script:WinRAR = 0}
+        If ($WPFCheckbox_Ditto.ischecked -eq $true) {$Script:Ditto = 1}
+        Else {$Script:Ditto = 0}
+        If ($WPFCheckbox_OperaBrowser.ischecked -eq $true) {$Script:OperaBrowser = 1}
+        Else {$Script:OperaBrowser = 0}
+        If ($WPFCheckbox_XCA.ischecked -eq $true) {$Script:XCA = 1}
+        Else {$Script:XCA = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -6411,9 +6593,12 @@ $inputXML = @"
         $Script:MozillaThunderbird_Language = $WPFBox_MozillaThunderbird_Language.SelectedIndex
         $Script:MSAzureDataStudio_Architecture = $WPFBox_MSAzureDataStudio_Architecture.SelectedIndex
         $Script:TeamViewer_Architecture = $WPFBox_TeamViewer_Architecture.SelectedIndex
+        $Script:Ditto_Architecture = $WPFBox_Ditto_Architecture.SelectedIndex
+        $Script:Ditto_Channel = $WPFBox_Ditto.SelectedIndex
+        $Script:OperaBrowser_Architecture = $WPFBox_OperaBrowser_Architecture.SelectedIndex
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture,$OperaBrowser,$OperaBrowser_Architecture,$Ditto,$Ditto_Architecture,$Ditto_Channel,$XCA | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If ($MS365Apps -eq 1) {
@@ -6625,6 +6810,12 @@ $inputXML = @"
         Else {$Script:PDF24Creator = 0}
         If ($WPFCheckbox_WinRAR.ischecked -eq $true) {$Script:WinRAR = 1}
         Else {$Script:WinRAR = 0}
+        If ($WPFCheckbox_Ditto.ischecked -eq $true) {$Script:Ditto = 1}
+        Else {$Script:Ditto = 0}
+        If ($WPFCheckbox_OperaBrowser.ischecked -eq $true) {$Script:OperaBrowser = 1}
+        Else {$Script:OperaBrowser = 0}
+        If ($WPFCheckbox_XCA.ischecked -eq $true) {$Script:XCA = 1}
+        Else {$Script:XCA = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -6724,9 +6915,12 @@ $inputXML = @"
         $Script:MozillaThunderbird_Language = $WPFBox_MozillaThunderbird_Language.SelectedIndex
         $Script:MSAzureDataStudio_Architecture = $WPFBox_MSAzureDataStudio_Architecture.SelectedIndex
         $Script:TeamViewer_Architecture = $WPFBox_TeamViewer_Architecture.SelectedIndex
+        $Script:Ditto_Architecture = $WPFBox_Ditto_Architecture.SelectedIndex
+        $Script:Ditto_Channel = $WPFBox_Ditto.SelectedIndex
+        $Script:OperaBrowser_Architecture = $WPFBox_OperaBrowser_Architecture.SelectedIndex
         
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture,$OperaBrowser,$OperaBrowser_Architecture,$Ditto,$Ditto_Architecture,$Ditto_Channel,$XCA | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If ($MS365Apps -eq 1) {
@@ -6762,8 +6956,6 @@ $inputXML = @"
 
     # Button Cancel
     $WPFButton_Cancel.Add_Click({
-        #$Script:install = $true
-        #$Script:download = $true
         Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
         $Form.Close()
         Break
@@ -6771,8 +6963,6 @@ $inputXML = @"
 
     # Button Cancel Detail
     $WPFButton_Cancel_Detail.Add_Click({
-        #$Script:install = $true
-        #$Script:download = $true
         Write-Host -Foregroundcolor Red "GUI Mode Canceled - Nothing happens"
         $Form.Close()
         Break
@@ -6956,6 +7146,12 @@ $inputXML = @"
         Else {$Script:PDF24Creator = 0}
         If ($WPFCheckbox_WinRAR.ischecked -eq $true) {$Script:WinRAR = 1}
         Else {$Script:WinRAR = 0}
+        If ($WPFCheckbox_Ditto.ischecked -eq $true) {$Script:Ditto = 1}
+        Else {$Script:Ditto = 0}
+        If ($WPFCheckbox_OperaBrowser.ischecked -eq $true) {$Script:OperaBrowser = 1}
+        Else {$Script:OperaBrowser = 0}
+        If ($WPFCheckbox_XCA.ischecked -eq $true) {$Script:XCA = 1}
+        Else {$Script:XCA = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -7055,9 +7251,12 @@ $inputXML = @"
         $Script:MozillaThunderbird_Language = $WPFBox_MozillaThunderbird_Language.SelectedIndex
         $Script:MSAzureDataStudio_Architecture = $WPFBox_MSAzureDataStudio_Architecture.SelectedIndex
         $Script:TeamViewer_Architecture = $WPFBox_TeamViewer_Architecture.SelectedIndex
+        $Script:Ditto_Architecture = $WPFBox_Ditto_Architecture.SelectedIndex
+        $Script:Ditto_Channel = $WPFBox_Ditto.SelectedIndex
+        $Script:OperaBrowser_Architecture = $WPFBox_OperaBrowser_Architecture.SelectedIndex
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture,$OperaBrowser,$OperaBrowser_Architecture,$Ditto,$Ditto_Architecture,$Ditto_Channel,$XCA | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If ($MS365Apps -eq 1) {
@@ -7268,6 +7467,12 @@ $inputXML = @"
         Else {$Script:PDF24Creator = 0}
         If ($WPFCheckbox_WinRAR.ischecked -eq $true) {$Script:WinRAR = 1}
         Else {$Script:WinRAR = 0}
+        If ($WPFCheckbox_Ditto.ischecked -eq $true) {$Script:Ditto = 1}
+        Else {$Script:Ditto = 0}
+        If ($WPFCheckbox_OperaBrowser.ischecked -eq $true) {$Script:OperaBrowser = 1}
+        Else {$Script:OperaBrowser = 0}
+        If ($WPFCheckbox_XCA.ischecked -eq $true) {$Script:XCA = 1}
+        Else {$Script:XCA = 0}
         $Script:Language = $WPFBox_Language.SelectedIndex
         $Script:Architecture = $WPFBox_Architecture.SelectedIndex
         $Script:Installer = $WPFBox_Installer.SelectedIndex
@@ -7367,9 +7572,12 @@ $inputXML = @"
         $Script:MozillaThunderbird_Language = $WPFBox_MozillaThunderbird_Language.SelectedIndex
         $Script:MSAzureDataStudio_Architecture = $WPFBox_MSAzureDataStudio_Architecture.SelectedIndex
         $Script:TeamViewer_Architecture = $WPFBox_TeamViewer_Architecture.SelectedIndex
+        $Script:Ditto_Architecture = $WPFBox_Ditto_Architecture.SelectedIndex
+        $Script:Ditto_Channel = $WPFBox_Ditto.SelectedIndex
+        $Script:OperaBrowser_Architecture = $WPFBox_OperaBrowser_Architecture.SelectedIndex
 
         # Write LastSetting.txt or -GUIFile Parameter file to get the settings of the last session. (AddScript)
-        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture | out-file -filepath "$PSScriptRoot\$GUIfile"
+        $Language,$Architecture,$CitrixWorkspaceAppRelease,$MS365AppsChannel,$MSOneDriveRing,$MSTeamsRing,$FirefoxChannel,$TreeSizeType,$7ZIP,$AdobeProDC,$AdobeReaderDC,$BISF,$Citrix_Hypervisor_Tools,$Citrix_WorkspaceApp,$Filezilla,$Firefox,$Foxit_Reader,$MSFSLogix,$GoogleChrome,$Greenshot,$KeePass,$mRemoteNG,$MS365Apps,$MSEdge,$MSOffice,$MSOneDrive,$MSTeams,$NotePadPlusPlus,$OpenJDK,$OracleJava8,$TreeSize,$VLCPlayer,$VMWareTools,$WinSCP,$Download,$Install,$IrfanView,$MSTeamsNoAutoStart,$deviceTRUST,$MSDotNetFramework,$MSDotNetFrameworkChannel,$MSPowerShell,$MSPowerShellRelease,$RemoteDesktopManager,$RemoteDesktopManagerType,$Slack,$Wireshark,$ShareX,$Zoom,$ZoomCitrixClient,$deviceTRUSTPackage,$MSEdgeChannel,$GIMP,$MSPowerToys,$MSVisualStudio,$MSVisualStudioCode,$MSVisualStudioCodeChannel,$PaintDotNet,$Putty,$TeamViewer,$Installer,$MSVisualStudioEdition,$PuttyChannel,$MSAzureDataStudio,$MSAzureDataStudioChannel,$ImageGlass,$MSFSLogixChannel,$uberAgent,$1Password,$SumatraPDF,$ControlUpAgent,$ControlUpAgentFramework,$ControlUpConsole,$MSSQLServerManagementStudio,$MSAVDRemoteDesktop,$MSAVDRemoteDesktopChannel,$MSPowerBIDesktop,$RDAnalyzer,$CiscoWebexTeams,$CitrixFiles,$FoxitPDFEditor,$GitForWindows,$LogMeInGoToMeeting,$MSAzureCLI,$MSPowerBIReportBuilder,$MSSysinternals,$NMap,$PeaZip,$TechSmithCamtasia,$TechSmithSnagit,$WinMerge,$WhatIf,$CleanUp,$7Zip_Architecture,$AdobeReaderDC_Architecture,$AdobeReaderDC_Language,$CiscoWebexTeams_Architecture,$CitrixHypervisorTools_Architecture,$ControlUpAgent_Architecture,$deviceTRUST_Architecture,$FoxitPDFEditor_Language,$FoxitReader_Language,$GitForWindows_Architecture,$GoogleChrome_Architecture,$ImageGlass_Architecture,$IrfanView_Architecture,$Keepass_Language,$MSDotNetFramework_Architecture,$MS365Apps_Architecture,$MS365Apps_Language,$MS365Apps_Visio,$MS365Apps_Visio_Language,$MS365Apps_Project,$MS365Apps_Project_Language,$MSAVDRemoteDesktop_Architecture,$MSEdge_Architecture,$MSFSLogix_Architecture,$MSOffice_Architecture,$MSOneDrive_Architecture,$MSPowerBIDesktop_Architecture,$MSPowerShell_Architecture,$MSSQLServerManagementStudio_Language,$MSTeams_Architecture,$MSVisualStudioCode_Architecture,$Firefox_Architecture,$Firefox_Language,$NotePadPlusPlus_Architecture,$OpenJDK_Architecture,$OracleJava8_Architecture,$PeaZip_Architecture,$Putty_Architecture,$Slack_Architecture,$SumatraPDF_Architecture,$TechSmithSnagIt_Architecture,$VLCPlayer_Architecture,$VMWareTools_Architecture,$WinMerge_Architecture,$Wireshark_Architecture,$IrfanView_Language,$MSOffice_Language,$MSEdgeWebView2,$MSEdgeWebView2_Architecture,$AutodeskDWGTrueView,$MindView7,$MindView7_Language,$PDFsam,$MSOfficeVersion,$OpenShellMenu,$PDFForgeCreator,$TotalCommander,$LogMeInGoToMeeting_Installer,$MSAzureDataStudio_Installer,$MSVisualStudioCode_Installer,$MS365Apps_Installer,$Zoom_Architecture,$MSTeams_Installer,$Zoom_Installer,$MSOneDrive_Installer,$Slack_Installer,$pdfforgePDFCreatorChannel,$TotalCommander_Architecture,$Repository,$CleanUpStartMenu,$MSVisualCPlusPlusRuntime,$MSVisualCPlusPlusRuntimeRelease,$MSVisualCPlusPlusRuntime_Architecture,$MSOffice_Visio,$MSOffice_Visio_Language,$MSOffice_Project,$MSOffice_Project_Language,$CiscoWebexTeamsClient,$ControlUpAgentPlugin,$MozillaThunderbird,$PDF24Creator,$WinRAR,$AdobeProDC_Architecture,$GoogleChromeChannel,$OpenJDKPackage,$PaintDotNet_Architecture,$WinRAR_Architecture,$WinRAR_Language,$WinRARChannel,$MozillaThunderbird_Architecture,$MozillaThunderbird_Language,$MSAzureDataStudio_Architecture,$TeamViewer_Architecture,$OperaBrowser,$OperaBrowser_Architecture,$Ditto,$Ditto_Architecture,$Ditto_Channel,$XCA | out-file -filepath "$PSScriptRoot\$GUIfile"
         If ($MS365Apps_Path -ne "") {
             If ($WhatIf -eq '0') {
                 If ($MS365Apps -eq 1) {
@@ -7614,13 +7822,19 @@ If ($ESfile) {
         $MozillaThunderbird_Architecture = $FileSetting[182] -as [int]
         $MozillaThunderbird_Language = $FileSetting[183] -as [int]
         $MSAzureDataStudio_Architecture = $FileSetting[184] -as [int]
-        $TeamViewer_Architecture = $FileSetting[184] -as [int]
+        $TeamViewer_Architecture = $FileSetting[185] -as [int]
+        $OperaBrowser = $FileSetting[186] -as [int]
+        $OperaBrowser_Architecture = $FileSetting[187] -as [int]
+        $Ditto = $FileSetting[188] -as [int]
+        $Ditto_Architecture = $FileSetting[189] -as [int]
+        $Ditto_Channel = $FileSetting[190] -as [int]
+        $XCA = $FileSetting[191] -as [int]
     }
     Write-Host "Unattended Mode."
 }
 Else {
     # Cleanup of the used variables (AddScript)
-    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu,MSVisualCPlusPlusRuntime,MSVisualCPlusPlusRuntimeRelease,MSVisualCPlusPlusRuntime_Architecture,MSOffice_Visio,MSOffice_Visio_Language,MSOffice_Project,MSOffice_Project_Language,Zoom_Architecture,CiscoWebexTeamsClient,ControlUpAgentPlugin,MozillaThunderbird,PDF24Creator,WinRAR,AdobeProDC_Architecture,GoogleChromeChannel,OpenJDKPackage,PaintDotNet_Architecture,WinRAR_Architecture,WinRAR_Language,WinRARChannel,MozillaThunderbird_Architecture,MozillaThunderbird_Language,MSAzureDataStudio_Architecture,TeamViewer_Architecture -ErrorAction SilentlyContinue
+    Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu,MSVisualCPlusPlusRuntime,MSVisualCPlusPlusRuntimeRelease,MSVisualCPlusPlusRuntime_Architecture,MSOffice_Visio,MSOffice_Visio_Language,MSOffice_Project,MSOffice_Project_Language,Zoom_Architecture,CiscoWebexTeamsClient,ControlUpAgentPlugin,MozillaThunderbird,PDF24Creator,WinRAR,AdobeProDC_Architecture,GoogleChromeChannel,OpenJDKPackage,PaintDotNet_Architecture,WinRAR_Architecture,WinRAR_Language,WinRARChannel,MozillaThunderbird_Architecture,MozillaThunderbird_Language,MSAzureDataStudio_Architecture,TeamViewer_Architecture,OperaBrowser,OperaBrowser_Architecture,Ditto,Ditto_Architecture,Ditto_Channel,XCA -ErrorAction SilentlyContinue
 
     # Shortcut Creation
     If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
@@ -7811,6 +8025,21 @@ Switch ($deviceTRUSTPackage) {
         $deviceTRUSTHost = $True}
     4 { $deviceTRUSTConsole = $True
         $deviceTRUSTHost = $True}
+}
+
+If ($Ditto_Architecture -ne "") {
+    Switch ($Ditto_Architecture) {
+        1 { $DittoArchitectureClear = 'x86'}
+        2 { $DittoArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $DittoArchitectureClear = $ArchitectureClear
+}
+
+Switch ($Ditto_Channel) {
+    0 { $DittoChannelClear = 'Beta'}
+    1 { $DittoChannelClear = 'Stable'}
 }
 
 If ($FoxitPDFEditor_Language -ne "") {
@@ -9182,6 +9411,16 @@ Switch ($OpenJDKPackage) {
     3 { $OpenJDKPackageClear = '17'}
 }
 
+If ($OperaBrowser_Architecture -ne "") {
+    Switch ($OperaBrowser_Architecture) {
+        1 { $OperaBrowserArchitectureClear = 'x86'}
+        2 { $OperaBrowserArchitectureClear = 'x64'}
+    }
+}
+Else {
+    $OperaBrowserArchitectureClear = $ArchitectureClear
+}
+
 If ($OracleJava8_Architecture -ne "") {
     Switch ($OracleJava8_Architecture) {
         1 { 
@@ -9647,7 +9886,6 @@ If ($Download -eq "1") {
     If ($7ZIP -eq 1) {
         $Product = "7-Zip"
         $PackageName = "7-Zip_" + "$7ZipArchitectureClear"
-        #$7ZipD = Get-EvergreenApp -Name 7zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear" -and $_.Type -eq "exe" }
         $7ZipD = Get-7-Zip | Where-Object { $_.Architecture -eq "$7ZipArchitectureClear"}
         $Version = $7ZipD.Version
         $URL = $7ZipD.uri
@@ -10542,6 +10780,54 @@ If ($Download -eq "1") {
                 Remove-Item -Path "$PSScriptRoot\$Product\_ADMX" -Force -Recurse
             }
             Write-Host -ForegroundColor Green "Copy of the new ADMX files version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download Ditto
+    If ($Ditto -eq 1) {
+        $Product = "Ditto"
+        $PackageName = "Ditto-Setup-" + "$DittoArchitectureClear" + "-$DittoChannelClear"
+        $DittoD = Get-Ditto | Where-Object { $_.Architecture -eq "$DittoArchitectureClear" -and $_.Channel -eq "$DittoChannelClear"}
+        $Version = $DittoD.Version
+        $URL = $DittoD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "exe"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$DittoArchitectureClear" + "_$DittoChannelClear" + ".txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product $DittoChannelClear channel $DittoArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.exe" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product $DittoChannelClear channel $DittoArchitectureClear version $Version"
+            If ($WhatIf -eq '0') {
+                Invoke-WebRequest -Uri $URL -OutFile ("$PSScriptRoot\$Product\" + ($Source))
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
             Write-Output ""
         }
         Else {
@@ -13429,10 +13715,27 @@ If ($Download -eq "1") {
         $Source = "$PackageName" + "." + "$InstallerType"
         $VersionPath = "$PSScriptRoot\$Product\Version_" + "$FirefoxChannelClear" + "$FirefoxArchitectureClear" + "$FFLanguageClear" + ".txt"
         $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        $FirefoxSplit = $CurrentVersion.split(".")
+        $FirefoxStrings = ([regex]::Matches($CurrentVersion, "\." )).count
+        $FirefoxStringFirst = ([regex]::Matches($FirefoxSplit[0], "." )).count
+        If ($FirefoxStringFirst -lt "3") {
+            $FirefoxSplit[0] = "0" + $FirefoxSplit[0]
+        }
+        Switch ($FirefoxStrings) {
+            1 {
+                $NewCurrentVersion = $FirefoxSplit[0] + "." + $FirefoxSplit[1]
+            }
+            2 {
+                $NewCurrentVersion = $FirefoxSplit[0] + "." + $FirefoxSplit[1] + "." + $FirefoxSplit[2]
+            }
+            3 {
+                $NewCurrentVersion = $FirefoxSplit[0] + "." + $FirefoxSplit[1] + "." + $FirefoxSplit[2] + "." + $FirefoxSplit[3]
+            }
+        }
         Write-Host -ForegroundColor Magenta "Download $Product $FirefoxChannelClear $FFLanguageLongClear $FirefoxArchitectureClear"
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $CurrentVersion"
-        If ($CurrentVersion -lt $Version) {
+        If ($NewCurrentVersion -lt $Version) {
             Write-Host -ForegroundColor Green "Update available"
             If ($WhatIf -eq '0') {
                 If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
@@ -14725,7 +15028,7 @@ If ($Download -eq "1") {
                 }
                 Remove-Item "$PSScriptRoot\$Product\*" -Recurse
                 Start-Transcript $LogPS | Out-Null
-                Set-Content -Path "$PSScriptRoot\$Product\Version.txt" -Value "$Version"
+                Set-Content -Path "$VersionPath" -Value "$Version"
             }
             Write-Host "Starting download of $Product $TeamViewerArchitectureClear version $Version"
             If ($WhatIf -eq '0') {
@@ -15321,6 +15624,54 @@ If ($Download -eq "1") {
                 Set-Content -Path "$VersionPath" -Value "$Version"
             }
             Write-Host "Starting download of $Product $WiresharkArchitectureClear version $Version"
+            If ($WhatIf -eq '0') {
+                Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
+                Write-Verbose "Stop logging"
+                Stop-Transcript | Out-Null
+            }
+            Write-Host -ForegroundColor Green "Download of the new version $Version finished!"
+            Write-Output ""
+        }
+        Else {
+            Write-Host -ForegroundColor Cyan "No new version available"
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Download XCA
+    If ($XCA -eq 1) {
+        $Product = "XCA"
+        $PackageName = "XCA"
+        $XCAD = Get-XCA
+        $Version = $XCAD.Version
+        $URL = $XCAD.uri
+        Add-Content -Path "$FWFile" -Value "$URL"
+        $InstallerType = "msi"
+        $Source = "$PackageName" + "." + "$InstallerType"
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $CurrentVersion = Get-Content -Path "$VersionPath" -EA SilentlyContinue
+        Write-Host -ForegroundColor Magenta "Download $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $CurrentVersion"
+        If ($CurrentVersion -lt $Version) {
+            Write-Host -ForegroundColor Green "Update available"
+            If ($WhatIf -eq '0') {
+                If (!(Test-Path -Path "$PSScriptRoot\$Product")) { New-Item -Path "$PSScriptRoot\$Product" -ItemType Directory | Out-Null }
+                $LogPS = "$PSScriptRoot\$Product\" + "$Product $Version.log"
+                If ($Repository -eq '1') {
+                    If ($CurrentVersion) {
+                        Write-Host "Copy $Product installer version $CurrentVersion to repository folder"
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product")) { New-Item -Path "$PSScriptRoot\_Repository\$Product" -ItemType Directory | Out-Null }
+                        If (!(Test-Path -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion")) { New-Item -Path "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ItemType Directory | Out-Null }
+                        Copy-Item -Path "$PSScriptRoot\$Product\*.msi" -Destination "$PSScriptRoot\_Repository\$Product\$CurrentVersion" -ErrorAction SilentlyContinue
+                        Write-Host -ForegroundColor Green "Copy of the current version $CurrentVersion finished!"
+                    }
+                }
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+                Start-Transcript $LogPS | Out-Null
+                Set-Content -Path "$VersionPath" -Value "$Version"
+            }
+            Write-Host "Starting download of $Product version $Version"
             If ($WhatIf -eq '0') {
                 Get-Download $URL "$PSScriptRoot\$Product\" $Source -includeStats
                 Write-Verbose "Stop logging"
@@ -16658,6 +17009,81 @@ If ($Install -eq "1") {
                 Write-Host -ForegroundColor Cyan "No update available for $Product Console"
                 Write-Output ""
             }
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
+    #// Mark: Install Ditto
+    If ($Ditto -eq 1) {
+        $Product = "Ditto"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version_" + "$DittoArchitectureClear" + "_$DittoChannelClear" + ".txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $DittoD.Version
+        }
+        $DittoV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Ditto*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        If (!$DittoV) {
+            $DittoV = (Get-ItemProperty HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*Ditto*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $DittoInstaller = "Ditto-Setup-" + "$DittoArchitectureClear" + "-$DittoChannelClear" + ".exe"
+        Write-Host -ForegroundColor Magenta "Install $Product $DittoChannelClear channel $DittoArchitectureClear"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $DittoV"
+        If ($DittoV -lt $Version) {
+            $Options = @(
+                "/VERYSILENT"
+                "/NORESTART"
+                "/MERGETASKS=addfirewallexception"
+            )
+            DS_WriteLog "I" "Install $Product $DittoChannelClear channel $DittoArchitectureClear" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            Try {
+                Write-Host "Starting install of $Product $DittoChannelClear channel $DittoArchitectureClear version $Version"
+                If ($WhatIf -eq '0') {
+                    Start-Process "$PSScriptRoot\$Product\$DittoInstaller" -ArgumentList $Options -ErrorAction Stop
+                }
+                $p = Get-Process Ditto-Setup-$DittoArchitectureClear-$DittoChannelClear -ErrorAction SilentlyContinue
+                If ($p) {
+                    $p.WaitForExit()
+                    Write-Host -ForegroundColor Green "Install of the new version $Version finished!"
+                    DS_WriteLog "I" "Installation $Product $DittoChannelClear channel $DittoArchitectureClear finished!" $LogFile
+                }
+                If ($WhatIf -eq '0') {
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Ditto") {Remove-Item -Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Ditto" -Recurse -Force}
+                    }
+                    If (!(Test-Path -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1")) {
+                        New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -ErrorAction SilentlyContinue | Out-Null
+                        New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -Name DisplayVersion -Value $Version -PropertyType REG_SZ -ErrorAction SilentlyContinue | Out-Null
+                    }
+                    Else {
+                        If ((Test-RegistryValue2 -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -Value "DisplayVersion") -ne $true) {
+                            New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -Name DisplayVersion -Value $Version -PropertyType REG_SZ -ErrorAction SilentlyContinue | Out-Null
+                        } Else {
+                            New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -ErrorAction SilentlyContinue | Out-Null
+                            New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Ditto_is1" -Name DisplayVersion -Value $Version -PropertyType REG_SZ -ErrorAction SilentlyContinue | Out-Null
+                        }
+                    }
+                }
+            } Catch {
+                Write-Host -ForegroundColor Red "Error installing $Product $DittoChannelClear channel $DittoArchitectureClear (Error: $($Error[0]))"
+                DS_WriteLog "E" "Error installing $Product $DittoChannelClear channel $DittoArchitectureClear (Error: $($Error[0]))" $LogFile
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
         }
         If ($CleanUp -eq '1') {
             If ($WhatIf -eq '0') {
@@ -18022,11 +18448,13 @@ If ($Install -eq "1") {
                         $RegPath = "HKLM:SYSTEM\CurrentControlSet\services\CtxUvi"
                         If (Test-Path $RegPath) {
                             $RegName = "UviProcessExcludes"
-                            $EdgeRegvalue = "msedge.exe"
                             # Get current values in UviProcessExcludes
                             $CurrentValues = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $RegName
+                            If ($CurrentValues -like "*msedge.exe*") {
+                                $NewValues = $CurrentValues.replace("msedge.exe;","")
+                            }
                             # Add the msedge.exe value to existing values in UviProcessExcludes
-                            Set-ItemProperty -Path $RegPath -Name $RegName -Value "$CurrentValues$EdgeRegvalue;" -ErrorAction SilentlyContinue
+                            Set-ItemProperty -Path $RegPath -Name $RegName -Value "$NewValues" -ErrorAction SilentlyContinue
                         }
                     ) | Out-Null
                 }
@@ -20375,12 +20803,18 @@ If ($Install -eq "1") {
         Write-Host "Download Version: $Version"
         Write-Host "Current Version:  $OperaBrowserV"
         If ($OperaBrowserV -lt $Version) {
+            $Options = @(
+                "/silent"
+                "/allusers=1"
+                "/launchopera=0"
+                "/setdefaultbrowser=0"
+            )
             DS_WriteLog "I" "Install $Product $OperaBrowserArchitectureClear" $LogFile
             Write-Host -ForegroundColor Green "Update available"
             Try {
                 Write-Host "Starting install of $Product $OperaBrowserArchitectureClear version $Version"
                 If ($WhatIf -eq '0') {
-                    Start-Process "$PSScriptRoot\$Product\$OperaBrowserInstaller" -ArgumentList /silent /allusers=1 /launchopera=0 /setdefaultbrowser=0
+                    Start-Process "$PSScriptRoot\$Product\$OperaBrowserInstaller" -ArgumentList $Options -ErrorAction Stop
                 }
                 $p = Get-Process OperaBrowser_$OperaBrowserArchitectureClear -ErrorAction SilentlyContinue
 		        If ($p) {
@@ -20389,6 +20823,7 @@ If ($Install -eq "1") {
                     DS_WriteLog "I" "Installation $Product finished!" $LogFile
                 }
                 If ($WhatIf -eq '0') {
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\Opera-Browser.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\Opera-Browser.lnk" -Force}
                     If ($CleanUpStartMenu) {
                         If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Opera*.lnk") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\Opera*.lnk" -Force}
                     }
@@ -22033,6 +22468,66 @@ If ($Install -eq "1") {
         }
     }
 
+    #// Mark: Install XCA
+    If ($XCA -eq 1) {
+        $Product = "XCA"
+        # Check, if a new version is available
+        $VersionPath = "$PSScriptRoot\$Product\Version.txt"
+        $Version = Get-Content -Path "$VersionPath" -ErrorAction SilentlyContinue
+        If (!($Version)) {
+            $Version = $XCAD.Version
+        }
+        $XCAV = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*XCA*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        $XCALog = "$LogTemp\XCA.log"
+        If (!$XCAV) {
+            $XCAV = (Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object {$_.DisplayName -like "*XCA*"}).DisplayVersion | Sort-Object -Property Version -Descending | Select-Object -First 1
+        }
+        $XCAInstaller = "XCA.msi"
+        $InstallMSI = "$PSScriptRoot\$Product\$XCAInstaller"
+        Write-Host -ForegroundColor Magenta "Install $Product"
+        Write-Host "Download Version: $Version"
+        Write-Host "Current Version:  $XCAV"
+        If ($XCAV -lt $Version) {
+            DS_WriteLog "I" "Install $Product" $LogFile
+            Write-Host -ForegroundColor Green "Update available"
+            $Arguments = @(
+                "/i"
+                "`"$InstallMSI`""
+                "/qn"
+                "/L*V $XCALog"
+            )
+            Try {
+                Write-Host "Starting install of $Product version $Version"
+                If ($WhatIf -eq '0') {
+                    Install-MSI $InstallMSI $Arguments
+                    Get-Content $XCALog -ErrorAction SilentlyContinue | Add-Content $LogFile -Encoding ASCI -ErrorAction SilentlyContinue
+                    Remove-Item $XCALog -ErrorAction SilentlyContinue
+                    If (Test-Path -Path "$env:PUBLIC\Desktop\XCA.lnk") {Remove-Item -Path "$env:PUBLIC\Desktop\XCA.lnk" -Force}
+                    If ($CleanUpStartMenu) {
+                        If (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\XCA") {Remove-Item -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\XCA" -Recurse -Force}
+                    }
+                }
+            } Catch {
+                DS_WriteLog "E" "An error occurred installing $Product (Error: $($Error[0]))" $LogFile 
+            }
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+        # Stop, if no new version is available
+        Else {
+            Write-Host -ForegroundColor Cyan "No update available for $Product"
+            Write-Output ""
+        }
+        If ($CleanUp -eq '1') {
+            If ($WhatIf -eq '0') {
+                Remove-Item "$PSScriptRoot\$Product\*" -Recurse
+            }
+            Write-Host -ForegroundColor Green "CleanUp for $Product install files successfully."
+            DS_WriteLog "-" "" $LogFile
+            Write-Output ""
+        }
+    }
+
     #// Mark: Install Zoom
     If ($Zoom -eq 1) {
         If ($ZoomCitrixClient -eq 0) {
@@ -22196,4 +22691,5 @@ If ($Install -eq "1") {
     }
 }
 $LASTEXITCODE = "0"
+Set-Location $PSScriptRoot
 exit $LASTEXITCODE
