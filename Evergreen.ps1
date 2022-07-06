@@ -8,7 +8,7 @@ A new folder for every single package will be created, together with a version f
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.09.01
+  Version:          2.09.02
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -163,6 +163,8 @@ the script checks the version number and will update the package.
   2022-06-17        Correction Mozilla Firefox CurrentVersion detection
   2022-06-20        Add XCA download and install
   2022-06-21        Correction Teamviewer download version
+  2022-07-04        Correction msedge UviProcessExcludes reg entry / Add Ditto, Opera Browser and XCA to the GUI
+  2022-07-06        Correction Microsoft Edge Registry
 
 .PARAMETER ESfile
 
@@ -3719,7 +3721,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 # Is there a newer Evergreen Script version?
 # ========================================================================================================================================
-$eVersion = "2.09.01"
+$eVersion = "2.09.02"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -18452,9 +18454,9 @@ If ($Install -eq "1") {
                             $CurrentValues = Get-ItemProperty -Path $RegPath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $RegName
                             If ($CurrentValues -like "*msedge.exe*") {
                                 $NewValues = $CurrentValues.replace("msedge.exe;","")
+                                Set-ItemProperty -Path $RegPath -Name $RegName -Value "$NewValues" -ErrorAction SilentlyContinue
                             }
                             # Add the msedge.exe value to existing values in UviProcessExcludes
-                            Set-ItemProperty -Path $RegPath -Name $RegName -Value "$NewValues" -ErrorAction SilentlyContinue
                         }
                     ) | Out-Null
                 }
