@@ -165,7 +165,7 @@ the script checks the version number and will update the package.
   2022-06-21        Correction Teamviewer download version
   2022-07-04        Correction msedge UviProcessExcludes reg entry / Add Ditto, Opera Browser and XCA to the GUI
   2022-07-06        Correction Microsoft Edge Registry
-  2022-07-19        Renamming and correction auto update flow
+  2022-07-19        Renaming and correction auto update flow
 
 .PARAMETER ESfile
 
@@ -3793,6 +3793,10 @@ If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
 }
 
 If (Test-Path -Path "$PSScriptRoot\Evergreen.ps1") {
+    Write-Host -Foregroundcolor Green "Renaming Evergreen.ps1 to NeverRed.ps1"
+    Write-Output ""
+    Write-Host -Foregroundcolor Green "Start NeverRed.ps1"
+    Write-Output ""
     $rename = @'
                 Rename-Item -Path "$PSScriptRoot\Evergreen.ps1" -NewName "NeverRed.ps1"
                 & "$PSScriptRoot\NeverRed.ps1"
