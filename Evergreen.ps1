@@ -3772,7 +3772,7 @@ Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "      Manuel Wink
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                       "
 $host.ui.RawUI.WindowTitle ="NeverRed - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
-    #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
+    Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
 } Else {
     If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
         New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
@@ -3814,7 +3814,7 @@ If (!($NoUpdate)) {
     }
     Else {
         # There is a new Evergreen Script Version
-        Write-Host -Foregroundcolor Red "Attention! There is a new version of the NeverRed."
+        Write-Host -Foregroundcolor Red "Attention! There is a new version of NeverRed."
         Write-Output ""
         If ($ESfile) {
             $update = @'
