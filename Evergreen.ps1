@@ -3773,6 +3773,7 @@ Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                 
 $host.ui.RawUI.WindowTitle ="NeverRed - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
+    Remove-Item -Path "$PSScriptRoot\Rename.ps1" -Force
 } Else {
     If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
         New-Item -Path HKLM:SOFTWARE\EvergreenScript -ErrorAction SilentlyContinue | Out-Null
@@ -3789,6 +3790,16 @@ If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     } else {
         New-ItemProperty -Path HKLM:SOFTWARE\EvergreenScript -Name UpdateLanguage -Value 1 -PropertyType DWORD -ErrorAction SilentlyContinue | Out-Null
     }
+}
+
+If (Test-Path -Path "$PSScriptRoot\Evergreen.ps1") {
+    $rename = @'
+                Rename-Item -Path "$PSScriptRoot\Evergreen.ps1" -NewName "NeverRed.ps1"
+                & "$PSScriptRoot\NeverRed.ps1"
+'@
+            $rename > $PSScriptRoot\rename.ps1
+            & "$PSScriptRoot\rename.ps1"
+            Break
 }
 
 If (!($NoUpdate)) {
