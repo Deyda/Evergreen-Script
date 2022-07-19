@@ -1,14 +1,14 @@
 #requires -version 5
 <#
 .SYNOPSIS
-Download and Install several Software with the Evergreen module from Aaron Parker, Bronson Magnan and Trond Eric Haarvarstein. and the Nevergreen module from Dan Gough.
+NeverRed is a simple PowerShell script to download and install the latest version for several common enterprise Windows applications.
 .DESCRIPTION
 To update or download a software package just select a LastSetting.txt file (With parameter -ESfile) or select your Software out of the GUI.
 A new folder for every single package will be created, together with a version file and a log file. If a new version is available
 the script checks the version number and will update the package.
 
 .NOTES
-  Version:          2.09.02
+  Version:          2.09.03
   Author:           Manuel Winkel <www.deyda.net>
   Creation Date:    2021-01-29
 
@@ -165,6 +165,7 @@ the script checks the version number and will update the package.
   2022-06-21        Correction Teamviewer download version
   2022-07-04        Correction msedge UviProcessExcludes reg entry / Add Ditto, Opera Browser and XCA to the GUI
   2022-07-06        Correction Microsoft Edge Registry
+  2022-07-19        Renamming and correction auto update flow
 
 .PARAMETER ESfile
 
@@ -176,19 +177,19 @@ Path to GUI file (LastSetting.txt) for software selection in GUI mode.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -ESfile LastSetting.txt
+.\NeverRed.ps1 -ESfile LastSetting.txt
 
 Download and / or Install the selected Software out of the file.
 
 .EXAMPLE
 
-.\Evergreen.ps1 -GUIfile LastSetting.txt
+.\NeverRed.ps1 -GUIfile LastSetting.txt
 
 Start the GUI with the options out of the file.
 
 .EXAMPLE
 
-.\Evergreen.ps1
+.\NeverRed.ps1
 
 Start the GUI to select the mode (Install and/or Download) and the Software.
 #>
@@ -196,36 +197,18 @@ Start the GUI to select the mode (Install and/or Download) and the Software.
 [CmdletBinding()]
 
 Param (
-    
-        [Parameter(
-            HelpMessage='Not used anymore',
-            ValuefromPipelineByPropertyName = $true
-        )]
-        [string]$download,
 
         [Parameter(
-            HelpMessage='Not used anymore',
-            ValuefromPipelineByPropertyName = $true
-        )]
-        [string]$install,
-
-        [Parameter(
-            HelpMessage='File with Software Selection',
+            HelpMessage='File with Software Selection for Unattended Mode',
             ValuefromPipelineByPropertyName = $true
         )]
         [string]$ESfile,
     
         [Parameter(
-            HelpMessage='File with Software Selection for GUI',
+            HelpMessage='File with Software Selection for GUI Mode',
             ValuefromPipelineByPropertyName = $true
         )]
         [string]$GUIfile,
-
-        [Parameter(
-            HelpMessage='Not used anymore',
-            ValuefromPipelineByPropertyName = $true
-        )]
-        [switch]$list,
 
         [Parameter(
             HelpMessage='Do not check the PowerShell Modules',
@@ -3652,7 +3635,7 @@ function Get-ZoomAdmx {
         # grab version
         $Version = ($URI.Split("/")[-1] | Select-String -Pattern "(\d+(\.\d+){1,4})" -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }).ToString()
 
-        # return evergreen object
+        # return object
         return @{ Version = $Version; URI = $URI }
     }
     catch {
@@ -3719,13 +3702,13 @@ Function DS_WriteLog {
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'SilentlyContinue'
 
-# Is there a newer Evergreen Script version?
+# Is there a newer NeverRed Script version?
 # ========================================================================================================================================
-$eVersion = "2.09.02"
+$eVersion = "2.09.03"
 $WebVersion = ""
 [bool]$NewerVersion = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1"
+$WebResponseVersion = Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/Deyda/NeverRed/master/NeverRed.ps1"
 If ($WebResponseVersion) {
     $WebVersion = (($WebResponseVersion.tostring() -split "[`r`n]" | select-string "Version:" | Select-Object -First 1) -split ":")[1].Trim()
 }
@@ -3784,10 +3767,10 @@ If ((Test-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon"
 # Script Version
 # ========================================================================================================================================
 Write-Output ""
-Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "   Evergreen Script - Update your Software, the lazy way    "
+Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "       NeverRed - Update your Software, the lazy way        "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "      Manuel Winkel - Deyda Consulting (www.deyda.net)      "
 Write-Host -BackgroundColor DarkGreen -ForegroundColor Yellow "                      Version $eVersion                       "
-$host.ui.RawUI.WindowTitle ="Evergreen Script - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
+$host.ui.RawUI.WindowTitle ="NeverRed - Update your Software, the lazy way - Manuel Winkel (www.deyda.net) - Version $eVersion"
 If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
     #Remove-Item -Path "$PSScriptRoot\Update.ps1" -Force
 } Else {
@@ -3810,11 +3793,11 @@ If (Test-Path "$PSScriptRoot\update.ps1" -PathType leaf) {
 
 If (!($NoUpdate)) {
     Write-Output ""
-    Write-Host -Foregroundcolor DarkGray "Is there a newer Evergreen Script version?"
+    Write-Host -Foregroundcolor DarkGray "Is there a newer NeverRed version?"
     
     If ($NewerVersion -eq $false) {
         # No new version available
-        Write-Host -Foregroundcolor Green "OK, script is newest version!"
+        Write-Host -Foregroundcolor Green "OK, NeverRed is newest version!"
         Write-Output ""
         # Change old LastSetting.txt files to the new format (AddScript)
         If (!(Test-Path -Path HKLM:SOFTWARE\EvergreenScript)) {
@@ -3831,13 +3814,14 @@ If (!($NoUpdate)) {
     }
     Else {
         # There is a new Evergreen Script Version
-        Write-Host -Foregroundcolor Red "Attention! There is a new version of the Evergreen Script."
+        Write-Host -Foregroundcolor Red "Attention! There is a new version of the NeverRed."
         Write-Output ""
         If ($ESfile) {
             $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -ESfile $ESfile
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force
+                Remove-Item -Path "$PSScriptRoot\NeverRed.ps1" -Force 
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/NeverRed/master/NeverRed.ps1 -OutFile ("$PSScriptRoot\" + "NeverRed.ps1")
+                & "$PSScriptRoot\NeverRed.ps1" -ESfile $ESfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
@@ -3845,9 +3829,10 @@ If (!($NoUpdate)) {
         }
         ElseIf ($GUIfile) {
             $update = @'
-                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                & "$PSScriptRoot\evergreen.ps1" -GUIfile $GUIfile
+                Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force
+                Remove-Item -Path "$PSScriptRoot\NeverRed.ps1" -Force
+                Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/NeverRed/master/NeverRed.ps1 -OutFile ("$PSScriptRoot\" + "NeverRed.ps1")
+                & "$PSScriptRoot\NeverRed.ps1" -GUIfile $GUIfile
 '@
             $update > $PSScriptRoot\update.ps1
             & "$PSScriptRoot\update.ps1"
@@ -3858,11 +3843,12 @@ If (!($NoUpdate)) {
             $wshell = New-Object -ComObject Wscript.Shell
             $AnswerPending = $wshell.Popup("Do you want to download the new version?",0,"New Version Alert!",32+4)
             If ($AnswerPending -eq "6") {
-                Start-Process "https://www.deyda.net/index.php/en/evergreen-script/"
+                Start-Process "https://www.deyda.net/index.php/en/NeverRed/"
                 $update = @'
-                    Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force 
-                    Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/Evergreen.ps1 -OutFile ("$PSScriptRoot\" + "Evergreen.ps1")
-                    & "$PSScriptRoot\evergreen.ps1"
+                    Remove-Item -Path "$PSScriptRoot\Evergreen.ps1" -Force
+                    Remove-Item -Path "$PSScriptRoot\NeverRed.ps1" -Force
+                    Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/NeverRed/master/NeverRed.ps1 -OutFile ("$PSScriptRoot\" + "NeverRed.ps1")
+                    & "$PSScriptRoot\NeverRed.ps1"
 '@
                 $update > $PSScriptRoot\update.ps1
                 & "$PSScriptRoot\update.ps1"
@@ -3877,6 +3863,8 @@ If ($myWindowsPrincipal.IsInRole($adminRole)) {
     # OK, runs as admin
     Write-Host -Foregroundcolor Green "OK, script is running with admin rights."
     Write-Output ""
+    If (!(Test-Path -Path "$PSScriptRoot\shortcut")) { New-Item -Path "$PSScriptRoot\shortcut" -ItemType Directory | Out-Null }
+    If (!(Test-Path -Path "$PSScriptRoot\shortcut\NeverRed.ico")) {Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/NeverRed/master/shortcut/NeverRed.ico -OutFile ("$PSScriptRoot\shortcut\" + "NeverRed.ico")}
 }
 Else {
     # Script doesn't run as admin, stop!
@@ -3917,8 +3905,8 @@ $inputXML = @"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Evergreen Script - Update your Software, the lazy way - Version $eVersion" Height="998" Width="980"
-        Icon="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
+        Title="NeverRed - Update your Software, the lazy way - Version $eVersion" Height="998" Width="980"
+        Icon="$PSScriptRoot\shortcut\NeverRed.ico"
         WindowStartupLocation="CenterScreen">
     <TabControl Grid.Column="1">
         <TabItem Header="General">
@@ -3932,7 +3920,7 @@ $inputXML = @"
                         <RowDefinition Height="60"/>
                         <RowDefinition Height="870"/>
                     </Grid.RowDefinitions>
-                    <Image x:Name="Image_Logo" Height="100" Margin="0,3,30,0" HorizontalAlignment="Right" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" ToolTip="www.deyda.net"/>
+                    <Image x:Name="Image_Logo" Height="100" Margin="0,3,30,0" HorizontalAlignment="Right" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA.png" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" ToolTip="www.deyda.net"/>
                     <Label x:Name="Label_SelectMode" Content="Select Mode" HorizontalAlignment="Left" Margin="3,3,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <CheckBox x:Name="Checkbox_Download" Content="Download" HorizontalAlignment="Left" Margin="12,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <CheckBox x:Name="Checkbox_Install" Content="Install" HorizontalAlignment="Left" Margin="100,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
@@ -4208,7 +4196,7 @@ $inputXML = @"
                         <RowDefinition Height="60"/>
                         <RowDefinition Height="850"/>
                     </Grid.RowDefinitions>
-                    <Image x:Name="Image_Logo_Detail" Height="100" Margin="0,3,30,0" HorizontalAlignment="Right" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA_no_cta.png" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" ToolTip="www.deyda.net"/>
+                    <Image x:Name="Image_Logo_Detail" Height="100" Margin="0,3,30,0" HorizontalAlignment="Right" VerticalAlignment="Top" Width="100" Source="$PSScriptRoot\img\Logo_DEYDA.png" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" ToolTip="www.deyda.net"/>
                     <Label x:Name="Label_OptionalMode" Content="Optional Mode" HorizontalAlignment="Left" Margin="3,3,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <CheckBox x:Name="Checkbox_WhatIf" Content="WhatIf" HorizontalAlignment="Left" Margin="12,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
                     <CheckBox x:Name="Checkbox_Repository" Content="Installer Repository" HorizontalAlignment="Left" Margin="76,34,0,0" VerticalAlignment="Top" Grid.Column="0" Grid.Row="0"/>
@@ -7839,24 +7827,27 @@ Else {
     Clear-Variable -name Download,Install,7ZIP,AdobeProDC,AdobeReaderDC,BISF,Citrix_Hypervisor_Tools,Filezilla,Firefox,Foxit_Reader,MSFSLogix,Greenshot,GoogleChrome,KeePass,mRemoteNG,MS365Apps,MSEdge,MSOffice,MSTeams,NotePadPlusPlus,MSOneDrive,OpenJDK,OracleJava8,TreeSize,VLCPlayer,VMWareTools,WinSCP,Citrix_WorkspaceApp,Architecture,FirefoxChannel,CitrixWorkspaceAppRelease,Language,MS365AppsChannel,MSOneDriveRing,MSTeamsRing,TreeSizeType,IrfanView,MSTeamsNoAutoStart,deviceTRUST,MSDotNetFramework,MSDotNetFrameworkChannel,MSPowerShell,MSPowerShellRelease,RemoteDesktopManager,RemoteDesktopManagerType,Slack,ShareX,Zoom,ZoomCitrixClient,deviceTRUSTPackage,deviceTRUSTClient,deviceTRUSTConsole,deviceTRUSTHost,MSEdgeChannel,Installer,MSVisualStudioCodeChannel,MSVisualStudio,MSVisualStudioCode,TeamViewer,Putty,PaintDotNet,MSPowerToys,GIMP,MSVisualStudioEdition,PuttyChannel,Wireshark,MSAzureDataStudio,MSAzureDataStudioChannel,ImageGlass,MSFSLogixChannel,uberAgent,1Password,CiscoWebexClient,ControlUpAgent,ControlUpAgentFramework,ControlUpConsole,MSSQLServerManagementStudio,MSAVDRemoteDesktop,MSAVDRemoteDesktopChannel,MSPowerBIDesktop,RDAnalyzer,SumatraPDF,CiscoWebexTeams,CitrixFiles,FoxitPDFEditor,GitForWindows,LogMeInGoToMeeting,MSAzureCLI,MSPowerBIReportBuilder,MSSysinternals,NMap,PeaZip,TechSmithCamtasia,TechSmithSnagit,WinMerge,WhatIf,CleanUp,7Zip_Architecture,AdobeReaderDC_Architecture,AdobeReaderDC_Language,CiscoWebexTeams_Architecture,CitrixHypervisorTools_Architecture,ControlUpAgent_Architecture,deviceTRUST_Architecture,FoxitPDFEditor_Language,FoxitReader_Language,GitForWindows_Architecture,GoogleChrome_Architecture,ImageGlass_Architecture,IrfanView_Architecture,Keepass_Language,MSDotNetFramework_Architecture,MS365Apps_Architecture,MS365Apps_Language,MS365Apps_Visio,MS365Apps_Visio_Language,MS365Apps_Project,MS365Apps_Project_Language,MSAVDRemoteDesktop_Architecture,MSEdge_Architecture,MSFSLogix_Architecture,MSOffice_Architecture,MSOneDrive_Architecture,MSPowerBIDesktop_Architecture,MSPowerShell_Architecture,MSSQLServerManagementStudio_Language,MSTeams_Architecture,MSVisualStudioCode_Architecture,Firefox_Architecture,Firefox_Language,NotePadPlusPlus_Architecture,OpenJDK_Architecture,OracleJava8_Architecture,PeaZip_Architecture,Putty_Architecture,Slack_Architecture,SumatraPDF_Architecture,TechSmithSnagIt_Architecture,VLCPlayer_Architecture,VMWareTools_Architecture,WinMerge_Architecture,Wireshark_Architecture,IrfanView_Language,MSOffice_Language,MSEdgeWebView2,MSEdgeWebView2_Architecture,AutodeskDWGTrueView,MindView7,MindView7_Language,PDFsam,MSOfficeVersion,OpenShellMenu,PDFForgeCreator,TotalCommander,LogMeInGoToMeeting_Installer,MSAzureDataStudio_Installer,MSVisualStudioCode_Installer,MS365Apps_Installer,MSTeams_Installer,Zoom_Installer,MSOneDrive_Installer,Slack_Installer,pdfforgePDFCreatorChannel,TotalCommander_Architecture,Repository,CleanUpStartMenu,MSVisualCPlusPlusRuntime,MSVisualCPlusPlusRuntimeRelease,MSVisualCPlusPlusRuntime_Architecture,MSOffice_Visio,MSOffice_Visio_Language,MSOffice_Project,MSOffice_Project_Language,Zoom_Architecture,CiscoWebexTeamsClient,ControlUpAgentPlugin,MozillaThunderbird,PDF24Creator,WinRAR,AdobeProDC_Architecture,GoogleChromeChannel,OpenJDKPackage,PaintDotNet_Architecture,WinRAR_Architecture,WinRAR_Language,WinRARChannel,MozillaThunderbird_Architecture,MozillaThunderbird_Language,MSAzureDataStudio_Architecture,TeamViewer_Architecture,OperaBrowser,OperaBrowser_Architecture,Ditto,Ditto_Architecture,Ditto_Channel,XCA -ErrorAction SilentlyContinue
 
     # Shortcut Creation
-    If (!(Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
+    If ((Test-Path -Path "$env:USERPROFILE\Desktop\Evergreen Script.lnk")) {
+        Remove-Item "$env:USERPROFILE\Desktop\Evergreen Script.lnk"
+    }
+    If (!(Test-Path -Path "$env:USERPROFILE\Desktop\NeverRed.lnk")) {
         $WScriptShell = New-Object -ComObject 'WScript.Shell'
-        $ShortcutFile = "$env:USERPROFILE\Desktop\Evergreen Script.lnk"
+        $ShortcutFile = "$env:USERPROFILE\Desktop\NeverRed.lnk"
         $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)
         $Shortcut.TargetPath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
         $Shortcut.WorkingDirectory = "C:\Windows\System32\WindowsPowerShell\v1.0"
         If (!(Test-Path -Path "$PSScriptRoot\shortcut")) { New-Item -Path "$PSScriptRoot\shortcut" -ItemType Directory | Out-Null }
-        If (!(Test-Path -Path "$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico")) {Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/shortcut/EvergreenLeafDeyda.ico -OutFile ("$PSScriptRoot\shortcut\" + "EvergreenLeafDeyda.ico")}
-        $shortcut.IconLocation="$PSScriptRoot\shortcut\EvergreenLeafDeyda.ico"
-        $Shortcut.Arguments = '-noexit -ExecutionPolicy Bypass -file "' + "$PSScriptRoot" + '\Evergreen.ps1"'
+        If (!(Test-Path -Path "$PSScriptRoot\shortcut\NeverRed.ico")) {Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/NeverRed/master/shortcut/NeverRed.ico -OutFile ("$PSScriptRoot\shortcut\" + "NeverRed.ico")}
+        $shortcut.IconLocation="$PSScriptRoot\shortcut\NeverRed.ico"
+        $Shortcut.Arguments = '-noexit -ExecutionPolicy Bypass -file "' + "$PSScriptRoot" + '\NeverRed.ps1"'
         $Shortcut.Save()
         $Admin = [System.IO.File]::ReadAllBytes("$ShortcutFile")
         $Admin[0x15] = $Admin[0x15] -bor 0x20
         [System.IO.File]::WriteAllBytes("$ShortcutFile", $Admin)
     }
-    If (!(Test-Path -Path "$PSScriptRoot\img\Logo_DEYDA_no_cta.png")) {
+    If (!(Test-Path -Path "$PSScriptRoot\img\Logo_DEYDA.png")) {
         If (!(Test-Path -Path "$PSScriptRoot\img")) { New-Item -Path "$PSScriptRoot\img" -ItemType Directory | Out-Null }
-        Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Evergreen-Script/main/img/Logo_DEYDA_no_cta.png -OutFile ("$PSScriptRoot\img\" + "Logo_DEYDA_no_cta.png")
+        Invoke-WebRequest -Uri https://raw.githubusercontent.com/Deyda/Neverred/master/img/Logo_DEYDA.png -OutFile ("$PSScriptRoot\img\" + "Logo_DEYDA.png")
     }
     gui_mode
 }
@@ -9700,7 +9691,7 @@ If ($Download -eq "1") {
     # Global variables
     # $StartDir = $PSScriptRoot # the directory path of the script currently being executed
     $LogDir = "$PSScriptRoot\_Install Logs"
-    $LogTemp = "$env:windir\Logs\Evergreen"
+    $LogTemp = "$env:windir\Logs\NeverRed"
     $LogFileName = ("$ENV:COMPUTERNAME - $Date.log")
     $LogFile = Join-path $LogDir $LogFileName
     $FWFileName = ("Firewall - $Date.log")
